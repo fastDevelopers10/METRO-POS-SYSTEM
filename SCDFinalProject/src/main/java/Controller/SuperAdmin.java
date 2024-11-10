@@ -1,6 +1,7 @@
 package Controller;
 
-public class SuperAdmin {
+public class SuperAdmin
+{
     private static int idCounter = 1;  //count for increment in id over each object creation
     private int id;
     private String name;

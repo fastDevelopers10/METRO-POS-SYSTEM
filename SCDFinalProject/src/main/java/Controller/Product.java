@@ -1,5 +1,4 @@
-package Controller;
-
+// Inner class to represent a product
 public class Product {
     private String name;
     private double price;

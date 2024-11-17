@@ -1,4 +1,4 @@
-package SCDFinalProject.src.main.java.View;
+package View;
 
 import javax.swing.*;
 import java.awt.*;

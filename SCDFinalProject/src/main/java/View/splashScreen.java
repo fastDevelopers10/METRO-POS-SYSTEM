@@ -4,13 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
-public class LoadingBar extends JPanel {
+public class splashScreen extends JPanel {
     private int progress = 0;
     private Image backgroundImage;
     static JFrame frame;
 
-    public LoadingBar() {
-        backgroundImage = new ImageIcon("Splash.png").getImage();
+    public splashScreen() {
+        backgroundImage = new ImageIcon("SCDFinalProject/src/main/java/images/Splash.png").getImage();
 
         // Timer to update progress
         Timer timer = new Timer(30, e -> {
@@ -54,7 +54,7 @@ public class LoadingBar extends JPanel {
 
         frame.setBackground(new Color(0, 0, 0, 0));
 
-        LoadingBar panel = new LoadingBar();
+        splashScreen panel = new splashScreen();
         panel.setPreferredSize(new Dimension(600, 400)); // Set size to match the background
 
         frame.add(panel);

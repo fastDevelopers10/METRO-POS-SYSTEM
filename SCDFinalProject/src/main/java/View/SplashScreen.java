@@ -36,7 +36,7 @@ public class SplashScreen extends JPanel {
 
         int barWidth = 490;
         int barHeight = 8;
-        int arc = 8;
+        int arc = 8; // Rounded corners
 
         g2d.setColor(Color.decode("#D9D9D9"));
         g2d.fillRoundRect(55, 310, barWidth, barHeight, arc, arc);
@@ -49,12 +49,12 @@ public class SplashScreen extends JPanel {
         frame = new JFrame();
         frame.setUndecorated(true);
 
-        frame.setShape(new RoundRectangle2D.Double(0, 0, 600, 400, 36, 36)); // Adjust the corner radius as needed
+        frame.setShape(new RoundRectangle2D.Double(0, 0, 600, 400, 36, 36));
 
         frame.setBackground(new Color(0, 0, 0, 0));
 
         SplashScreen panel = new SplashScreen();
-        panel.setPreferredSize(new Dimension(600, 400)); // Set size to match the background
+        panel.setPreferredSize(new Dimension(600, 400));
 
         frame.add(panel);
         frame.pack();

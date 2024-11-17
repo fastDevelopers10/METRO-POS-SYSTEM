@@ -1,6 +1,7 @@
-package View;
+package SCDFinalProject.src.main.java.View;
 
-import Controller.CashierController;
+import SCDFinalProject.src.main.java.Controller.CashierController;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

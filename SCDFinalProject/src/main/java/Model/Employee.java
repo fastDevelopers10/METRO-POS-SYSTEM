@@ -1,4 +1,4 @@
-package Model;
+package SCDFinalProject.src.main.java.Model;
 
 public class Employee {
     private String employeeId;

@@ -1,5 +1,5 @@
 
-package Model;
+package SCDFinalProject.src.main.java.Model;
 
 public class Product
 {

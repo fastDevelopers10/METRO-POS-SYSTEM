@@ -1,4 +1,4 @@
-package Model;
+package SCDFinalProject.src.main.java.Model;
 
 import java.util.ArrayList;
 import java.util.List;

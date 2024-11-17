@@ -1,6 +1,8 @@
-package DAO;
+package SCDFinalProject.src.main.java.DAO;
 
-import Model.Product;
+
+import SCDFinalProject.src.main.java.Model.Product;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,7 +16,7 @@ public class ProductDAO {
     }
 
     // Method to fetch a product from the database
-    public Product getProductByName(String productName)
+    public SCDFinalProject.src.main.java.Model.Product getProductByName(String productName)
     {
         String query = "SELECT * FROM products WHERE name = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {

@@ -1,10 +1,10 @@
-package Service;
+package SCDFinalProject.src.main.java.Service;
 
-import DAO.DBConnection;
-import DAO.ProductDAO;
-import Model.Bill;
-import Model.Cashier;
-import Model.Product;
+
+import SCDFinalProject.src.main.java.DAO.DBConnection;
+import SCDFinalProject.src.main.java.DAO.ProductDAO;
+import SCDFinalProject.src.main.java.Model.Bill;
+import SCDFinalProject.src.main.java.Model.Product;
 
 import java.sql.Connection;
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package DAO;
+package SCDFinalProject.src.main.java.DAO;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

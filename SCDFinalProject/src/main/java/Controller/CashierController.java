@@ -1,6 +1,7 @@
-package Controller;
+package SCDFinalProject.src.main.java.Controller;
 
-import Service.CashierService;
+import SCDFinalProject.src.main.java.Service.CashierService;
+
 import javax.swing.JOptionPane;
 
 public class CashierController {

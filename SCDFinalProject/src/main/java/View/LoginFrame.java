@@ -14,7 +14,7 @@ public class LoginFrame extends JFrame {
         setResizable(false); // Not resizable
 
         // Background image
-        JLabel backgroundLabel = new JLabel(new ImageIcon("login.png"));
+        JLabel backgroundLabel = new JLabel(new ImageIcon("SCDFinalProject/src/main/java/images/login.png"));
         backgroundLabel.setLayout(null); // Use absolute positioning
         add(backgroundLabel);
 

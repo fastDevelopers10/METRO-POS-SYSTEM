@@ -14,12 +14,6 @@ public class DataOperatorUI extends JFrame {
     private BufferedImage backgroundImage;
     private JButton activeButton = null; // To track the active button
 
-    // Customizable properties
-    private int buttonWidth = 220;   // Default button width
-    private final Color buttonDefaultColor = Color.WHITE;  // Default button color
-    private final Color buttonActiveColor = new Color(200, 229, 220); // Active button color
-
-    // Constructor to initialize the UI
     public DataOperatorUI() {
         setTitle("Data Operator Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -28,11 +22,10 @@ public class DataOperatorUI extends JFrame {
 
         // Load the background image
         try {
-            backgroundImage = ImageIO.read(new File("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\DOP4.png"));
+            backgroundImage = ImageIO.read(new File("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\DOPN.png"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-
 
         JPanel backgroundPanel = new JPanel() {
             @Override
@@ -53,19 +46,17 @@ public class DataOperatorUI extends JFrame {
         JPanel sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(new GridBagLayout());
         sideMenuPanel.setBackground(Color.WHITE);
-        // Default Y position of side menu
-        int menuYPosition = 250;
-        // Width of the side menu
-        int menuWidth = 240;
-        sideMenuPanel.setBounds(10, menuYPosition, menuWidth, getHeight() - menuYPosition); // Set custom bounds
+        int menuYPosition = 250; // Default Y position of side menu
+        int menuWidth = 240;     // Width of the side menu
+        sideMenuPanel.setBounds(10, menuYPosition, menuWidth, getHeight() - menuYPosition);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;  // Horizontal weight remains the same
-        gbc.insets = new Insets(0, 0, 0, 0); // No padding around buttons
-        gbc.anchor = GridBagConstraints.NORTH; // Align components at the top
+        gbc.weightx = 1.0;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.anchor = GridBagConstraints.NORTH;
 
-// Button texts and placeholder icon paths
+        // Button texts and icon paths
         String[] buttonTexts = {"Dashboard", "Change Password", "Add Product", "Add Vendor", "Add Category", "LogOut"};
         String[] iconPaths = {
                 "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\dash_icon.png",
@@ -76,39 +67,18 @@ public class DataOperatorUI extends JFrame {
                 "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logout.png"
         };
 
-// Create buttons and add them to the side menu panel
+        // Create buttons and add them to the side menu panel
         for (int i = 0; i < buttonTexts.length; i++) {
-            JButton button = new JButton(buttonTexts[i]);
-            try {
-                button.setIcon(new ImageIcon(iconPaths[i])); // Load the icon
-            } catch (Exception e) {
-                System.out.println("Icon for " + buttonTexts[i] + " not found.");
-            }
-            button.setHorizontalAlignment(SwingConstants.LEFT);
-            // Default font
-            Font buttonFont = new Font("Century Gothic", Font.PLAIN, 14);
-            button.setFont(buttonFont);
-            // Default text color
-            Color buttonTextColor = Color.BLACK;
-            button.setForeground(buttonTextColor);
-            button.setBackground(buttonDefaultColor);
-            button.setFocusPainted(false);
-            button.setBorderPainted(false);
-            // Default button height
-            int buttonHeight = 40;
-            button.setPreferredSize(new Dimension(menuWidth, buttonHeight));
+            SideMenuButton button = new SideMenuButton(buttonTexts[i], iconPaths[i]);
 
             // Add action listener
-            button.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (activeButton != null) {
-                        activeButton.setBackground(buttonDefaultColor);
-                    }
-                    button.setBackground(buttonActiveColor);
-                    activeButton = button;
-                    System.out.println("Button clicked: " + button.getText());
+            button.addActionListener(e -> {
+                if (activeButton != null) {
+                    ((SideMenuButton) activeButton).setActive(false);
                 }
+                button.setActive(true);
+                activeButton = button;
+                System.out.println("Button clicked: " + button.getText());
             });
 
             gbc.gridy = i; // Set the row for the button
@@ -117,12 +87,12 @@ public class DataOperatorUI extends JFrame {
 
             // Set the first button as the active button by default
             if (i == 0) {
-                button.setBackground(buttonActiveColor);
+                button.setActive(true);
                 activeButton = button;
             }
         }
 
-// Add vertical space after the buttons to push them upward (using a "filler" component)
+        // Add vertical space after the buttons to push them upward (using a "filler" component)
         gbc.gridy = buttonTexts.length; // Set after all buttons
         gbc.weighty = 1.0; // Give the filler component vertical space
         gbc.fill = GridBagConstraints.VERTICAL; // Allow filler to take vertical space
@@ -224,13 +194,13 @@ public class DataOperatorUI extends JFrame {
         productspanel.add(productsbtn, BorderLayout.EAST); // Add button on the right
 
         // Add an action listener to the productsbtn
-        productsbtn.addActionListener(e -> {
+//        productsbtn.addActionListener(e -> {
+//
+//        });
 
-        });
-
-        transparentPanel.add(VendorPanel);  // Add "Current Month Bill" panel
-        transparentPanel.add(categoryPanel); // Add "Update CNIC" panel
-        transparentPanel.add(productspanel); // Add "Logout" panel
+        transparentPanel.add(VendorPanel);
+        transparentPanel.add(categoryPanel);
+        transparentPanel.add(productspanel);
 
 // Add the transparent panel to the layered pane
         layeredPane.add(transparentPanel, JLayeredPane.PALETTE_LAYER);
@@ -239,16 +209,7 @@ public class DataOperatorUI extends JFrame {
         // Make the frame visible
         setVisible(true);
     }
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(DataOperatorUI::new);
-    }
-
-    public int getButtonWidth() {
-        return buttonWidth;
-    }
-
-    public void setButtonWidth(int buttonWidth) {
-        this.buttonWidth = buttonWidth;
     }
 }

@@ -1,4 +1,4 @@
-package SCDFinalProject.src.main.java.Controller;
+package Controller;
 
 import SCDFinalProject.src.main.java.Service.CashierService;
 

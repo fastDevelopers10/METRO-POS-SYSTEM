@@ -1,13 +1,13 @@
-package SCDFinalProject.src.main.java.Service;
+package Service;
 
 
-import SCDFinalProject.src.main.java.DAO.DBConnection;
-import SCDFinalProject.src.main.java.DAO.ProductDAO;
-import SCDFinalProject.src.main.java.Model.Bill;
-import SCDFinalProject.src.main.java.Model.Product;
+import DAO.DBConnection;
+import DAO.ProductDAO;
+import Model.Bill;
+import Model.Product;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 public class CashierService
 {
@@ -18,20 +18,20 @@ public class CashierService
     public CashierService()
     {
         this.connection = DBConnection.getConnection();
-        this.productDAO = new ProductDAO(connection);
+        this.productDAO = new ProductDAO();
     }
 
     public boolean addProductToBill(String productName, int quantity)
     {
         Product product = productDAO.getProductByName(productName);
-        if (product != null && product.getStock() >= quantity) {
+        if (product != null && product.getNoOfProducts() >= quantity) {
             bill.addProduct(product, quantity);
             return true;
         }
         return false;
     }
 
-    public double getTotalBill() {
+    public BigDecimal getTotalBill() {
         return bill.getTotalBill();
     }
     // Reset the bill after generating it
@@ -40,7 +40,7 @@ public class CashierService
     }
     public void deductStockFromDatabase() {
         for (Product product : bill.getProducts()) {
-            productDAO.updateStock(product.getName(), product.getStock());
+            productDAO.updateStock(product.getName(), product.getNoOfProducts());
         }
     }
 }

@@ -1,4 +1,4 @@
-package SCDFinalProject.src.main.java.Controller;
+package Controller;
 
 import java.time.LocalDate;
 import java.util.List;

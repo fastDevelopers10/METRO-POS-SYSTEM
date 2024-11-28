@@ -1,8 +1,9 @@
 package Controller;
 
-import SCDFinalProject.src.main.java.Service.CashierService;
+import Service.CashierService;
 
 import javax.swing.JOptionPane;
+import java.math.BigDecimal;
 
 public class CashierController {
     private CashierService cashierService;
@@ -22,7 +23,7 @@ public class CashierController {
 
     public void generateBill()
     {
-        double totalBill = cashierService.getTotalBill();
+        BigDecimal totalBill = cashierService.getTotalBill();
         JOptionPane.showMessageDialog(null, "Total Bill: $" + totalBill);
         cashierService.deductStockFromDatabase();
         cashierService.resetBill();

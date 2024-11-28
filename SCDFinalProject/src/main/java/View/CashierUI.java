@@ -1,5 +1,10 @@
 package View;
 
+import DAO.ProductDAO;
+import Model.Product;
+
+import java.math.BigDecimal;
+import java.util.List; // Correct import for List
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -93,32 +98,37 @@ public class CashierUI extends JFrame {
         // Horizontal Scrollable Panel for categories
         JPanel horizontalScrollPanel = new JPanel();
         horizontalScrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        for (int i = 1; i <= 10; i++) {
-            final String categoryName = "Category " + i; // Create a final variable
-            JButton categoryButton = new JButton(categoryName);
-            categoryButton.setPreferredSize(new Dimension(100, 40));
-            categoryButton.addActionListener(e -> displayProducts(categoryName)); // Use the final variable
-            horizontalScrollPanel.add(categoryButton);
-        }
+
+        // Adding Shampoo and Fruit category buttons
+        JButton shampooButton = new JButton("Shampoo");
+        shampooButton.setPreferredSize(new Dimension(100, 40));
+        shampooButton.addActionListener(e -> displayProducts("Shampoo"));
+
+        JButton fruitButton = new JButton("Fruit");
+        fruitButton.setPreferredSize(new Dimension(100, 40));
+        fruitButton.addActionListener(e -> displayProducts("Fruit"));
+
+        horizontalScrollPanel.add(shampooButton);
+        horizontalScrollPanel.add(fruitButton);
 
         JScrollPane scrollPane = new JScrollPane(horizontalScrollPanel);
         scrollPane.setBounds(200, 20, 900, 60);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 
-        // Product Panel - Now displaying 4 products per row with scrolling capability
+        // Product Panel - Now displaying products
         productPanel = new JPanel();
         productPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 8, 8)); // 4 products per row with 8px horizontal spacing
         productPanel.setBounds(200, 100, 700, 500); // Adjusted size
         productPanel.setBackground(Color.LIGHT_GRAY);
         productPanel.setOpaque(false);
 
-// Scrollable product panel with only vertical scrollbar
+        // Scrollable product panel with only vertical scrollbar
         JScrollPane productScrollPane = new JScrollPane(productPanel);
         productScrollPane.setBounds(200, 100, 700, 500);
         productScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Enable vertical scrollbar
 
-// Add the product scroll pane to the layered pane
+        // Add the product scroll pane to the layered pane
         JPanel billPanel = new JPanel();
         billPanel.setLayout(new BorderLayout());
         billPanel.setBounds(920, 100, 350, 500); // Increased width from 280 to 350
@@ -175,24 +185,29 @@ public class CashierUI extends JFrame {
         setVisible(true);
     }
 
-    // Method to display products in the product panel
     private void displayProducts(String category) {
         productPanel.removeAll(); // Clear existing products
-        for (int i = 1; i <= 60; i++) {
+
+        // Get products from the database based on the selected category
+        ProductDAO productDAO = new ProductDAO();
+        List<Product> products = productDAO.getProductsByCategory(category);
+
+        // Add each product to the productPanel
+        for (Product product : products) {
             JPanel productBox = new JPanel();
             productBox.setLayout(new BoxLayout(productBox, BoxLayout.Y_AXIS));
             productBox.setPreferredSize(new Dimension(150, 150));
             productBox.setBackground(Color.WHITE);
             productBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-            String productName = category + " Product " + i;
-            int price = 10 * i;
+            String productName = product.getName();
+            BigDecimal price = product.getPrice();
 
             JLabel nameLabel = new JLabel(productName);
             JLabel priceLabel = new JLabel("Price: $" + price);
             JButton addButton = new JButton("Add");
 
-            addButton.addActionListener(e -> addToBill(productName, price));
+            addButton.addActionListener(e -> addToBill(product));
 
             productBox.add(nameLabel);
             productBox.add(priceLabel);
@@ -200,82 +215,53 @@ public class CashierUI extends JFrame {
 
             productPanel.add(productBox);
         }
+
         productPanel.revalidate();
         productPanel.repaint();
     }
 
+
     // Method to add a product to the bill
-    private void addToBill(String productName, int price) {
-        if (!cart.containsKey(productName)) {
-            cart.put(productName, 1); // Add product with quantity 1
-            JPanel billItem = new JPanel();
-            billItem.setLayout(new FlowLayout(FlowLayout.LEFT));
-            JLabel productLabel = new JLabel(productName);
-            JLabel quantityLabel = new JLabel("1");
-            JButton minusButton = new JButton("-");
-            JButton plusButton = new JButton("+");
-            JButton removeButton = new JButton("Remove");
+    private void addToBill(Product product) {
+        // Update the cart by adding the product or increasing its quantity
+        String productName = product.getName();
+        BigDecimal price =  product.getPrice(); // Assuming price is a double, cast to int for simplicity
+        cart.put(productName, cart.getOrDefault(productName, 0) + 1);
 
-            minusButton.addActionListener(e -> updateQuantity(productName, -1, quantityLabel));
-            plusButton.addActionListener(e -> updateQuantity(productName, 1, quantityLabel));
-            removeButton.addActionListener(e -> removeFromBill(productName, billItem));
+        // Update bill panel
+        JPanel billItemPanel = new JPanel();
+        billItemPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        billItemPanel.setPreferredSize(new Dimension(320, 40));
 
-            billItem.add(productLabel);
-            billItem.add(quantityLabel);
-            billItem.add(minusButton);
-            billItem.add(plusButton);
-            billItem.add(removeButton);
+        // Display product name with quantity
+        JLabel itemLabel = new JLabel(productName + " x" + cart.get(productName));
+        JLabel priceLabel = new JLabel("$" + price);
+        billItemPanel.add(itemLabel);
+        billItemPanel.add(priceLabel);
 
-            billItemsPanel.add(billItem);
-        } else {
-            updateQuantity(productName, 1, null); // Increment quantity if already in the cart
-        }
-        updateTotal();
+        billItemsPanel.add(billItemPanel); // Add the item to the bill items panel
+        updateTotal(); // Update the total (subtotal, tax, and grand total)
     }
 
-    // Method to update quantity
-    private void updateQuantity(String productName, int change, JLabel quantityLabel) {
-        int currentQuantity = cart.getOrDefault(productName, 0);
-        currentQuantity += change;
 
-        if (currentQuantity <= 0) {
-            cart.remove(productName); // Remove product if quantity becomes 0
-        } else {
-            cart.put(productName, currentQuantity);
-        }
-
-        if (quantityLabel != null) {
-            quantityLabel.setText(String.valueOf(currentQuantity));
-        }
-        updateTotal();
-    }
-
-    // Method to remove product from the bill
-    private void removeFromBill(String productName, JPanel billItem) {
-        cart.remove(productName);
-        billItemsPanel.remove(billItem);
-        updateTotal();
-        billItemsPanel.revalidate();
-        billItemsPanel.repaint();
-    }
-
-    // Method to update the total
+    // Method to update the subtotal, tax, and total amounts
     private void updateTotal() {
         double subtotal = 0;
-        for (Map.Entry<String, Integer> entry : cart.entrySet()) {
-            int quantity = entry.getValue();
-            double price = 10 * quantity; // Example pricing formula
+        for (String product : cart.keySet()) {
+            int price = 10; // Placeholder price, update as needed
             subtotal += price;
         }
+
         double tax = subtotal * TAX_PERCENTAGE / 100;
         double total = subtotal + tax;
 
-        subtotalLabel.setText("Subtotal: $" + String.format("%.2f", subtotal));
-        taxLabel.setText("Tax (" + TAX_PERCENTAGE + "%): $" + String.format("%.2f", tax));
-        totalLabel.setText("Total: $" + String.format("%.2f", total));
+        subtotalLabel.setText("Subtotal: $" + subtotal);
+        taxLabel.setText("Tax (" + TAX_PERCENTAGE + "%): $" + tax);
+        totalLabel.setText("Total: $" + total);
     }
 
+    // Main method to run the application
     public static void main(String[] args) {
-        new CashierUI(); // Run the application
+        SwingUtilities.invokeLater(CashierUI::new);
     }
 }

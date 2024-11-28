@@ -1,48 +1,67 @@
-package SCDFinalProject.src.main.java.DAO;
+package DAO;
 
+import Model.Product;
 
-import SCDFinalProject.src.main.java.Model.Product;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProductDAO {
     private Connection connection;
 
-    public ProductDAO(Connection connection) {
-        this.connection = connection;
+    public ProductDAO() {
+        // Initialize the connection from DBConnection class
+        this.connection = DBConnection.getConnection();
     }
 
-    // Method to fetch a product from the database
-    public SCDFinalProject.src.main.java.Model.Product getProductByName(String productName)
-    {
-        String query = "SELECT * FROM products WHERE name = ?";
+    // Method to get a product by its name
+    public Product getProductByName(String productName) {
+        String query = "SELECT * FROM product WHERE name = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, productName);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 String name = resultSet.getString("name");
                 String category = resultSet.getString("category");
-                double originalPrice = resultSet.getDouble("original_price");
-                double salePrice = resultSet.getDouble("sale_price");
-                double pricePerUnit = resultSet.getDouble("price_per_Unit");
-                double pricePerCarton = resultSet.getDouble("price_per_Carton");
-                int quantity = 1; // Set a default quantity for retrieval, or handle this based on usage
-                int stock = resultSet.getInt("stock");
+                BigDecimal originalPrice = resultSet.getBigDecimal("original_price");
+                BigDecimal salesPrice = resultSet.getBigDecimal("sales_price");
+                int noOfProducts = resultSet.getInt("no_of_products");
 
-                // Create and return the product instance with all 8 parameters
-                return new Product(name, category, originalPrice, salePrice, pricePerUnit, pricePerCarton, quantity, stock);
+                // Return Product object created from the database values
+                return new Product(name, category, originalPrice, salesPrice, noOfProducts);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null; // Return null if the product is not found
+        return null; // Return null if product not found
     }
+
+    // Method to get products by category
+    public List<Product> getProductsByCategory(String category) {
+        List<Product> products = new ArrayList<>();
+        String query = "SELECT * FROM product WHERE category = ?";
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, category);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                String name = resultSet.getString("name");
+                BigDecimal price = resultSet.getBigDecimal("sales_price");
+                int quantity = resultSet.getInt("no_of_products");
+
+                products.add(new Product(name, category, price, price, quantity));  // Adjusted constructor call
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return products;
+    }
+
     // Method to update stock in the database
     public void updateStock(String productName, int quantity) {
-        String updateStockQuery = "UPDATE products SET stock = stock - ? WHERE name = ?";
+        String updateStockQuery = "UPDATE product SET no_of_products = no_of_products - ? WHERE name = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(updateStockQuery)) {
             statement.setInt(1, quantity);  // Deduct quantity from stock
@@ -54,6 +73,25 @@ public class ProductDAO {
             } else {
                 System.out.println("Stock updated for product: " + productName);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Method to add a new product to the database
+    public void addProduct(Product product) {
+        String insertProductQuery = "INSERT INTO product (name, category, original_price, sales_price, no_of_products) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        try (PreparedStatement statement = connection.prepareStatement(insertProductQuery)) {
+            statement.setString(1, product.getName());
+            statement.setString(2, product.getCategory());
+            statement.setBigDecimal(3, product.getOriginalPrice());
+            statement.setBigDecimal(4, product.getSalesPrice());
+            statement.setInt(5, product.getNoOfProducts());
+
+            statement.executeUpdate();
+            System.out.println("Product added successfully: " + product.getName());
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,50 +1,51 @@
+package Model;
 
-package SCDFinalProject.src.main.java.Model;
+import java.math.BigDecimal;
 
-public class Product
-{
+public class Product {
     private String name;
     private String category;
-    private double originalPrice;
-    private double salePrice;
-    private double pricePerUnit;
-    private double pricePerCarton;
-    private int quantity;  // Quantity being purchased in the current transaction
-    private int stock;     // Available stock in the inventory
+    private BigDecimal originalPrice;
+    private BigDecimal salesPrice;
+    private int noOfProducts;
 
     // Constructor
-    public Product(String name, String category, double originalPrice, double salePrice, double pricePerUnit, double pricePerCarton, int quantity, int stock) {
+    public Product(String name, String category, BigDecimal originalPrice, BigDecimal salesPrice, int noOfProducts) {
         this.name = name;
         this.category = category;
         this.originalPrice = originalPrice;
-        this.salePrice = salePrice;
-        this.pricePerUnit = pricePerUnit;
-        this.pricePerCarton = pricePerCarton;
-        this.quantity = quantity;
-        this.stock = stock;
+        this.salesPrice = salesPrice;
+        this.noOfProducts = noOfProducts;
     }
 
-    // Getters and Setters
-    public String getName() { return name; }
-    public String getCategory() { return category; }
-    public double getOriginalPrice() { return originalPrice; }
-    public double getSalePrice() { return salePrice; }
-    public double getPricePerUnit() { return pricePerUnit; }
-    public double getPricePerCarton() { return pricePerCarton; }
-    public int getQuantity() { return quantity; }
-    public int getStock() { return stock; }
+    // Getters
+    public String getName() {
+        return name;
+    }
 
-    public void setQuantity(int quantity) { this.quantity = quantity; }
-    public void setStock(int stock) { this.stock = stock; }
+    public String getCategory() {
+        return category;
+    }
 
-    //update stock after a sale
-    public boolean reduceStock(int amount)
-    {
-        if (stock >= amount)
-        {
-            stock -= amount;
-            return true;  // Stock successfully reduced
-        }
-        return false;  // Not enough stock
+    public BigDecimal getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public BigDecimal getSalesPrice() {
+        return salesPrice;
+    }
+
+    public int getNoOfProducts() {
+        return noOfProducts;
+    }
+
+    // Setter for noOfProducts (note the correct naming convention)
+    public void setNoOfProducts(int noOfProducts) {
+        this.noOfProducts = noOfProducts;
+    }
+
+    public BigDecimal getPrice() {
+        return originalPrice;
+
     }
 }

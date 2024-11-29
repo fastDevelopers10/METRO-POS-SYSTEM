@@ -60,7 +60,7 @@ public class UpdatePasswordUI extends JFrame {
         panel.add(tfCFPassword); // Add to the panel
 
         // Create the "Login" button
-        JButton btnLogin = new JButton("Login");
+        JButton btnLogin = new JButton("Update");
         btnLogin.setOpaque(false); // Make background invisible
         btnLogin.setContentAreaFilled(false); // Disable default button background rendering
         btnLogin.setBorderPainted(false); // Make the border invisible

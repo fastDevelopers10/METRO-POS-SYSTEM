@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 
 public class SideMenuButton extends JButton {
-    // Default properties for the buttons
     private static final Color DEFAULT_COLOR = Color.WHITE;
     private static final Color ACTIVE_COLOR = new Color(200, 229, 220);
     private static final Font DEFAULT_FONT = new Font("Century Gothic", Font.PLAIN, 14);
@@ -15,7 +14,8 @@ public class SideMenuButton extends JButton {
 
         // Set icon
         try {
-            setIcon(new ImageIcon(iconPath)); // Load the icon
+            ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource(iconPath));
+            setIcon(icon);
         } catch (Exception e) {
             System.out.println("Icon not found for " + text + ": " + e.getMessage());
         }
@@ -32,9 +32,7 @@ public class SideMenuButton extends JButton {
         setPreferredSize(new Dimension(240, 40)); // Adjust width and height
     }
 
-    // Method to set the active state
     public void setActive(boolean isActive) {
         setBackground(isActive ? ACTIVE_COLOR : DEFAULT_COLOR);
     }
 }
-

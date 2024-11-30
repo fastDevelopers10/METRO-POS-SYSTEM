@@ -7,7 +7,15 @@ public class Product {
     private String category;
     private BigDecimal originalPrice;
     private BigDecimal salesPrice;
-    private int noOfProducts;
+    private int quantity;
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;  // This method updates the product's quantity
+    }
 
     // Constructor
     public Product(String name, String category, BigDecimal originalPrice, BigDecimal salesPrice, int noOfProducts) {
@@ -15,7 +23,6 @@ public class Product {
         this.category = category;
         this.originalPrice = originalPrice;
         this.salesPrice = salesPrice;
-        this.noOfProducts = noOfProducts;
     }
 
     // Getters
@@ -35,17 +42,9 @@ public class Product {
         return salesPrice;
     }
 
-    public int getNoOfProducts() {
-        return noOfProducts;
-    }
 
-    // Setter for noOfProducts (note the correct naming convention)
-    public void setNoOfProducts(int noOfProducts) {
-        this.noOfProducts = noOfProducts;
-    }
 
     public BigDecimal getPrice() {
         return originalPrice;
-
     }
 }

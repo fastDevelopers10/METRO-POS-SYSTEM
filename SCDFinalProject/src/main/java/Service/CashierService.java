@@ -8,6 +8,7 @@ import Model.Product;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 public class CashierService
 {
@@ -24,7 +25,7 @@ public class CashierService
     public boolean addProductToBill(String productName, int quantity)
     {
         Product product = productDAO.getProductByName(productName);
-        if (product != null && product.getNoOfProducts() >= quantity) {
+        if (product != null && product.getQuantity() >= quantity) {
             bill.addProduct(product, quantity);
             return true;
         }
@@ -38,9 +39,9 @@ public class CashierService
     public void resetBill() {
         bill.resetBill(); // Reset the bill by calling the reset method on the Bill object
     }
-    public void deductStockFromDatabase() {
+    public void deductStockFromDatabase() throws SQLException {
         for (Product product : bill.getProducts()) {
-            productDAO.updateStock(product.getName(), product.getNoOfProducts());
+            productDAO.updateStock(product.getName(), product.getQuantity());
         }
     }
 }

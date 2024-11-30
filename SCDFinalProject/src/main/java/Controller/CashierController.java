@@ -4,6 +4,7 @@ import Service.CashierService;
 
 import javax.swing.JOptionPane;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 
 public class CashierController {
     private CashierService cashierService;
@@ -21,8 +22,7 @@ public class CashierController {
         }
     }
 
-    public void generateBill()
-    {
+    public void generateBill() throws SQLException {
         BigDecimal totalBill = cashierService.getTotalBill();
         JOptionPane.showMessageDialog(null, "Total Bill: $" + totalBill);
         cashierService.deductStockFromDatabase();

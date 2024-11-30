@@ -1,10 +1,17 @@
 package View;
 
 import DAO.ProductDAO;
+import Model.Bill;
 import Model.Product;
 
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.math.BigDecimal;
-import java.util.List; // Correct import for List
+import java.math.RoundingMode;
+import java.sql.SQLException;
+import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -15,32 +22,39 @@ import javax.swing.border.EmptyBorder;
 import java.io.File;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 import javax.imageio.ImageIO;
 
 public class CashierUI extends JFrame {
+    private static final String TAX_PERCENTAGE = "17";
     private BufferedImage backgroundImage;
     private JButton activeButton = null;
     private JPanel productPanel; // Panel to display products
     private JPanel billItemsPanel; // Panel to display bill items
     private JScrollPane billScrollPane; // Scroll pane for bill items
-    private JLabel subtotalLabel, taxLabel, totalLabel; // Labels for subtotal, tax, and total
-    private Map<String, Integer> cart; // Cart to store products and their quantities
-    private final double TAX_PERCENTAGE = 8.5; // Tax percentage
+    private JLabel subtotalLabel, taxLabel, totalBillLabel; // Labels for subtotal, tax, and total
+    private Bill cart; // Use Bill instead of a Map for cart    private final double TAX_PERCENTAGE = 8.5; // Tax percentage
+    private JPanel horizontalScrollPanel = new JPanel();
+    private JButton activeCategoryButton = null; // Tracks the currently active category button
+
+    private ProductDAO productDAO;
 
     // Constructor to initialize the UI
     public CashierUI() {
-        cart = new HashMap<>(); // Initialize the cart
-
+        cart = new Bill(); // Correct initialization of cart as Bill        productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
+        this.productDAO = new ProductDAO(); // Initialize with the proper constructor
         setTitle("Cashier Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1320, 710); // Set a default size for the window
         setResizable(false);
 
-        // Load the background image
         try {
-            backgroundImage = ImageIO.read(new File("C:\\Users\\HP\\Documents\\GitHub\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\Cashier.png"));
+            // Use class loader to load the resource
+            backgroundImage = ImageIO.read(Objects.requireNonNull(
+                    getClass().getClassLoader().getResourceAsStream("images/Cashier.png")));
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
+            System.err.println("Error: Unable to load background image.");
         }
 
         // Background Panel
@@ -61,114 +75,184 @@ public class CashierUI extends JFrame {
 
         // Side Menu
         JPanel sideMenuPanel = new JPanel();
-        sideMenuPanel.setLayout(new GridBagLayout());
+        sideMenuPanel.setLayout(null); // Use null layout for manual positioning
         sideMenuPanel.setBackground(Color.WHITE);
-        int menuYPosition = 40;
-        int menuWidth = 157;
-        sideMenuPanel.setBounds(10, menuYPosition, menuWidth, getHeight() - menuYPosition);
-        sideMenuPanel.setOpaque(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        gbc.anchor = GridBagConstraints.NORTH;
 
-        // Create buttons dynamically for side menu
-        String[] buttonTexts = {"Start Sale", "View Bills", "Generate Bill", "Logout"};
-        for (int i = 0; i < buttonTexts.length; i++) {
-            JButton button = new JButton(buttonTexts[i]);
-            button.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-            button.setForeground(Color.BLACK);
-            button.setBackground(Color.WHITE);
-            button.setFocusPainted(false);
-            button.setBorderPainted(false);
-            button.setPreferredSize(new Dimension(menuWidth, 40));
+// Adjust the bounds of the panel itself (height can adjust based on content)
+        int menuYPosition = 220; // Set this closer to 0 for moving the panel higher
+        int menuWidth = 157;
+        sideMenuPanel.setBounds(14, menuYPosition, menuWidth, getHeight() - menuYPosition);
+        sideMenuPanel.setOpaque(false);
+
+// Button text and optional icon paths
+        String[][] menuItems = {
+                {"Start Sale", "images/icons/dash_icon.png"},
+                {"View Bills", "icons/view_bills.png"},
+                {"Generate Bill", "icons/generate_bill.png"},
+                {"Logout", "images/icons/logout.png"}
+        };
+
+        final SideMenuButton[] activeButton = {null}; // Track the currently active button
+
+// Initial Y position for the first button
+        int buttonYPosition = 10; // Start higher in the panel
+
+        for (int i = 0; i < menuItems.length; i++) {
+            String text = menuItems[i][0];
+            String iconPath = menuItems[i][1];
+
+            SideMenuButton button = new SideMenuButton(text, iconPath);
+
+            // Set button bounds manually
+            int buttonHeight = 50; // Adjust the height of each button as needed
+            button.setBounds(0, buttonYPosition, menuWidth, buttonHeight);
+
             button.addActionListener(e -> {
-                if (activeButton != null) {
-                    activeButton.setBackground(Color.WHITE);
+                // Set the active button's background
+                if (activeButton[0] != null) {
+                    activeButton[0].setActive(false); // Reset previous button
                 }
-                button.setBackground(new Color(200, 229, 220));
-                activeButton = button;
+                button.setActive(true);
+                activeButton[0] = button;
                 System.out.println("Button clicked: " + button.getText());
+
+                // Perform specific actions based on the button clicked
+                switch (button.getText()) {
+                    case "Start Sale":
+                        System.out.println("Starting Sale...");
+                        startSaleAction();
+                        break;
+
+                    case "View Bills":
+                        System.out.println("Viewing Bills...");
+                        viewBillsAction();
+                        break;
+
+                    case "Generate Bill":
+                        System.out.println("Generating Bill...");
+                        try {
+                            generateBillAction();
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        break;
+
+                    case "Logout":
+                        System.out.println("Logging out...");
+                        logoutAction();
+                        break;
+
+                    default:
+                        System.out.println("Unknown action");
+                        break;
+                }
             });
-            gbc.gridy = i;
-            sideMenuPanel.add(button, gbc);
+
+            // Add button to the panel
+            sideMenuPanel.add(button);
+
+            // Update Y position for next button
+            buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
 
+// Add side menu panel to your background panel
+        backgroundPanel.add(sideMenuPanel);
+
+
+        // Create a label for categories
+        JLabel categoryLabel = new JLabel("Product Categories");
+        categoryLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
+        categoryLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        // Set the bounds of the label (optional if you want to control the size and positioning)
+        categoryLabel.setBounds(200, 10, 200, 30);  // Adjust the position as needed
+
         // Horizontal Scrollable Panel for categories
-        JPanel horizontalScrollPanel = new JPanel();
         horizontalScrollPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
-        // Adding Shampoo and Fruit category buttons
-        JButton shampooButton = new JButton("Shampoo");
-        shampooButton.setPreferredSize(new Dimension(100, 40));
-        shampooButton.addActionListener(e -> displayProducts("Shampoo"));
-
-        JButton fruitButton = new JButton("Fruit");
-        fruitButton.setPreferredSize(new Dimension(100, 40));
-        fruitButton.addActionListener(e -> displayProducts("Fruit"));
-
-        horizontalScrollPanel.add(shampooButton);
-        horizontalScrollPanel.add(fruitButton);
+horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
         JScrollPane scrollPane = new JScrollPane(horizontalScrollPanel);
-        scrollPane.setBounds(200, 20, 900, 60);
+        scrollPane.setBounds(200, 40, 1060, 85);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 
-        // Product Panel - Now displaying products
+        scrollPane.setBorder(BorderFactory.createEmptyBorder()); // This removes the border
+
+        IOSScrollBarUtils.applyIOSStyleScrollBar(scrollPane);
+
+        // Initialize category buttons dynamically
+        initializeCategoryButtons();
+        backgroundPanel.add(scrollPane);
+        // Add the label and the scroll pane to the background panel
+        backgroundPanel.setLayout(null);  // Ensure the background panel uses null layout for manual positioning
+        backgroundPanel.add(categoryLabel);
+
+        // Product Panel - Using GridLayout for 4 products per row
         productPanel = new JPanel();
-        productPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 8, 8)); // 4 products per row with 8px horizontal spacing
-        productPanel.setBounds(200, 100, 700, 500); // Adjusted size
-        productPanel.setBackground(Color.LIGHT_GRAY);
-        productPanel.setOpaque(false);
-
-        // Scrollable product panel with only vertical scrollbar
+        productPanel.setLayout(new GridLayout(0, 3, 20, 20));  // 4 products per row with 20px gap between them
+        productPanel.setBounds(200, 180, 700, 500);  // Increase the 'y' position to move it down        productPanel.setBackground(Color.LIGHT_GRAY);
+        productPanel.setOpaque(true);  // Make sure productPanel is opaque to display correctly
+        productPanel.setBackground(new Color(247, 247, 247));
+        // Scrollable product panel with vertical scrollbar
         JScrollPane productScrollPane = new JScrollPane(productPanel);
-        productScrollPane.setBounds(200, 100, 700, 500);
-        productScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Enable vertical scrollbar
+        productScrollPane.setBounds(200, 123, 700, 500);
+        productScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        productScrollPane.setBorder(BorderFactory.createEmptyBorder()); // This removes the border
 
-        // Add the product scroll pane to the layered pane
+//padding
+        productPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));  // Top, Left, Bottom, Right padding
+
+        IOSScrollBarUtils.applyIOSStyleScrollBar(productScrollPane);
+
+        // Bill Panel with enhanced layout
         JPanel billPanel = new JPanel();
         billPanel.setLayout(new BorderLayout());
-        billPanel.setBounds(920, 100, 350, 500); // Increased width from 280 to 350
-        billPanel.setBackground(Color.WHITE);
-        billPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        billPanel.setBounds(905, 135, 360, 490);
+        billPanel.setBackground(new Color(197, 227, 218));
+        billPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
-        JLabel billTitle = new JLabel("Bill Summary");
-        billTitle.setFont(new Font("Century Gothic", Font.BOLD, 16));
+        JLabel billTitle = new JLabel("---------Bill Summary---------");
+        billTitle.setFont(new Font("Century Gothic", Font.BOLD, 17));
         billTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        billTitle.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 0));  // Add padding to the title
         billPanel.add(billTitle, BorderLayout.NORTH);
         billPanel.setOpaque(false);
 
-        // Bill Items Panel with Scrollbar
+        // Bill Items Panel - Flexible layout
         billItemsPanel = new JPanel();
-        billItemsPanel.setLayout(new BoxLayout(billItemsPanel, BoxLayout.Y_AXIS));
+        billItemsPanel.setLayout(new BoxLayout(billItemsPanel, BoxLayout.Y_AXIS));  // Stack items vertically
         billItemsPanel.setBackground(Color.WHITE);
+
         billScrollPane = new JScrollPane(billItemsPanel);
-        billScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Always show vertical scroll
+        billScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        billScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        IOSScrollBarUtils.applyIOSStyleScrollBar(billScrollPane);
+
         billPanel.add(billScrollPane, BorderLayout.CENTER);
 
-        // Subtotal, Tax, and Total Panel
+        // Totals Section
         JPanel totalsPanel = new JPanel();
         totalsPanel.setLayout(new BoxLayout(totalsPanel, BoxLayout.Y_AXIS));
         totalsPanel.setBackground(Color.WHITE);
-        totalsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        totalsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        subtotalLabel = new JLabel("Subtotal: $0");
+        subtotalLabel = new JLabel("Subtotal: Rs.0");
         subtotalLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-        taxLabel = new JLabel("Tax (" + TAX_PERCENTAGE + "%): $0");
+        taxLabel = new JLabel("Tax (" + TAX_PERCENTAGE + "%): Rs.0");
         taxLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-        totalLabel = new JLabel("Total: $0");
-        totalLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
+        totalBillLabel = new JLabel("Total: Rs.0");
+        totalBillLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
+        totalBillLabel.setForeground(new Color(0, 128, 0));  // Green for total
 
         totalsPanel.add(subtotalLabel);
         totalsPanel.add(taxLabel);
-        totalsPanel.add(totalLabel);
+        totalsPanel.add(totalBillLabel);
 
         billPanel.add(totalsPanel, BorderLayout.SOUTH);
 
-        // Layered Pane
+
+
+// Adding components to the layered pane
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setLayout(null);
         layeredPane.setPreferredSize(new Dimension(getWidth(), getHeight()));
@@ -176,92 +260,380 @@ public class CashierUI extends JFrame {
         layeredPane.add(backgroundPanel, JLayeredPane.DEFAULT_LAYER);
         layeredPane.add(sideMenuPanel, JLayeredPane.PALETTE_LAYER);
         layeredPane.add(scrollPane, JLayeredPane.PALETTE_LAYER);
-        layeredPane.add(productPanel, JLayeredPane.PALETTE_LAYER);
+        layeredPane.add(productScrollPane, JLayeredPane.PALETTE_LAYER);  // Add scroll pane for products
         layeredPane.add(billPanel, JLayeredPane.PALETTE_LAYER);
-        layeredPane.add(productScrollPane, JLayeredPane.PALETTE_LAYER);
 
-        // Set content pane and display
-        setContentPane(layeredPane);
-        setVisible(true);
+// After adjusting, revalidate and repaint
+        layeredPane.revalidate();
+        layeredPane.repaint();
+
+
+        this.add(layeredPane);
     }
 
-    private void displayProducts(String category) {
-        productPanel.removeAll(); // Clear existing products
+    private void initializeCategoryButtons() {
+        List<String> categories = productDAO.getUniqueCategories(); // Fetch categories from DAO
 
-        // Get products from the database based on the selected category
-        ProductDAO productDAO = new ProductDAO();
-        List<Product> products = productDAO.getProductsByCategory(category);
+        for (String category : categories) {
+            String iconPath;
 
-        // Add each product to the productPanel
-        for (Product product : products) {
-            JPanel productBox = new JPanel();
-            productBox.setLayout(new BoxLayout(productBox, BoxLayout.Y_AXIS));
-            productBox.setPreferredSize(new Dimension(150, 150));
-            productBox.setBackground(Color.WHITE);
-            productBox.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            // Determine icon based on category
+            if (category.equalsIgnoreCase("Shampoo")) {
+                iconPath = "images/icons/washingprod_icon.png"; // Path to Shampoo icon
+            } else if (category.equalsIgnoreCase("Food")) {
+                iconPath = "images/icons/food_icon.png"; // Path to Food icon
+            } else if (category.equalsIgnoreCase("Fruit")) {
+                iconPath = "images/icons/food_icon.png"; // Path to Bathtub icon
+            } else {
+                iconPath = "images/icons/Product.png"; // Default icon for other categories
+            }
 
-            String productName = product.getName();
-            BigDecimal price = product.getPrice();
+            // Create a category button with the determined icon
+            SideMenuButton categoryButton = new SideMenuButton(category, iconPath);
 
-            JLabel nameLabel = new JLabel(productName);
-            JLabel priceLabel = new JLabel("Price: $" + price);
-            JButton addButton = new JButton("Add");
+            // Add action listener to handle button clicks
+            categoryButton.addActionListener(e -> {
+                // Deactivate the previously active button, if any
+                if (activeCategoryButton != null) {
+                    ((SideMenuButton) activeCategoryButton).setActive(false);
+                }
 
-            addButton.addActionListener(e -> addToBill(product));
+                // Activate the clicked button
+                categoryButton.setActive(true);
+                activeCategoryButton = categoryButton;
 
-            productBox.add(nameLabel);
-            productBox.add(priceLabel);
-            productBox.add(addButton);
+                // Log and load products for the selected category
+                System.out.println("Category clicked: " + category);
+                loadProductsByCategory(category); // Load relevant products
+            });
 
-            productPanel.add(productBox);
+            // Add the button to the horizontal scroll panel
+            horizontalScrollPanel.add(categoryButton);
         }
 
-        productPanel.revalidate();
-        productPanel.repaint();
+        // Refresh the panel to display the newly added buttons
+        horizontalScrollPanel.revalidate();
+        horizontalScrollPanel.repaint();
+    }
+
+    private Map<Product, JLabel> productStockLabels = new HashMap<>();
+
+    private void loadProductsByCategory(String category) {
+        try {
+            // Fetch products based on the selected category from the database
+            List<Product> products = productDAO.getProductsByCategory(category);
+
+            // Clear the current products displayed
+            productPanel.removeAll();
+            productStockLabels.clear(); // Clear previous stock labels
+
+            for (Product product : products) {
+                // Create a rounded panel for each product
+                RoundedPanel productInfoPanel = new RoundedPanel(15); // Corner radius of 15
+                productInfoPanel.setLayout(new BoxLayout(productInfoPanel, BoxLayout.Y_AXIS)); // Stack vertically
+                productInfoPanel.setBackground(new Color(198, 227, 218));
+                productInfoPanel.setPreferredSize(new Dimension(200, 200)); // Ensure consistent size for the product panel
+                productInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                // Product name label
+                JLabel productNameLabel = new JLabel(product.getName());
+                productNameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+                productNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                productNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                // Product price label
+                JLabel productPriceLabel = new JLabel("Rs. " + product.getPrice());
+                productPriceLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+                productPriceLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                productPriceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                // Product stock label
+                JLabel productStockLabel = new JLabel("Stock: " + productDAO.getProductQuantityByName(product.getName()));
+                productStockLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
+                productStockLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                productStockLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                // Store the stock label for later updates
+                productStockLabels.put(product, productStockLabel);
+
+                // Add labels to the product info panel
+                productInfoPanel.add(Box.createVerticalGlue()); // Add space above
+                productInfoPanel.add(productNameLabel);
+                productInfoPanel.add(Box.createRigidArea(new Dimension(0, 5))); // Small spacing
+                productInfoPanel.add(productPriceLabel);
+                productInfoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+                productInfoPanel.add(productStockLabel);
+                productInfoPanel.add(Box.createVerticalGlue()); // Add space below
+
+                // Button for adding the product to the cart
+                RoundedButton addProductButton = new RoundedButton("Add to Cart", 15); // Corner radius of 15
+                addProductButton.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+                addProductButton.setBackground(Color.WHITE);
+                addProductButton.setForeground(Color.BLACK);
+                addProductButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+                addProductButton.addActionListener(e -> {
+                    System.out.println("Product clicked: " + product.getName());
+                    addProductToCart(product);  // Add the product to the cart when clicked
+                });
+
+                // Add the button to the product info panel
+                productInfoPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add space before the button
+                productInfoPanel.add(addProductButton);
+
+                // Add the product info panel to the main product panel
+                productPanel.add(productInfoPanel);
+            }
+
+            // Revalidate and repaint to update the UI
+            productPanel.revalidate();
+            productPanel.repaint();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error loading products from the database.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
 
-    // Method to add a product to the bill
-    private void addToBill(Product product) {
-        // Update the cart by adding the product or increasing its quantity
-        String productName = product.getName();
-        BigDecimal price =  product.getPrice(); // Assuming price is a double, cast to int for simplicity
-        cart.put(productName, cart.getOrDefault(productName, 0) + 1);
-
-        // Update bill panel
-        JPanel billItemPanel = new JPanel();
-        billItemPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        billItemPanel.setPreferredSize(new Dimension(320, 40));
-
-        // Display product name with quantity
-        JLabel itemLabel = new JLabel(productName + " x" + cart.get(productName));
-        JLabel priceLabel = new JLabel("$" + price);
-        billItemPanel.add(itemLabel);
-        billItemPanel.add(priceLabel);
-
-        billItemsPanel.add(billItemPanel); // Add the item to the bill items panel
-        updateTotal(); // Update the total (subtotal, tax, and grand total)
+    // Method to add a product to the cart
+    private void addProductToCart(Product product) {
+        cart.addProduct(product, 1);  // Add 1 quantity of the product to the cart
+        updateBill();  // Update the UI with the new bill information (for example, total, tax, etc.)
     }
 
+    private void updateBill() {
+        // Clear existing bill items
+        billItemsPanel.removeAll();
 
-    // Method to update the subtotal, tax, and total amounts
-    private void updateTotal() {
-        double subtotal = 0;
-        for (String product : cart.keySet()) {
-            int price = 10; // Placeholder price, update as needed
-            subtotal += price;
+        cart.subtotal = BigDecimal.ZERO;
+
+        // Use the cart from the Bill object (which is a Map<Product, Integer>)
+        for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
+            Product product = entry.getKey();  // Get the Product object directly
+            int quantity = entry.getValue();
+
+            // Handle possible SQLException when fetching product price and quantity
+            BigDecimal productPrice = BigDecimal.ZERO;
+            int availableQuantity = 0;  // Fetch quantity available in stock
+
+            try {
+                productPrice = productDAO.getProductPriceByName(product.getName());  // Get product price from DB (using product.getName())
+                availableQuantity = productDAO.getProductQuantityByName(product.getName());  // Get available quantity from DB (using product.getName())
+            } catch (SQLException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error fetching product details.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            // Update subtotal
+            cart.subtotal = cart.subtotal.add(productPrice.multiply(BigDecimal.valueOf(quantity)));
+
+            // Panel for each bill item (including product name, price, and quantity control buttons)
+            JPanel billItemPanel = new JPanel();
+            billItemPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5)); // Reduced spacing between items
+            billItemPanel.setBackground(Color.WHITE);
+
+            // Product name label (adjust size dynamically based on the longest name)
+            JLabel productNameLabel = new JLabel(product.getName());
+            productNameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            productNameLabel.setPreferredSize(new Dimension(60, 30)); // Fixed width for wrapping
+            productNameLabel.setMaximumSize(new Dimension(60, 30)); // Prevent overflow
+            billItemPanel.add(productNameLabel);
+
+            // Product price label
+            JLabel productPriceLabel = new JLabel("$" + productPrice);
+            productPriceLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            productPriceLabel.setPreferredSize(new Dimension(60, 30));
+            productPriceLabel.setMaximumSize(new Dimension(60, 30)); // Prevent overflow
+            billItemPanel.add(productPriceLabel);
+
+            // Quantity control buttons
+            JPanel quantityPanel = new JPanel();
+            quantityPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5)); // Reduced spacing between buttons
+            quantityPanel.setBackground(Color.WHITE);
+
+            // Quantity Label
+            JLabel quantityLabel = new JLabel(" " + quantity + " ");
+            quantityLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            quantityPanel.add(quantityLabel);
+
+            // Minus Button (Rounded)
+            RoundedButton minusButton = new RoundedButton("-", 15);  // 15 is the corner radius for rounded corners
+            minusButton.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            minusButton.setBackground(new Color(253, 0, 0));  // Example background color for the button
+            minusButton.addActionListener(e -> adjustQuantity(product, -1, quantityLabel));
+            quantityPanel.add(minusButton);
+
+            // Plus Button (Rounded)
+            RoundedButton plusButton = new RoundedButton("+", 15);  // 15 is the corner radius for rounded corners
+            plusButton.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            plusButton.setBackground(new Color(0, 253, 42));  // Example background color for the button
+            plusButton.addActionListener(e -> adjustQuantity(product, 1, quantityLabel));
+            quantityPanel.add(plusButton);
+
+            billItemPanel.add(quantityPanel);
+
+            // Add the item to the bill items panel
+            billItemsPanel.add(billItemPanel);
         }
 
-        double tax = subtotal * TAX_PERCENTAGE / 100;
-        double total = subtotal + tax;
-
-        subtotalLabel.setText("Subtotal: $" + subtotal);
-        taxLabel.setText("Tax (" + TAX_PERCENTAGE + "%): $" + tax);
-        totalLabel.setText("Total: $" + total);
+        // Update the bill after all items
+        updateBillSummary();
     }
 
-    // Main method to run the application
+    // Adjust the quantity of the product in the cart
+    private void adjustQuantity(Product product, int adjustment, JLabel quantityLabel) {
+        // Adjust quantity in the cart
+        int currentQuantity = cart.getCart().get(product);  // Get current quantity
+        int newQuantity = currentQuantity + adjustment;
+
+        // Prevent going below 0
+        if (newQuantity >= 0) {
+            cart.addProduct(product, newQuantity - currentQuantity);  // Update quantity in cart
+        }
+
+        // Update the quantity label
+        quantityLabel.setText(" " + newQuantity + " ");  // Update label text with the new quantity
+
+        // Recalculate the bill
+        updateBill();  // This will automatically update the subtotal, total, etc.
+    }
+
+    // Summary update for the bill (e.g., total, tax, subtotal)
+    private void updateBillSummary() {
+        // You can display the final total, tax, and subtotal somewhere in the UI
+        totalBillLabel.setText("Total: " + cart.getTotalBill().toString());
+        subtotalLabel.setText("Subtotal: " + cart.getSubtotal().toString());
+        taxLabel.setText("Tax: " + cart.getTax().toString());
+    }
+
+
+
+    private void updateSubtotalAndTax() {
+        // Reset the subtotal, tax, and total in the Bill object (cart is the Bill object)
+        cart.subtotal = BigDecimal.ZERO;  // Reset Bill's subtotal
+        cart.tax = BigDecimal.ZERO; // Reset Bill's tax amount
+
+        // Loop through each item in the cart
+        for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
+            Product product = entry.getKey(); // Product object
+            int quantity = entry.getValue();  // Quantity of the product
+
+            try {
+                // Calculate the product price from the product object directly
+                BigDecimal productPrice = product.getSalesPrice();  // Get product's sales price
+
+                // Add product price * quantity to the Bill's subtotal
+                cart.subtotal = cart.subtotal.add(productPrice.multiply(BigDecimal.valueOf(quantity)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Calculate tax based on the Bill's subtotal
+        cart.tax = cart.subtotal.multiply(new BigDecimal(String.valueOf(cart.getTax()))).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+
+        // Calculate the total (subtotal + tax) and set it in the Bill object
+        cart.totalBill = cart.subtotal.add(cart.tax);
+    }
+
+
+
+    // Example methods for each action:
+    private void startSaleAction() {
+        // Start sale logic here
+        System.out.println("Sale started");
+    }
+
+    private void viewBillsAction() {
+        // Logic to view bills here
+        System.out.println("Bills displayed");
+    }
+
+    private void updateStockInDatabase() throws SQLException {
+        // Iterate over the cart and update stock for each product
+        for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
+            Product product = entry.getKey();
+            int quantitySold = entry.getValue();
+
+            // Update the stock for each product by calling ProductDAO's updateStock method
+            ProductDAO productDAO = new ProductDAO();
+            productDAO.updateStock(product.getName(), quantitySold);  // Deduct quantity from stock
+        }
+    }
+    private void generateBillAction() throws SQLException {
+        printBill();
+        updateStockInDatabase();
+    }
+
+
+        private void printBill() {
+            PrinterJob printerJob = PrinterJob.getPrinterJob();
+
+            // Set the print job to print the bill
+            printerJob.setPrintable(new Printable() {
+                public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+                    if (pageIndex > 0) {
+                        return NO_SUCH_PAGE; // Only one page of content
+                    }
+
+                    // Set up the graphics context for printing
+                    Graphics2D g2d = (Graphics2D) graphics;
+                    g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+                    // Print the bill title
+                    g2d.setFont(new Font("Arial", Font.BOLD, 16));
+                    g2d.drawString("Bill", 100, 100);  // Adjust the X and Y positions as needed
+
+                    // Set the font for the body of the bill
+                    g2d.setFont(new Font("Arial", Font.PLAIN, 12));
+
+                    // Starting Y position for printing
+                    int yPosition = 120;
+
+                    // Loop through the cart and print product details
+                    for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
+                        String productName = entry.getKey().getName();
+                        int quantity = entry.getValue();
+                        BigDecimal productPrice = entry.getKey().getSalesPrice();
+
+                        // Print the product details on the bill
+                        String line = productName + " x" + quantity + " - $" + productPrice;
+                        g2d.drawString(line, 100, yPosition);
+                        yPosition += 20;  // Move down for the next line
+                    }
+
+                    // Now, print the stored subtotal, tax, and total
+                    g2d.drawString("Subtotal: $" + cart.getSubtotal(), 100, yPosition);
+                    yPosition += 20;
+                    g2d.drawString("Tax (10%): $" + cart.getTax(), 100, yPosition);
+                    yPosition += 20;
+                    g2d.drawString("Total: $" + cart.getTotalBill(), 100, yPosition);
+
+                    return PAGE_EXISTS;  // Indicating that the page has content
+                }
+            });
+
+            // Show the print dialog
+            if (printerJob.printDialog()) {
+                try {
+                    printerJob.print();  // Execute the printing job
+                } catch (PrinterException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error printing the bill.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+
+
+
+        private void logoutAction() {
+        // Logic for logging out here
+        System.out.println("Logged out");
+    }
+
+    // Main method to launch the UI
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(CashierUI::new);
+        SwingUtilities.invokeLater(() -> {
+            new CashierUI().setVisible(true);
+        });
     }
 }

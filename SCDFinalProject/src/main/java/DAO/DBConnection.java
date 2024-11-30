@@ -6,27 +6,26 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DBConnection {
-    private static Connection connection;
 
-    private DBConnection() {}
+    private static final String URL = "jdbc:mysql://localhost:3306/METRO_POS_System";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
 
+    // This method will create and return a new connection each time it's called
     public static Connection getConnection() {
-        if (connection == null) {
-            try {
-                connection = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/",
-                        "root", "");
-                createDatabaseAndTables();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+        try {
+            Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            return connection;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return connection;
     }
 
-    private static void createDatabaseAndTables() {
-        try (Statement stmt = connection.createStatement()) {
-            // Create database if not exists
+    // Method to create the database and tables if they don't already exist
+    public static void createDatabaseAndTables() {
+        try (Connection connection = getConnection(); Statement stmt = connection.createStatement()) {
+            // Create the database if it doesn't exist
             stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS METRO_POS_System");
             stmt.executeUpdate("USE METRO_POS_System");
 
@@ -60,7 +59,7 @@ public class DBConnection {
 
             // Create product table
             stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS product (" +
+                    "CREATE TABLE IF NOT EXISTS inventory (" +
                             "product_id INT AUTO_INCREMENT PRIMARY KEY, " +
                             "name VARCHAR(100) NOT NULL, " +
                             "category VARCHAR(50) NOT NULL, " +
@@ -81,7 +80,7 @@ public class DBConnection {
                             "carton_price DECIMAL(10, 2) NOT NULL" + ")"
             );
 
-
+            // Create transaction table
             stmt.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS transaction (" +
                             "transaction_id INT AUTO_INCREMENT PRIMARY KEY, " +
@@ -89,9 +88,8 @@ public class DBConnection {
                             "quantity_sold INT NOT NULL, " +
                             "transaction_date DATE NOT NULL, " +
                             "profit DECIMAL(10, 2), " +
-                            "FOREIGN KEY (product_id) REFERENCES product(product_id))"
+                            "FOREIGN KEY (product_id) REFERENCES inventory(product_id))"
             );
-
 
             System.out.println("Database and tables created successfully!");
         } catch (SQLException e) {

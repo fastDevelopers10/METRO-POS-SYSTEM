@@ -91,13 +91,18 @@ public class DBConnection {
     private static void createVendorTable(Statement stmt) throws SQLException {
         stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS vendor (" +
-                        "vendor_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                        "name VARCHAR(100) NOT NULL, " +
-                        "phone VARCHAR(20), " +
-                        "status BOOLEAN DEFAULT TRUE" +
+                        "vendor_id INT AUTO_INCREMENT PRIMARY KEY, " +  // Unique ID for the vendor
+                        "name VARCHAR(100) NOT NULL, " +  // Vendor name (required field)
+                        "phone VARCHAR(20), " +  // Phone number of the vendor
+                        "no_of_cartons INT, " +  // Number of cartons the vendor provides
+                        "no_of_products_in_carton INT, " +  // Number of products in each carton
+                        "category VARCHAR(50), " +  // Category the vendor belongs to
+                        "carton_price DECIMAL(10, 2), " +  // Price per carton (with 2 decimal places)
+                        "status BOOLEAN DEFAULT TRUE" +  // Status to indicate if the vendor is active
                         ")"
         );
     }
+
 
     private static void createProductTable(Statement stmt) throws SQLException {
         stmt.executeUpdate(
@@ -159,11 +164,15 @@ public class DBConnection {
         stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS employee (" +
                         "employee_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                        "password VARCHAR(50) UNIQUE NOT NULL, " +
+                        "email VARCHAR(100) UNIQUE NOT NULL, " +  // Added email field (unique)
+                        "username VARCHAR(50) UNIQUE NOT NULL, " +  // Added username field (unique)
+                        "password VARCHAR(50) NOT NULL, " +  // Ensure password is not nullable
                         "name VARCHAR(100) NOT NULL, " +
                         "position VARCHAR(50) NOT NULL, " +
-                        "status BOOLEAN DEFAULT TRUE, " +
-                        "first_time_joined BOOLEAN DEFAULT TRUE" +
+                        "branch_id INT NOT NULL, " +  // Assuming there is a foreign key for branch_id
+                        "status BOOLEAN DEFAULT TRUE, " +  // Status column
+                        "first_time_joined BOOLEAN DEFAULT TRUE, " +  // Whether the employee is joining for the first time
+                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id) ON DELETE CASCADE" + // Foreign key constraint
                         ")"
         );
     }

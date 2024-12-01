@@ -1,21 +1,9 @@
 package Controller;
 
-import DAO.ProductDAO;
 import Model.Bill;
-import Model.Cashier;
-import Model.Employee;
-import Model.Product;
 import Service.CashierService;
 
-import javax.swing.JOptionPane;
-import java.awt.*;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
-import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Map;
 
 public class CashierController {
     private CashierService cashierService;

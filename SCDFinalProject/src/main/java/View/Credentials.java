@@ -23,15 +23,16 @@ public class Credentials extends JFrame {
         this.role = role;
 
         setTitle(role + " Login"); // Set the title based on the role
-        setSize(1350, 750);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize(screenSize);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
         setResizable(false);
 
         // Load the background image
         try {
             backgroundImage = ImageIO.read(Objects.requireNonNull(
-                    getClass().getClassLoader().getResourceAsStream("images/login_screen.png")));
+                    getClass().getClassLoader().getResourceAsStream("images/LoginScreen.png")));
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error: Unable to load background image.");
@@ -66,10 +67,10 @@ public class Credentials extends JFrame {
         JButton btnExit = createButton("Exit", Color.BLACK);
 
         // Set component bounds
-        txtUsername.setBounds(453, 257, 437, 35);
-        txtPassword.setBounds(462, 344, 437, 35);
-        btnLogin.setBounds(456, 415, 250, 40);
-        btnExit.setBounds(572, 415, 250, 40);
+        txtUsername.setBounds(490, 255, 350, 30);
+        txtPassword.setBounds(490, 330, 350, 30);
+        btnLogin.setBounds(459, 375, 250, 40);
+        btnExit.setBounds(574, 376, 250, 40);
 
         // Add components to the panel
         backgroundPanel.add(txtUsername);

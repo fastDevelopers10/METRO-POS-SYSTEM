@@ -3,14 +3,9 @@ package View;
 import Controller.CashierController;
 import DAO.ProductDAO;
 import Model.Bill;
-import Model.Cashier;
 import Model.Employee;
 import Model.Product;
 
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
@@ -52,7 +47,10 @@ public class CashierUI extends JFrame {
         //      productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
         setTitle("Cashier Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1320, 710); // Set a default size for the window
+        // Get screen size and set JFrame to this
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize(screenSize);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
         setResizable(false);
 
         try {

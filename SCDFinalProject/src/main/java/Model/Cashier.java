@@ -10,7 +10,7 @@ public class Cashier extends Employee {
     private BigDecimal totalBill;    // Total bill amount
 
     // Constructor to initialize all fields
-    public Cashier(String employeeId, String username, String email, String password, String branchCode, String address,
+    public Cashier(String employeeId, String username, String email, String password, int branchCode, String address,
                    BigDecimal salary, String phone, String status, Date joiningDate, String employeeType) {
         // Calling the Employee constructor to initialize inherited fields
         super(employeeId, username, email, password, branchCode, address, salary, phone, status, joiningDate, employeeType);

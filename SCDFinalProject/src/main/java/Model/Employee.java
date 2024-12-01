@@ -8,7 +8,7 @@ public class Employee {
     private String username;  // Added username field
     private String email;
     private String password;  // Password for login functionality
-    private String branchCode;  // Added branchCode field
+    private int branchCode;  // Added branchCode field
     private String address;  // Added address field
     private BigDecimal salary;  // Added salary field (using BigDecimal for precision)
     private String phone;  // Added phone number field
@@ -17,7 +17,7 @@ public class Employee {
     private String employeeType;  // Added employee type (Cashier, Manager, etc.)
 
     // Constructor to initialize all fields
-    public Employee(String employeeId, String username, String email, String password, String branchCode, String address,
+    public Employee(String employeeId, String username, String email, String password, int branchCode, String address,
                     BigDecimal salary, String phone, String status, Date joiningDate, String employeeType) {
         this.employeeId = employeeId;
         this.username = username;
@@ -65,11 +65,11 @@ public class Employee {
         this.password = password;
     }
 
-    public String getBranchCode() {
+    public int getBranchCode() {
         return branchCode;
     }
 
-    public void setBranchCode(String branchCode) {
+    public void setBranchCode(int branchCode) {
         this.branchCode = branchCode;
     }
 

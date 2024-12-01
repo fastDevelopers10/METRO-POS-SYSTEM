@@ -1,6 +1,8 @@
 package View;
 
 import Controller.LoginController;
+import DAO.EmployeeDAO;
+import Model.Employee;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,6 +15,8 @@ public class Credentials extends JFrame {
 
     private Image backgroundImage;
     private String role; // Role passed to the class
+    JTextField txtUsername;
+    JPasswordField txtPassword;
 
     // Constructor to initialize the Login frame with a role
     public Credentials(String role) {
@@ -48,11 +52,11 @@ public class Credentials extends JFrame {
         add(backgroundPanel);
 
         // Username field
-        JTextField txtUsername = new JTextField();
+         txtUsername = new JTextField();
         styleTextField(txtUsername);
 
         // Password field
-        JPasswordField txtPassword = new JPasswordField();
+         txtPassword = new JPasswordField();
         styleTextField(txtPassword);
 
         // Login button
@@ -63,7 +67,7 @@ public class Credentials extends JFrame {
 
         // Set component bounds
         txtUsername.setBounds(453, 257, 437, 35);
-        txtPassword.setBounds(462, 344,437 , 35);
+        txtPassword.setBounds(462, 344, 437, 35);
         btnLogin.setBounds(456, 415, 250, 40);
         btnExit.setBounds(572, 415, 250, 40);
 
@@ -84,11 +88,11 @@ public class Credentials extends JFrame {
             if (loginController.validateLogin(role, username, password)) {
                 JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 openDashboard(role); // Open appropriate dashboard based on role
+                this.dispose(); // Close the login frame after successful login
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid credentials. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
 
         // Exit button action
         btnExit.addActionListener(e -> System.exit(0));
@@ -117,34 +121,43 @@ public class Credentials extends JFrame {
         return button;
     }
 
-    // Validate credentials based on the role
-    private boolean validateCredentials(String role, String username, String password) {
-        // Dummy validation logic (replace with database or API calls)
-        switch (role.toLowerCase()) {
-            case "cashier":
-                return username.equals("cashier") && password.equals("password123");
-            case "branch manager":
-                return username.equals("manager") && password.equals("manager123");
-            case "data operator":
-                return username.equals("dataop") && password.equals("dataop123");
-            case "super admin":
-                return username.equals("admin") && password.equals("admin123");
-            default:
-                return false;
-        }
-    }
-
     // Open the dashboard based on the role
     private void openDashboard(String role) {
-        System.out.println("Opening " + role + " Dashboard...");
-        // Replace with code to open the actual dashboard
-    }
+        // After login validation, get the Employee object
+        EmployeeDAO employeeDAO = new EmployeeDAO();
+        Employee loggedInEmployee = employeeDAO.findEmployeeByUsernameAndRole(txtUsername.getText(), role);
 
+        if (loggedInEmployee == null) {
+            JOptionPane.showMessageDialog(this, "Error retrieving employee details.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Open the UI based on the role and pass the Employee object
+        switch (role.toLowerCase()) {
+            case "cashier":
+                new CashierUI(loggedInEmployee).setVisible(true);; // Pass the Employee object to CashierUI
+                break;
+            case "branch manager":
+                // You can pass the Employee object here when implementing BranchManagerUI
+                // new BranchManagerUI(loggedInEmployee);
+                break;
+            case "data operator":
+                // new DataOperatorUI(loggedInEmployee);
+                break;
+            case "super admin":
+                // new SuperAdminUI(loggedInEmployee);
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Invalid role!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+
+        this.dispose(); // Close the login frame after successful login
+    }
     // Main method to demonstrate the role-based login
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // Replace "Cashier" with the desired role for testing
-            new Credentials("Cashier").setVisible(true);
+            // Example usage
         });
     }
 }

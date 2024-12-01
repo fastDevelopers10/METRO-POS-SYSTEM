@@ -23,7 +23,7 @@ public class EmployeeDAO {
             preparedStatement.setString(2, employee.getUsername());
             preparedStatement.setString(3, employee.getEmail());
             preparedStatement.setString(4, employee.getPassword());
-            preparedStatement.setString(5, employee.getBranchCode());
+            preparedStatement.setInt(5, employee.getBranchCode());
             preparedStatement.setString(6, employee.getAddress());
             preparedStatement.setBigDecimal(7, employee.getSalary());
             preparedStatement.setString(8, employee.getPhone());
@@ -66,7 +66,7 @@ public class EmployeeDAO {
         String username = resultSet.getString("username");
         String email = resultSet.getString("email");
         String password = resultSet.getString("password");
-        String branchCode = resultSet.getString("branch_code");
+        int branchCode = resultSet.getInt("branch_code");
         String address = resultSet.getString("address");
         BigDecimal salary = resultSet.getBigDecimal("salary");
         String phone = resultSet.getString("phone");

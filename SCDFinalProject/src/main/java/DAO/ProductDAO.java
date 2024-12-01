@@ -18,12 +18,12 @@ public class ProductDAO {
         this.connection = DBConnection.getConnection();
     }
 
-    // Method to get a product by its name and branch, passing Product and Branch as parameters
-    public Product getProductByName(String productName, Branch branch) {
+    public Product getProductByName(String productName, int branchId) {
         String query = "SELECT * FROM product WHERE product_name = ? AND branch_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, productName);  // Use product's name to query
-            statement.setInt(2, branch.getBranchId());  // Use branch's ID to query
+            statement.setString(1, productName);
+            statement.setInt(2, branchId);  // Use branchId for filtering the products
+
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 // Extract product data from the result set
@@ -34,7 +34,10 @@ public class ProductDAO {
                 int quantity = resultSet.getInt("total_products");
                 boolean status = resultSet.getBoolean("status");
 
-                // Return Product object created from the database values and the Branch object
+                // Fetch the branch using the branchId
+                Branch branch = getBranchById(branchId);
+
+                // Return Product object created from the database values
                 return new Product(branch, name, category, originalPrice, salesPrice, quantity, status);
             }
         } catch (SQLException e) {
@@ -44,15 +47,16 @@ public class ProductDAO {
     }
 
 
-    // Method to update stock for a product
-    public void updateStock(String productName, int quantity) throws SQLException {
-        String updateStockQuery = "UPDATE product SET total_products = total_products - ? WHERE product_name = ?";
+
+    public void updateStock(String productName, int quantity, int branchId) throws SQLException {
+        String updateStockQuery = "UPDATE product SET total_products = total_products - ? WHERE product_name = ? AND branch_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(updateStockQuery)) {
             connection.setAutoCommit(false);  // Disable auto-commit for transaction handling
 
             statement.setInt(1, quantity);  // Deduct the quantity from stock
             statement.setString(2, productName);  // Match product by name
+            statement.setInt(3, branchId);  // Match branch by branchId
 
             int rowsAffected = statement.executeUpdate();
             if (rowsAffected == 0) {
@@ -71,13 +75,23 @@ public class ProductDAO {
         }
     }
 
+
     // Method to add a new product
-    public void addProduct(Product product) {
+    public void addProduct(Product product, int branchId) {
         String insertProductQuery = "INSERT INTO product (branch_id, product_name, product_category, original_price, sales_price, total_products, status) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement statement = connection.prepareStatement(insertProductQuery)) {
-            statement.setInt(1, product.getBranch().getBranchId());
+            // First fetch the branch using branchId, if needed
+            Branch branch = getBranchById(branchId);  // A method that retrieves Branch by its ID (explained below)
+
+            if (branch == null) {
+                System.out.println("Branch not found!");
+                return; // Exit if the branch doesn't exist
+            }
+
+            // Set the parameters for the product insertion
+            statement.setInt(1, branchId);  // Store branchId in the product
             statement.setString(2, product.getName());
             statement.setString(3, product.getCategory());
             statement.setBigDecimal(4, product.getOriginalPrice());
@@ -92,16 +106,20 @@ public class ProductDAO {
         }
     }
 
+
+
+
     // Method to get unique categories
-    public List<String> getUniqueCategories() {
+    public List<String> getUniqueCategories(int branchId) {
         List<String> categories = new ArrayList<>();
-        String query = "SELECT DISTINCT product_category FROM product";
+        String query = "SELECT DISTINCT product_category FROM product WHERE branch_id = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
-
-            while (resultSet.next()) {
-                categories.add(resultSet.getString("product_category"));
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, branchId);  // Use branchId to filter categories
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    categories.add(resultSet.getString("product_category"));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -111,14 +129,14 @@ public class ProductDAO {
     }
 
     // Method to get products by category and branch
-    public List<Product> getProductsByCategory(String category, Branch branch) {
+    public List<Product> getProductsByCategory(String category, int branchId) {
         String query = "SELECT * FROM product WHERE product_category = ? AND branch_id = ?";
         List<Product> productList = new ArrayList<>();
         Set<String> uniqueProductNames = new HashSet<>(); // To track unique product names
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, category); // Set category
-            stmt.setInt(2, branch.getBranchId()); // Set branch ID
+            stmt.setString(1, category); // Set category parameter
+            stmt.setInt(2, branchId); // Set branch ID parameter
 
             ResultSet rs = stmt.executeQuery();
 
@@ -137,27 +155,57 @@ public class ProductDAO {
                 int quantity = rs.getInt("total_products");
                 boolean status = rs.getBoolean("status");
 
-                // Create Product object using the Branch and other data
+                // Fetch the Branch object using branchId
+                Branch branch = getBranchById(branchId);  // Assuming you have a method to get Branch by ID
+
+                // Create the Product with the Branch object
                 Product product = new Product(branch, name, productCategory, originalPrice, salesPrice, quantity, status);
                 productList.add(product);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Handle exceptions properly
         }
         return productList;
     }
 
+    // Helper method to fetch a branch by ID
+    private Branch getBranchById(int branchId) {
+        String query = "SELECT * FROM branch WHERE branch_id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, branchId); // Set branch ID parameter
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                // Assuming Branch class has these fields, adjust as per your schema
+                String city = rs.getString("city");
+                String name = rs.getString("name");
+                String status = rs.getString("status");
+                String address = rs.getString("address");
+                String phone = rs.getString("phone");
+                int numberOfEmployees = rs.getInt("number_of_employees");
 
-    // Method to get product price by name
-    public BigDecimal getProductPriceByName(String productName) {
-        String sql = "SELECT sales_price FROM product WHERE product_name = ?";
+                // Create and return Branch object
+                return new Branch(branchId, city, name, status, address, phone, numberOfEmployees);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Return null if the branch doesn't exist
+    }
+
+
+
+
+
+    public BigDecimal getProductPriceByName(String productName, int branchId) {
+        String sql = "SELECT sales_price FROM product WHERE product_name = ? AND branch_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, productName);
+            ps.setInt(2, branchId); // Use branchId to filter by branch
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getBigDecimal("sales_price");
             } else {
-                throw new SQLException("Product not found");
+                throw new SQLException("Product not found in branch");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -165,21 +213,23 @@ public class ProductDAO {
         return null;
     }
 
-    // Method to get product quantity by name
-    public int getProductQuantityByName(String productName) {
-        String query = "SELECT total_products FROM product WHERE product_name = ?";
+
+    public int getProductQuantityByName(String productName, int branchId) {
+        String query = "SELECT total_products FROM product WHERE product_name = ? AND branch_id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, productName);
+            statement.setInt(2, branchId); // Use branchId for filtering
 
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return resultSet.getInt("total_products");
             } else {
-                System.out.println("Product '" + productName + "' not found in the inventory.");
+                System.out.println("Product '" + productName + "' not found in branch with ID " + branchId);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return 0;
     }
+
 }

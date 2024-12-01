@@ -13,12 +13,13 @@ public class UpdatePasswordUI extends JFrame {
     private BufferedImage backgroundImage;
 
     public UpdatePasswordUI() {
-        setTitle("Data Operator Dashboard");
+        setTitle("Data Operator Update Password");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1344, 750); // Set a default size for the window
+        setSize(1920, 1080); // Set a default size for the window
         setResizable(false);
         setLocationRelativeTo(null); // Center the window on screen
 
+        // Load the background image
         try {
             // Use class loader to load the resource
             backgroundImage = ImageIO.read(Objects.requireNonNull(
@@ -27,6 +28,8 @@ public class UpdatePasswordUI extends JFrame {
             e.printStackTrace();
             System.err.println("Error: Unable to load background image.");
         }
+
+
         // Add a custom JPanel for drawing the background
         JPanel panel = new JPanel() {
             @Override
@@ -44,21 +47,21 @@ public class UpdatePasswordUI extends JFrame {
         JTextField tfUsername = new JTextField();
         tfUsername.setOpaque(true); // Make background visible (transparent is false)
         tfUsername.setBorder(new LineBorder(Color.BLACK, 1)); // Add a black border
-        tfUsername.setBounds(453, 239, 437, 35); // Position and size (x, y, width, height)
+        tfUsername.setBounds(490, 250, 350, 30); // Position and size (x, y, width, height)
         panel.add(tfUsername); // Add to the panel
 
         // Create the second text field (password)
         JTextField tfPassword = new JTextField();
         tfPassword.setOpaque(true); // Make background visible (transparent is false)
         tfPassword.setBorder(new LineBorder(Color.BLACK, 1)); // Add a black border
-        tfPassword.setBounds(490, 310, 350, 30); // Position and size (x, y, width, height)
+        tfPassword.setBounds(490, 320, 350, 30); // Position and size (x, y, width, height)
         panel.add(tfPassword); // Add to the panel
 
         // Create the second text field (password)
         JTextField tfCFPassword = new JTextField();
         tfCFPassword.setOpaque(true); // Make background visible (transparent is false)
         tfCFPassword.setBorder(new LineBorder(Color.BLACK, 1)); // Add a black border
-        tfCFPassword.setBounds(334, 333, 350, 30); // Position and size (x, y, width, height)
+        tfCFPassword.setBounds(490, 390, 350, 30); // Position and size (x, y, width, height)
         panel.add(tfCFPassword); // Add to the panel
 
         // Create the "Login" button
@@ -68,7 +71,7 @@ public class UpdatePasswordUI extends JFrame {
         btnLogin.setBorderPainted(false); // Make the border invisible
         btnLogin.setForeground(Color.WHITE); // Set text color to yellow
         btnLogin.setFont(new Font("Century Gothic", Font.PLAIN, 16)); // Optional: Set custom font
-        btnLogin.setBounds(536, 425, 120, 40); // Position and size (x, y, width, height)
+        btnLogin.setBounds(534, 442, 120, 40); // Position and size (x, y, width, height)
         panel.add(btnLogin); // Add to the panel
 
         // Create the "Exit" button
@@ -78,7 +81,7 @@ public class UpdatePasswordUI extends JFrame {
         btnExit.setBorderPainted(false); // Make the border invisible
         btnExit.setForeground(Color.BLACK); // Set text color to yellow
         btnExit.setFont(new Font("Century Gothic", Font.PLAIN, 16)); // Optional: Set custom font
-        btnExit.setBounds(660, 425, 120, 40); // Position and size (x, y, width, height)
+        btnExit.setBounds(660, 442, 120, 40); // Position and size (x, y, width, height)
         panel.add(btnExit); // Add to the panel
 
         // Add the custom panel to the frame

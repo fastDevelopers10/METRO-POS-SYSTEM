@@ -48,32 +48,44 @@ public class ProductDAO {
 
 
 
-    public void updateStock(String productName, int quantity, int branchId) throws SQLException {
-        String updateStockQuery = "UPDATE product SET total_products = total_products - ? WHERE product_name = ? AND branch_id = ?";
-
+    public boolean updateStock(String productName, int quantity, int branchId) throws SQLException {
+        String updateStockQuery = "UPDATE product SET total_products = total_products - ? " +
+                "WHERE product_name = ? AND branch_id = ? AND total_products >= ?";
         try (PreparedStatement statement = connection.prepareStatement(updateStockQuery)) {
-            connection.setAutoCommit(false);  // Disable auto-commit for transaction handling
+            connection.setAutoCommit(false); // Disable auto-commit for transaction handling
 
-            statement.setInt(1, quantity);  // Deduct the quantity from stock
-            statement.setString(2, productName);  // Match product by name
-            statement.setInt(3, branchId);  // Match branch by branchId
+            // Set parameters
+            statement.setInt(1, quantity);        // Deduct the quantity from stock
+            statement.setString(2, productName); // Match product by name
+            statement.setInt(3, branchId);       // Match branch by branchId
+            statement.setInt(4, quantity);       // Ensure stock is sufficient before deduction
 
+            // Execute the update query
             int rowsAffected = statement.executeUpdate();
+
             if (rowsAffected == 0) {
-                throw new SQLException("Product not found or insufficient stock.");
+                // No rows were updated; this indicates insufficient stock or invalid product/branch
+                connection.rollback(); // Rollback the transaction
+                System.err.println("Stock update failed for product: " + productName);
+                return false;
             }
 
-            connection.commit();  // Commit the transaction if no errors
-            System.out.println("Stock updated for product: " + productName);
+            // Commit the transaction if the update was successful
+            connection.commit();
+            System.out.println("Stock updated successfully for product: " + productName);
+            return true;
 
         } catch (SQLException e) {
-            connection.rollback();  // Rollback the transaction in case of error
+            // Rollback the transaction in case of an error
+            connection.rollback();
             System.err.println("Transaction failed, rolling back changes: " + e.getMessage());
             throw e;
         } finally {
-            connection.setAutoCommit(true);  // Restore auto-commit behavior
+            // Restore auto-commit behavior
+            connection.setAutoCommit(true);
         }
     }
+
 
 
     // Method to add a new product
@@ -181,7 +193,7 @@ public class ProductDAO {
                 String status = rs.getString("status");
                 String address = rs.getString("address");
                 String phone = rs.getString("phone");
-                int numberOfEmployees = rs.getInt("number_of_employees");
+                int numberOfEmployees = rs.getInt("no_of_employees");
 
                 // Create and return Branch object
                 return new Branch(branchId, city, name, status, address, phone, numberOfEmployees);

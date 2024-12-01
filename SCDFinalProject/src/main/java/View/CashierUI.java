@@ -1,5 +1,6 @@
 package View;
 
+import Controller.CashierController;
 import DAO.ProductDAO;
 import Model.Bill;
 import Model.Cashier;
@@ -35,15 +36,19 @@ public class CashierUI extends JFrame {
     private JLabel subtotalLabel, taxLabel, totalBillLabel; // Labels for subtotal, tax, and total
     private Bill cart; // Use Bill instead of a Map for cart    private final double TAX_PERCENTAGE = 8.5; // Tax percentage
     private JPanel horizontalScrollPanel = new JPanel();
-    private JButton activeCategoryButton = null; // Tracks the currently active category button
+    private JButton activeCategoryButton; // Tracks the currently active category button
 
     private ProductDAO productDAO;
     private Employee employee;
+    List<String> categories;
+
+
     // Constructor to initialize the UI
     public CashierUI(Employee loggedInEmployee) {
         this.employee=loggedInEmployee;
-        cart = new Bill(); // Correct initialization of cart as Bill        productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
         this.productDAO = new ProductDAO(); // Initialize with the proper constructor
+        this.categories=productDAO.getUniqueCategories(employee.getBranchCode()); // Fetch categories from DAO
+        cart = new Bill(); // Correct initialization of cart as Bill        productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
         setTitle("Cashier Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1320, 710); // Set a default size for the window
@@ -276,10 +281,8 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         this.add(layeredPane);
     }
 
-    private void initializeCategoryButtons() {
-
-        List<String> categories = productDAO.getUniqueCategories(employee.getBranchCode()); // Fetch categories from DAO
-
+    private void initializeCategoryButtons()
+    {
         for (String category : categories) {
             String iconPath = getCategoryIcon(category); // Fetch appropriate icon for the category
 
@@ -299,7 +302,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
                 // Log and load products for the selected category
                 System.out.println("Category clicked: " + category);
-//                loadProductsByCategory(category); // Load products based on selected category
+              loadProductsByCategory(category); // Load products based on selected category
             });
 
             // Add the category button to the horizontal scroll panel
@@ -556,87 +559,47 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         System.out.println("Bills displayed");
     }
 
-    private void updateStockInDatabase() throws SQLException {
-        // Iterate over the cart and update stock for each product
-        for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
-            Product product = entry.getKey();
-            int quantitySold = entry.getValue();
-
-            // Update the stock for each product by calling ProductDAO's updateStock method
-            ProductDAO productDAO = new ProductDAO();
-            productDAO.updateStock(product.getName(), quantitySold,employee.getBranchCode());  // Deduct quantity from stock
-        }
+    private boolean updateStockInDatabase() throws SQLException {
+        boolean flag=false;
+        CashierController cashierController=new CashierController();
+      flag=  cashierController.updateStockInDatabase(cart,employee.getBranchCode());
+      return flag;
     }
+
     private void generateBillAction() throws SQLException {
-        printBill();
-        updateStockInDatabase();
+        boolean flag=false;
+//        printBill();
+
+       flag=  updateStockInDatabase();
+        if (flag) {
+            JOptionPane.showMessageDialog(null,
+                    "Stock successfully updated for all products!",
+                    "Stock Update Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+
+
+            loadProductsByCategory(activeCategoryButton.getText()); // Repaint the panel to reflect changes
+            cart.resetBill();
+            billItemsPanel.removeAll();
+            // Reset bill summary labels
+            subtotalLabel.setText("Subtotal: Rs.0");
+            taxLabel.setText("Tax (" + TAX_PERCENTAGE + "%): Rs.0");
+            totalBillLabel.setText("Total: Rs.0");
+
+            // Refresh the UI
+            billItemsPanel.revalidate();
+            billItemsPanel.repaint();
+        }
+
     }
 
 
-        private void printBill() {
-            PrinterJob printerJob = PrinterJob.getPrinterJob();
-
-            // Set the print job to print the bill
-            printerJob.setPrintable(new Printable() {
-                public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                    if (pageIndex > 0) {
-                        return NO_SUCH_PAGE; // Only one page of content
-                    }
-
-                    // Set up the graphics context for printing
-                    Graphics2D g2d = (Graphics2D) graphics;
-                    g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-
-                    // Print the bill title
-                    g2d.setFont(new Font("Arial", Font.BOLD, 16));
-                    g2d.drawString("Bill", 100, 100);  // Adjust the X and Y positions as needed
-
-                    // Set the font for the body of the bill
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-
-                    // Starting Y position for printing
-                    int yPosition = 120;
-
-                    // Loop through the cart and print product details
-                    for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
-                        String productName = entry.getKey().getName();
-                        int quantity = entry.getValue();
-                        BigDecimal productPrice = entry.getKey().getSalesPrice();
-
-                        // Print the product details on the bill
-                        String line = productName + " x" + quantity + " - $" + productPrice;
-                        g2d.drawString(line, 100, yPosition);
-                        yPosition += 20;  // Move down for the next line
-                    }
-
-                    // Now, print the stored subtotal, tax, and total
-                    g2d.drawString("Subtotal: $" + cart.getSubtotal(), 100, yPosition);
-                    yPosition += 20;
-                    g2d.drawString("Tax (10%): $" + cart.getTax(), 100, yPosition);
-                    yPosition += 20;
-                    g2d.drawString("Total: $" + cart.getTotalBill(), 100, yPosition);
-
-                    return PAGE_EXISTS;  // Indicating that the page has content
-                }
-            });
-
-            // Show the print dialog
-            if (printerJob.printDialog()) {
-                try {
-                    printerJob.print();  // Execute the printing job
-                } catch (PrinterException e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Error printing the bill.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }
-
-
-
-        private void logoutAction() {
+        private void logoutAction()
+        {
         // Logic for logging out here
         System.out.println("Logged out");
-    }
+        }
 
 //    // Main method to launch the UI
 //    public static void main(String[] args) {

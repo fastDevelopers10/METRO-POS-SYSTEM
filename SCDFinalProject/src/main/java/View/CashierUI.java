@@ -48,7 +48,8 @@ public class CashierUI extends JFrame {
         this.employee=loggedInEmployee;
         this.productDAO = new ProductDAO(); // Initialize with the proper constructor
         this.categories=productDAO.getUniqueCategories(employee.getBranchCode()); // Fetch categories from DAO
-        cart = new Bill(); // Correct initialization of cart as Bill        productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
+        cart = new Bill(); // Correct initialization of cart as Bill
+        //      productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
         setTitle("Cashier Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1320, 710); // Set a default size for the window
@@ -164,9 +165,12 @@ public class CashierUI extends JFrame {
             // Update Y position for next button
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
-
+JLabel branchid=new JLabel(""+employee.getBranchCode());
+        branchid.setBounds(118,145,22,22);
 // Add side menu panel to your background panel
         backgroundPanel.add(sideMenuPanel);
+        backgroundPanel.add(branchid);
+
 
 
         // Create a label for categories

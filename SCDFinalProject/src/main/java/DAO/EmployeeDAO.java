@@ -8,11 +8,11 @@ import java.util.Date;
 
 public class EmployeeDAO {
     private static final String INSERT_EMPLOYEE_QUERY =
-            "INSERT INTO employees (employee_id, username, email, password, branch_code, address, salary, phone, status, joining_date, employee_type) " +
+            "INSERT INTO employee (employee_id, username, email, password, branch_code, address, salary, phone, status, joining_date, employee_type) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String FIND_EMPLOYEE_QUERY =
-            "SELECT * FROM employees WHERE username = ? AND employee_type = ?";
+            "SELECT * FROM employee WHERE username = ? AND employee_type = ?";
 
     // Insert a new employee into the database
     public boolean insertEmployee(Employee employee) {

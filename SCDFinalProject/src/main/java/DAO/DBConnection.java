@@ -7,128 +7,176 @@ import java.sql.Statement;
 
 public class DBConnection {
     private static Connection connection;
-
+    private static final String DB_URL = "jdbc:mysql://localhost:3306";  // Example, use your database URL
+    private static final String USER = "root";  // Your MySQL username
+    private static final String PASSWORD = "";  // Your MySQL password
+    // Private constructor to prevent instantiation
     private DBConnection() {}
 
     public static Connection getConnection() {
-        if (connection == null) {
-            try {
-                connection = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/",
-                        "root", "");
-                createDatabaseAndTables();
-            } catch (SQLException e) {
-                e.printStackTrace();
+        try {
+            if (connection == null || connection.isClosed()) {
+                // Establish connection
+                connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+                // Select the database after connecting
+                Statement stmt = connection.createStatement();
+                stmt.executeUpdate("USE METRO_POS_SYSTEM;");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return connection;
     }
-
+    // Create database and tables if they do not exist
     private static void createDatabaseAndTables() {
-        try (Statement stmt = connection.createStatement()) {
-            // Drop and create the database
+        Statement stmt = null;
+        try {
+            stmt = connection.createStatement();
+            // Drop and create database
             stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS METRO_POS_SYSTEM;");
             stmt.executeUpdate("USE METRO_POS_SYSTEM;");
 
-            // Create super_admin table
-            stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS super_admin (" +
-                            "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "username VARCHAR(50) NOT NULL, " +
-                            "password VARCHAR(50) NOT NULL" +
-                            ")"
-            );
-
-            // Create branch table
-            stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS branch (" +
-                            "branch_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "city VARCHAR(50) NOT NULL, " +
-                            "name VARCHAR(50) NOT NULL, " +
-                            "status ENUM('active', 'closed') NOT NULL, " +
-                            "address VARCHAR(255) NOT NULL, " +
-                            "phone VARCHAR(20), " +
-                            "no_of_employees INT DEFAULT 0" +
-                            ")"
-            );
-
-            // Create vendor table
-            stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS vendor (" +
-                            "vendor_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "name VARCHAR(100) NOT NULL, " +
-                            "phone VARCHAR(20), " +
-                            "status BOOLEAN DEFAULT TRUE" +
-                            ")"
-            );
-
-            // Create product table
-            stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS product (" +
-                            "product_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "branch_id INT NOT NULL, " +
-                            "product_name VARCHAR(100) NOT NULL, " +
-                            "product_category VARCHAR(50) NOT NULL, " +
-                            "total_products INT DEFAULT 0, " +
-                            "original_price DECIMAL(10, 2), " +
-                            "sales_price DECIMAL(10, 2), " +
-                            "status BOOLEAN DEFAULT TRUE, " +
-                            "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
-                            "UNIQUE(product_name, product_category)" +
-                            ")"
-            );
-
-            //// Create transaction table
-            stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS transaction (" +
-                            "transaction_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "branch_id INT NOT NULL, " +
-                            "product_id INT NOT NULL, " +
-                            "quantity_sold INT NOT NULL, " +
-                            "transaction_date DATE NOT NULL, " +
-                            "profit DECIMAL(10, 2), " +
-                            "status BOOLEAN DEFAULT TRUE, " +
-                            "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
-                            "FOREIGN KEY (product_id) REFERENCES product(product_id)" +
-                            ")"
-            );
-
-            // Create vendor_product table
-            stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS vendor_product (" +
-                            "relation_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "vendor_id INT NOT NULL, " +
-                            "branch_id INT NOT NULL, " +
-                            "product_id INT, " +
-                            "product_name VARCHAR(100) NOT NULL, " +
-                            "product_category VARCHAR(50) NOT NULL, " +
-                            "cartons_purchased INT NOT NULL, " +
-                            "items_per_carton INT NOT NULL, " +
-                            "products_purchased INT AS (cartons_purchased * items_per_carton) STORED, " +
-                            "original_price DECIMAL(10, 2) NOT NULL, " +
-                            "sales_price DECIMAL(10, 2) NOT NULL, " +
-                            "purchase_date DATE NOT NULL, " +
-                            "status BOOLEAN DEFAULT TRUE, " +
-                            "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
-                            "FOREIGN KEY (vendor_id) REFERENCES vendor(vendor_id), " +
-                            "FOREIGN KEY (product_id) REFERENCES product(product_id)" +
-                            ")"
-            );
-
-            // Create employee table
-            stmt.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS employee (" +
-                            "employee_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                            "password VARCHAR(50) UNIQUE NOT NULL, " +
-                            "name VARCHAR(100) NOT NULL, " +
-                            "position VARCHAR(50) NOT NULL, " +
-                            "status BOOLEAN DEFAULT TRUE, " +
-                            "first_time_joined BOOLEAN DEFAULT TRUE" +
-                            ")"
-            );
+            // Create tables
+            createSuperAdminTable(stmt);
+            createBranchTable(stmt);
+            createVendorTable(stmt);
+            createProductTable(stmt);
+            createTransactionTable(stmt);
+            createVendorProductTable(stmt);
+            createEmployeeTable(stmt);
 
             // Create triggers
-            // Trigger: Update Product Table After Vendor Product Insert
+            createTriggers(stmt);
+
+            System.out.println("Tables and triggers created successfully.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            // Ensure statement is closed to prevent resource leaks
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    // Helper methods to create individual tables
+    private static void createSuperAdminTable(Statement stmt) throws SQLException {
+        stmt.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS super_admin (" +
+                        "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "username VARCHAR(50) NOT NULL, " +
+                        "password VARCHAR(50) NOT NULL" +
+                        ")"
+        );
+    }
+
+    private static void createBranchTable(Statement stmt) throws SQLException {
+        stmt.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS branch (" +
+                        "branch_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "city VARCHAR(50) NOT NULL, " +
+                        "name VARCHAR(50) NOT NULL, " +
+                        "status ENUM('active', 'closed') NOT NULL, " +
+                        "address VARCHAR(255) NOT NULL, " +
+                        "phone VARCHAR(20), " +
+                        "no_of_employees INT DEFAULT 0" +
+                        ")"
+        );
+    }
+
+    private static void createVendorTable(Statement stmt) throws SQLException {
+        stmt.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS vendor (" +
+                        "vendor_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "name VARCHAR(100) NOT NULL, " +
+                        "phone VARCHAR(20), " +
+                        "status BOOLEAN DEFAULT TRUE" +
+                        ")"
+        );
+    }
+
+    private static void createProductTable(Statement stmt) throws SQLException {
+        stmt.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS product (" +
+                        "product_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "branch_id INT NOT NULL, " +
+                        "product_name VARCHAR(100) NOT NULL, " +
+                        "product_category VARCHAR(50) NOT NULL, " +
+                        "total_products INT DEFAULT 0, " +
+                        "original_price DECIMAL(10, 2), " +
+                        "sales_price DECIMAL(10, 2), " +
+                        "status BOOLEAN DEFAULT TRUE, " +
+                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
+                        "UNIQUE(product_name, product_category)" +
+                        ")"
+        );
+    }
+
+    private static void createTransactionTable(Statement stmt) throws SQLException {
+        stmt.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS transaction (" +
+                        "transaction_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "branch_id INT NOT NULL, " +
+                        "product_id INT NOT NULL, " +
+                        "quantity_sold INT NOT NULL, " +
+                        "transaction_date DATE NOT NULL, " +
+                        "profit DECIMAL(10, 2), " +
+                        "status BOOLEAN DEFAULT TRUE, " +
+                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
+                        "FOREIGN KEY (product_id) REFERENCES product(product_id)" +
+                        ")"
+        );
+    }
+
+    private static void createVendorProductTable(Statement stmt) throws SQLException {
+        stmt.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS vendor_product (" +
+                        "relation_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "vendor_id INT NOT NULL, " +
+                        "branch_id INT NOT NULL, " +
+                        "product_id INT, " +
+                        "product_name VARCHAR(100) NOT NULL, " +
+                        "product_category VARCHAR(50) NOT NULL, " +
+                        "cartons_purchased INT NOT NULL, " +
+                        "items_per_carton INT NOT NULL, " +
+                        "products_purchased INT AS (cartons_purchased * items_per_carton) STORED, " +
+                        "original_price DECIMAL(10, 2) NOT NULL, " +
+                        "sales_price DECIMAL(10, 2) NOT NULL, " +
+                        "purchase_date DATE NOT NULL, " +
+                        "status BOOLEAN DEFAULT TRUE, " +
+                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
+                        "FOREIGN KEY (vendor_id) REFERENCES vendor(vendor_id), " +
+                        "FOREIGN KEY (product_id) REFERENCES product(product_id)" +
+                        ")"
+        );
+    }
+
+    private static void createEmployeeTable(Statement stmt) throws SQLException {
+        stmt.executeUpdate(
+                "CREATE TABLE IF NOT EXISTS employee (" +
+                        "employee_id INT AUTO_INCREMENT PRIMARY KEY, " +
+                        "password VARCHAR(50) UNIQUE NOT NULL, " +
+                        "name VARCHAR(100) NOT NULL, " +
+                        "position VARCHAR(50) NOT NULL, " +
+                        "status BOOLEAN DEFAULT TRUE, " +
+                        "first_time_joined BOOLEAN DEFAULT TRUE" +
+                        ")"
+        );
+    }
+
+    private static void createTriggers(Statement stmt) throws SQLException {
+        // Check if the trigger exists
+        String checkTriggerExists = "SELECT COUNT(*) " +
+                "FROM information_schema.triggers " +
+                "WHERE trigger_name = 'update_product_on_purchase' " +
+                "AND trigger_schema = 'metro_pos_system';";
+        var resultSet = stmt.executeQuery(checkTriggerExists);
+        if (resultSet.next() && resultSet.getInt(1) == 0) {
+            // Create trigger if it doesn't exist
             stmt.executeUpdate(
                     "CREATE TRIGGER update_product_on_purchase " +
                             "AFTER INSERT ON vendor_product " +
@@ -152,26 +200,13 @@ public class DBConnection {
                             "   WHERE relation_id = NEW.relation_id; " +
                             "END"
             );
-
-            // Trigger: Update Product Quantity After a Sale
-            stmt.executeUpdate(
-                    "CREATE TRIGGER update_product_on_sale " +
-                            "AFTER INSERT ON transaction " +
-                            "FOR EACH ROW " +
-                            "BEGIN " +
-                            "   UPDATE product " +
-                            "   SET total_products = total_products - NEW.quantity_sold " +
-                            "   WHERE product_id = NEW.product_id; " +
-                            "END"
-            );
-
-            System.out.println("Tables and triggers created successfully.");
-        } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("Trigger 'update_product_on_purchase' created.");
+        } else {
+            System.out.println("Trigger 'update_product_on_purchase' already exists.");
         }
     }
 
-
+    // Main method to initialize the DB connection and setup
     public static void main(String[] args) {
         System.out.println("Initializing database setup...");
 

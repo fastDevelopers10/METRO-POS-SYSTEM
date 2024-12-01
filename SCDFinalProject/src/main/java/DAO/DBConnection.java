@@ -78,7 +78,7 @@ public class DBConnection {
                             ")"
             );
 
-            // Create transaction table
+            //// Create transaction table
             stmt.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS transaction (" +
                             "transaction_id INT AUTO_INCREMENT PRIMARY KEY, " +

@@ -135,6 +135,7 @@ public class Credentials extends JFrame {
         // Open the UI based on the role and pass the Employee object
         switch (role.toLowerCase()) {
             case "cashier":
+                this.dispose();
                 new CashierUI(loggedInEmployee).setVisible(true);; // Pass the Employee object to CashierUI
                 break;
             case "branch manager":

@@ -595,11 +595,25 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
     }
 
 
-        private void logoutAction()
-        {
-        // Logic for logging out here
-        System.out.println("Logged out");
+    private void logoutAction() {
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to log out?",
+                "Logout Confirmation",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Dispose of the current frame
+            this.dispose();
+
+            // Open the login options
+            new LoginOptions().setVisible(true);
         }
+    }
+
+
 
 //    // Main method to launch the UI
 //    public static void main(String[] args) {

@@ -1,19 +1,24 @@
 package Model;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Cashier extends Employee {
-    private List<Product> products;
-    private BigDecimal totalBill;
+    private List<Product> products;  // List of products added to the bill
+    private BigDecimal totalBill;    // Total bill amount
 
-    public Cashier(String employeeId, String name, String email, String password) {
-        super(employeeId, name, "Cashier", email, password);
+    // Constructor to initialize all fields
+    public Cashier(String employeeId, String username, String email, String password, String branchCode, String address,
+                   BigDecimal salary, String phone, String status, Date joiningDate, String employeeType) {
+        // Calling the Employee constructor to initialize inherited fields
+        super(employeeId, username, email, password, branchCode, address, salary, phone, status, joiningDate, employeeType);
         this.products = new ArrayList<>();
-        this.totalBill = BigDecimal.ZERO; // Initializing totalBill as BigDecimal.ZERO
+        this.totalBill = BigDecimal.ZERO;  // Initialize totalBill as BigDecimal.ZERO
     }
 
+    // Add product to the bill
     public void addProductToBill(Product product, int quantity) {
         products.add(product);
         // Multiply product's sales price by quantity and add to totalBill
@@ -25,14 +30,10 @@ public class Cashier extends Employee {
         return products;
     }
 
-    // Get total bill amount
+    // Get the total bill amount
     public BigDecimal getTotalBill() {
         return totalBill;
     }
 
-    // Method to process the bill (this could involve printing it or any other necessary action)
-    public void processBill() {
-        System.out.println(getName() + " is processing the bill...");
-        System.out.println("Total Bill: $" + totalBill);
-    }
+
 }

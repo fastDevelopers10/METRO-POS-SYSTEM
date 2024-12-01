@@ -1,4 +1,4 @@
-package SCDFinalProject.src.main.java.View;
+package View;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +16,7 @@ public class SplashScreen extends JPanel {
             progress += 1;
             if (progress > 100) {
                 ((Timer) e.getSource()).stop();
-                LoginFrame fr = new LoginFrame();
+                LoginOptions fr = new LoginOptions();
                 fr.setVisible(true);
                 frame.dispose();
             }

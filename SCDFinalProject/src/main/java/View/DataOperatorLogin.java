@@ -5,8 +5,8 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 public class DataOperatorLogin extends JFrame {
     private BufferedImage backgroundImage;
@@ -20,10 +20,13 @@ public class DataOperatorLogin extends JFrame {
 
         // Load the background image
         try {
-            backgroundImage = ImageIO.read(new File("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\LoginScreen.png"));
+            // Use class loader to load the resource
+            backgroundImage = ImageIO.read(Objects.requireNonNull(
+                    getClass().getClassLoader().getResourceAsStream("images/LoginScreen.png")));
         } catch (IOException e) {
-            System.out.println("Error loading background image: " + e.getMessage());
-        }
+            e.printStackTrace();
+            System.err.println("Error: Unable to load background image.");
+       }
 
         // Add a custom JPanel for drawing the background
         JPanel panel = new JPanel() {

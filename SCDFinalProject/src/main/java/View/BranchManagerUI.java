@@ -179,18 +179,30 @@ public class BranchManagerUI extends JFrame {
         // Fetch and display all employees based on the branchId
         int branchId =employee.getBranchId(); // Assuming 'employee' is the logged-in employee
         List<Employee> employeeList = employeeController.getEmployeesByBranch(branchId); // Fetch employees from the DB
-
+        System.out.println("Number of employees: " + employeeList.size());
         // Convert the list of employees to a 2D Object array for the JTable
-        String[] columnNames = {"Employee ID", "Name", "Role", "Email", "Phone", "Salary"};
+        String[] columnNames = {"employee_id",	"name", 	"position","email", 	"branch_id", 	"address "	,"phone_number", 	"salary "	,"joining_date ",	"username" 	,"password", 	"status" 	,"first_time_joined "	};
         Object[][] rowData = new Object[employeeList.size()][columnNames.length];
         for (int i = 0; i < employeeList.size(); i++) {
             Employee emp = employeeList.get(i);
             rowData[i][0] = emp.getEmployeeId();
-            rowData[i][1] = emp.getUsername();
+            rowData[i][1] = emp.getName();
             rowData[i][2] = emp.getPosition();
             rowData[i][3] = emp.getEmail();
-            rowData[i][4] = emp.getPhone();
-            rowData[i][5] = emp.getSalary();
+            rowData[i][4] = emp.getBranchId();
+
+            rowData[i][5] = emp.getAddress();
+            rowData[i][6] = emp.getPhone();
+            rowData[i][7] = emp.getSalary();
+            rowData[i][8] = emp.getJoiningDate();
+            rowData[i][9] = emp.getUsername();
+            rowData[i][10] = emp.getPassword();
+            rowData[i][11] = emp.getStatus();
+            rowData[i][12] = emp.getJoiningDate();
+
+
+
+
         }
 
         // Create a JTable to display the employees
@@ -262,10 +274,15 @@ public class BranchManagerUI extends JFrame {
         }
     }
 
-    // Main method for testing (optional)
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new BranchManagerUI(new Employee("anas1","anas","anas@gmail.com","1",1,"lhr",new BigDecimal(22222),"12345",true,new Date(),"Branch Manager"))) ;
-        }
-
+        SwingUtilities.invokeLater(() -> {
+            BranchManagerUI ui = new BranchManagerUI(new Employee(
+                    "anas1", "anas", "anas@gmail.com", "1", 1, "lhr",
+                    new BigDecimal(22222), "12345", "true", new Date(), "Branch Manager"
+            ));
+            ui.setVisible(true); // Make sure the UI is visible
+        });
     }
+}
+
 

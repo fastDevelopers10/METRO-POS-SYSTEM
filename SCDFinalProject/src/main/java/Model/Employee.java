@@ -13,14 +13,14 @@ public class Employee {
     private String address;
     private BigDecimal salary;
     private String phone;
-    private boolean status;
+    private String status;
     private Date joiningDate;
     private String position;
     private boolean firstTimeJoined;
 
     // Constructor to initialize all fields except employeeId, as it's auto-generated
     public Employee(String username, String name, String email, String password, int branchId,
-                    String address, BigDecimal salary, String phone, boolean status, Date joiningDate,
+                    String address, BigDecimal salary, String phone, String status, Date joiningDate,
                     String position) {
         this.username = username;
         this.name = name;
@@ -109,11 +109,11 @@ public class Employee {
         this.phone = phone;
     }
 
-    public boolean getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(boolean status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

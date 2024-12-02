@@ -39,6 +39,7 @@ public class EmployeeDAO {
         } catch (SQLException e) {
             throw new Exception("Error fetching employees by branch ID: " + e.getMessage(), e);
         }
+        System.out.println("Number of employees: " +employees.size());
 
         return employees;
     }
@@ -59,7 +60,7 @@ public class EmployeeDAO {
             preparedStatement.setDate(8, new java.sql.Date(employee.getJoiningDate().getTime()));
             preparedStatement.setString(9, employee.getUsername());
             preparedStatement.setString(10, employee.getPassword());
-            preparedStatement.setBoolean(11, employee.getStatus());
+            preparedStatement.setString(11, employee.getStatus());
             preparedStatement.setBoolean(12, employee.isFirstTimeJoined());
 
             // Execute the query and get the generated keys (auto-generated employee_id)
@@ -133,7 +134,7 @@ public class EmployeeDAO {
         String address = resultSet.getString("address");
         BigDecimal salary = resultSet.getBigDecimal("salary");
         String phone = resultSet.getString("phone_number");
-        boolean status = resultSet.getBoolean("status");
+        String status = resultSet.getString("status");
         Date joiningDate = resultSet.getDate("joining_date");
         String position = resultSet.getString("position");
         boolean firstTimeJoined = resultSet.getBoolean("first_time_joined");

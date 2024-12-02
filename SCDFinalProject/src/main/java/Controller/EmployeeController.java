@@ -8,7 +8,7 @@ import java.util.List;
 public class EmployeeController {
     private  EmployeeService employeeService;
 
-    public void EmployeeService() {
+    public  EmployeeController() {
         this.employeeService = new EmployeeService();
     }
 

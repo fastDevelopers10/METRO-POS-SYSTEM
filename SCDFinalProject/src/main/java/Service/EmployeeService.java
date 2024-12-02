@@ -28,7 +28,7 @@ public class EmployeeService {
     // Method to add a new employee
     public boolean insertEmployee( String username, String name, String email, String password,
                                int branchId, String address, BigDecimal salary, String phone,
-                               boolean status, Date joiningDate, String position) {
+                               String status, Date joiningDate, String position) {
         Employee employee = new Employee( username, name, email, password, branchId, address, salary, phone, status, joiningDate, position);
         return employeeDAO.insertEmployee(employee); // Call DAO to insert employee
     }

@@ -13,6 +13,9 @@ public class EmployeeDAO {
 
     private static final String FIND_EMPLOYEE_QUERY =
             "SELECT * FROM employee WHERE username = ? AND employee_type = ?";
+    private static final String UPDATE_PASSWORD_QUERY =
+            "UPDATE employee SET password = ? WHERE employee_id = ?";
+
 
     // Insert a new employee into the database
     public boolean insertEmployee(Employee employee) {
@@ -58,6 +61,26 @@ public class EmployeeDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // Method to update employee's password
+    public boolean updatePassword(String employeeId, String newPassword) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_PASSWORD_QUERY)) {
+
+            // Set the new password and employee ID
+            preparedStatement.setString(1, newPassword);
+            preparedStatement.setString(2, employeeId);
+
+            // Execute the update
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Return true if the password was updated successfully
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // Map the ResultSet row to an Employee object

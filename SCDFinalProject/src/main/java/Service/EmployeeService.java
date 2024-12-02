@@ -15,4 +15,10 @@ public class EmployeeService {
     public Employee getEmployeeByUsernameAndRole(String username, String role) {
         return employeeDAO.findEmployeeByUsernameAndRole(username, role);
     }
+
+    // Method to update the employee password
+    public boolean updateEmployeePassword(String employeeId, String newPassword) {
+        return employeeDAO.updatePassword(employeeId, newPassword); // Call DAO to update password
+    }
+
 }

@@ -46,7 +46,7 @@ public class CashierUI extends JFrame {
         this.employee=loggedInEmployee;
         this.cashierController=new CashierController();
         this.productDAO = new ProductDAO(); // Initialize with the proper constructor
-        this.categories=productDAO.getUniqueCategories(employee.getBranchCode()); // Fetch categories from DAO
+        this.categories=productDAO.getUniqueCategories(employee.getBranchId()); // Fetch categories from DAO
         cart = new Bill(); // Correct initialization of cart as Bill
         //      productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
         setTitle("Cashier Dashboard");
@@ -167,7 +167,7 @@ public class CashierUI extends JFrame {
             // Update Y position for next button
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
-JLabel branchid=new JLabel(""+employee.getBranchCode());
+JLabel branchid=new JLabel(""+employee.getEmployeeId());
         branchid.setBounds(118,145,22,22);
 // Add side menu panel to your background panel
         backgroundPanel.add(sideMenuPanel);
@@ -347,7 +347,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
     private void loadProductsByCategory(String category) {
         // Fetch products based on the selected category from the database
-        List<Product> products = productDAO.getProductsByCategory(category,employee.getBranchCode());
+        List<Product> products = productDAO.getProductsByCategory(category,employee.getBranchId());
 
         // Clear the current products displayed
         productPanel.removeAll();
@@ -374,7 +374,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
             productPriceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             // Product stock label
-            JLabel productStockLabel = new JLabel("Stock: " + productDAO.getProductQuantityByName(product.getName(), employee.getBranchCode()));
+            JLabel productStockLabel = new JLabel("Stock: " + productDAO.getProductQuantityByName(product.getName(), employee.getBranchId()));
             productStockLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
             productStockLabel.setHorizontalAlignment(SwingConstants.CENTER);
             productStockLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -437,8 +437,8 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
             BigDecimal productPrice = BigDecimal.ZERO;
             int availableQuantity = 0;  // Fetch quantity available in stock
 
-            productPrice = productDAO.getProductPriceByName(product.getName(), employee.getBranchCode());  // Get product price from DB (using product.getName())
-            availableQuantity = productDAO.getProductQuantityByName(product.getName(), employee.getBranchCode());  // Get available quantity from DB (using product.getName())
+            productPrice = productDAO.getProductPriceByName(product.getName(), employee.getBranchId());  // Get product price from DB (using product.getName())
+            availableQuantity = productDAO.getProductQuantityByName(product.getName(), employee.getBranchId());  // Get available quantity from DB (using product.getName())
 
             // Update subtotal
             cart.subtotal = cart.subtotal.add(productPrice.multiply(BigDecimal.valueOf(quantity)));
@@ -568,7 +568,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
     private boolean updateStockInDatabase() throws SQLException {
         boolean flag=false;
 
-      flag=  cashierController.updateStockInDatabase(cart,employee.getBranchCode());
+      flag=  cashierController.updateStockInDatabase(cart,employee.getBranchId());
       return flag;
     }
     // Method to create transactions from the cart
@@ -576,7 +576,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         // Assuming connection to database is already established
             for (Product product : cart.getProducts()) {
 
-               cashierController.insertTransaction(employee.getBranchCode(), product.getProductId(), cart.getCart().get(product), Date.valueOf(LocalDate.now()),product.calculateProfit());//get give val of key(quantity)
+               cashierController.insertTransaction(employee.getBranchId(), product.getProductId(), cart.getCart().get(product), Date.valueOf(LocalDate.now()),product.calculateProfit());//get give val of key(quantity)
             }
             JOptionPane.showMessageDialog(this, "Transactions recorded successfully!");
 

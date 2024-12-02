@@ -1,6 +1,6 @@
 package View;
 
-import DAO.ProductDAO;
+import Controller.EmployeeController;
 import Model.Employee;
 
 import javax.imageio.ImageIO;
@@ -9,18 +9,23 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.Objects;
+import java.util.List;
 
 public class BranchManagerUI extends JFrame {
 
     private BufferedImage backgroundImage;
     private Employee employee;
-
+    private JPanel employeePanel;  // Panel for adding employee buttons
+    private static    int menuYPosition = 220; // Y position for the menu
+    private static     int menuWidth = 157;
+    private static JPanel backgroundPanel;
+    private EmployeeController employeeController;
     // Constructor to initialize UI with the logged-in Employee
     public BranchManagerUI(Employee loggedInEmployee) {
         this.employee = loggedInEmployee; // Assign the received employee object
+        this.employeeController=new EmployeeController();
         setTitle("Branch Manager Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -46,7 +51,7 @@ public class BranchManagerUI extends JFrame {
     // Method to set up UI components
     private void setupComponents() {
         // Background Panel
-        JPanel backgroundPanel = new JPanel() {
+         backgroundPanel = new JPanel() {
 
             @Override
             protected void paintComponent(Graphics g) {
@@ -67,9 +72,7 @@ public class BranchManagerUI extends JFrame {
         sideMenuPanel.setLayout(null); // Use null layout for manual positioning
         sideMenuPanel.setBackground(Color.WHITE);
 
-        // Adjust the bounds of the panel
-        int menuYPosition = 220; // Y position for the menu
-        int menuWidth = 157;
+
         sideMenuPanel.setBounds(14, menuYPosition, menuWidth, getHeight() - menuYPosition);
         sideMenuPanel.setOpaque(false);
 
@@ -116,12 +119,11 @@ public class BranchManagerUI extends JFrame {
 
                     case "Employees":
                         System.out.println("Viewing Employees...");
-                        // viewBillsAction();
+                        showEmployeePanel();
                         break;
 
                     case "Reports":
                         System.out.println("View Reports...");
-
                         break;
 
                     case "Logout":
@@ -149,7 +151,7 @@ public class BranchManagerUI extends JFrame {
         }
 
         // Display Branch ID
-        JLabel branchIdLabel = new JLabel("" + employee.getBranchCode());
+        JLabel branchIdLabel = new JLabel("" + employee.getBranchId());
         branchIdLabel.setBounds(118, 145, 200, 22); // Adjust bounds as needed
         branchIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
         branchIdLabel.setForeground(Color.BLACK);
@@ -161,6 +163,88 @@ public class BranchManagerUI extends JFrame {
         // Add the background panel to the frame
         add(backgroundPanel);
     }
+
+    // Method to show the employee panel on the right side
+    private void showEmployeePanel() {
+        // Remove any existing employee panel
+        if (employeePanel != null) {
+            remove(employeePanel);
+        }
+
+        // Create a new employee panel
+        employeePanel = new JPanel();
+        employeePanel.setLayout(null); // Use null layout for absolute positioning
+        employeePanel.setBounds(menuWidth + 26, 0, getWidth() - menuWidth, getHeight()); // Set bounds of the panel
+
+        // Fetch and display all employees based on the branchId
+        int branchId =employee.getBranchId(); // Assuming 'employee' is the logged-in employee
+        List<Employee> employeeList = employeeController.getEmployeesByBranch(branchId); // Fetch employees from the DB
+
+        // Convert the list of employees to a 2D Object array for the JTable
+        String[] columnNames = {"Employee ID", "Name", "Role", "Email", "Phone", "Salary"};
+        Object[][] rowData = new Object[employeeList.size()][columnNames.length];
+        for (int i = 0; i < employeeList.size(); i++) {
+            Employee emp = employeeList.get(i);
+            rowData[i][0] = emp.getEmployeeId();
+            rowData[i][1] = emp.getUsername();
+            rowData[i][2] = emp.getPosition();
+            rowData[i][3] = emp.getEmail();
+            rowData[i][4] = emp.getPhone();
+            rowData[i][5] = emp.getSalary();
+        }
+
+        // Create a JTable to display the employees
+        JTable employeeTable = new JTable(rowData, columnNames);
+        employeeTable.setFillsViewportHeight(true);
+        employeeTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        employeeTable.setRowHeight(25);
+
+        // Style the JTable
+        employeeTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        employeeTable.getTableHeader().setBackground(new Color(70, 130, 180));
+        employeeTable.getTableHeader().setForeground(Color.WHITE);
+        employeeTable.setFont(new Font("Arial", Font.PLAIN, 12));
+
+        // Wrap the JTable in a JScrollPane
+        JScrollPane tableScrollPane = new JScrollPane(employeeTable);
+        tableScrollPane.setBounds(50, 50, getWidth() - menuWidth - 100, 400); // Set bounds for the scroll pane
+
+        // Add the JScrollPane to the employee panel
+        employeePanel.add(tableScrollPane);
+
+        // Create and add the "Add Cashier" button (use RoundedButton)
+        RoundedButton addCashierButton = new RoundedButton("Add Cashier", 20); // Set corner radius for rounded corners
+        addCashierButton.setBounds(615, 600, 280, 50); // Position and size of the button
+        addCashierButton.setBackground(new Color(0, 102, 204)); // Set button color (example blue)
+        addCashierButton.setForeground(Color.WHITE); // Set text color (white)
+        addCashierButton.addActionListener(e -> {
+            System.out.println("Add Cashier clicked");
+            // Implement Add Cashier functionality here
+        });
+        employeePanel.add(addCashierButton);
+
+        // Create and add the "Add Data Operator" button (use RoundedButton)
+        RoundedButton addDataOperatorButton = new RoundedButton("Add Data Operator", 20); // Set corner radius for rounded corners
+        addDataOperatorButton.setBounds(320, 600, 280, 50); // Position and size of the button
+        addDataOperatorButton.setBackground(new Color(73, 174, 66)); // Set button color (example green)
+        addDataOperatorButton.setForeground(Color.WHITE); // Set text color (white)
+        addDataOperatorButton.addActionListener(e -> {
+            System.out.println("Add Data Operator clicked");
+            // Implement Add Data Operator functionality here
+        });
+        employeePanel.add(addDataOperatorButton);
+
+        // Add the employee panel to the main background panel
+        backgroundPanel.add(employeePanel); // Ensure it's added to the backgroundPanel
+
+        // Revalidate and repaint to update the UI
+        revalidate();
+        repaint();
+    }
+
+
+
+
 
     // Logout action method
     private void logoutAction() {
@@ -178,23 +262,10 @@ public class BranchManagerUI extends JFrame {
         }
     }
 
-
     // Main method for testing (optional)
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Employee dummyEmployee = new Employee(
-                    "E001",                     // employeeId
-                    "john_doe",                 // username
-                    "john.doe@example.com",     // email
-                    "password123",              // password
-                    1,                        // branchCode
-                    "123 Main St, City, Country", // address
-                    new BigDecimal("5000.00"),  // salary
-                    "+1234567890",              // phone
-                    "active",                   // status
-                    new Date(),                 // joiningDate
-                    "Cashier"                   // employeeType
-            );            new BranchManagerUI(dummyEmployee).setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new BranchManagerUI(new Employee("anas1","anas","anas@gmail.com","1",1,"lhr",new BigDecimal(22222),"12345",true,new Date(),"Branch Manager"))) ;
+        }
+
     }
-}
+

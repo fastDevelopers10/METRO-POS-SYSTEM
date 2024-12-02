@@ -5,6 +5,7 @@ import Model.Employee;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.List;
 
 public class EmployeeService {
     private final EmployeeDAO employeeDAO;
@@ -20,16 +21,25 @@ public class EmployeeService {
     }
 
     // Method to update the employee password
-    public boolean updateEmployeePassword(String employeeId, String newPassword) {
-        return employeeDAO.updatePassword(employeeId, newPassword); // Call DAO to update password
+    public boolean updateEmployeePassword(String username, String newPassword) {
+        return employeeDAO.updatePassword(username, newPassword); // Call DAO to update password
     }
 
     // Method to add a new employee
-    public boolean insertEmployee(String employeeId, String username, String email, String password,
-                               int branchCode, String address, BigDecimal salary, String phone,
-                               String status, Date joiningDate, String employeeType) {
-        Employee employee = new Employee(employeeId, username, email, password, branchCode, address, salary, phone, status, joiningDate, employeeType);
+    public boolean insertEmployee( String username, String name, String email, String password,
+                               int branchId, String address, BigDecimal salary, String phone,
+                               boolean status, Date joiningDate, String position) {
+        Employee employee = new Employee( username, name, email, password, branchId, address, salary, phone, status, joiningDate, position);
         return employeeDAO.insertEmployee(employee); // Call DAO to insert employee
+    }
+    // Get a list of employees by branch ID
+    public List<Employee> getEmployeesByBranch(int branchId) {
+        try {
+            return employeeDAO.getEmployeesByBranch(branchId); // Call DAO to fetch employees
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error retrieving employees for branch ID: " + branchId, e);
+        }
     }
 
 }

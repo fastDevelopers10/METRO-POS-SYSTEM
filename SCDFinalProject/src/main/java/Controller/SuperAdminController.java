@@ -19,9 +19,9 @@ public class SuperAdminController {
     }
 
     // Method to add a new employee
-    public boolean addEmployee(String employeeId, String username, String email, String password,
+    public boolean insertEmployee(String employeeId, String username, String email, String password,
                                int branchCode, String address, BigDecimal salary, String phone,
                                String status, Date joiningDate, String employeeType) {
-        return employeeService.addEmployee(employeeId, username, email, password, branchCode, address, salary, phone, status, joiningDate, employeeType);
+        return employeeService.insertEmployee(employeeId, username, email, password, branchCode, address, salary, phone, status, joiningDate, employeeType);
     }
 }

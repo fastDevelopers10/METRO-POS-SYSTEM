@@ -19,23 +19,6 @@ public class CashierService {
         this.cart = new Bill();
     }
 
-    // Method to add a product to the cart and check for sufficient stock
-    public boolean addProductToBill(Product product, int quantity) {
-        // Logic to add a product to the cart
-        // Assuming there's a method in the Cart class to handle this
-        return cart.addProduct(product, quantity);
-    }
-
-    // Method to get the total bill (subtotal + tax)
-    public BigDecimal getTotalBill() {
-        // Return the total bill (sum of products in cart)
-        return cart.getTotalBill();
-    }
-
-    // Method to reset the cart after generating the bill
-    public void resetCart() {
-        cart.resetBill();  // Assuming clear() removes all products from the cart
-    }
 
     public boolean updateStockInDatabase(Bill cart, int branchId) throws SQLException {
         StringBuilder failedProducts = new StringBuilder(); // To store names of failed products

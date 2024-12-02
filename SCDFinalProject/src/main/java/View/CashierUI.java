@@ -5,18 +5,20 @@ import DAO.ProductDAO;
 import Model.Bill;
 import Model.Employee;
 import Model.Product;
+import Model.Transaction;
+import Service.CashierService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Date;
 import java.sql.SQLException;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
-import java.util.Objects;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 public class CashierUI extends JFrame {
@@ -35,12 +37,14 @@ public class CashierUI extends JFrame {
 
     private ProductDAO productDAO;
     private Employee employee;
+    CashierController cashierController ;
     List<String> categories;
 
 
     // Constructor to initialize the UI
     public CashierUI(Employee loggedInEmployee) {
         this.employee=loggedInEmployee;
+        this.cashierController=new CashierController();
         this.productDAO = new ProductDAO(); // Initialize with the proper constructor
         this.categories=productDAO.getUniqueCategories(employee.getBranchCode()); // Fetch categories from DAO
         cart = new Bill(); // Correct initialization of cart as Bill
@@ -563,23 +567,30 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
     private boolean updateStockInDatabase() throws SQLException {
         boolean flag=false;
-        CashierController cashierController=new CashierController();
+
       flag=  cashierController.updateStockInDatabase(cart,employee.getBranchCode());
       return flag;
+    }
+    // Method to create transactions from the cart
+    public void createTransactionsFromCart() throws SQLException {
+        // Assuming connection to database is already established
+            for (Product product : cart.getProducts()) {
+
+               cashierController.insertTransaction(employee.getBranchCode(), product.getProductId(), cart.getCart().get(product), Date.valueOf(LocalDate.now()),product.calculateProfit());//get give val of key(quantity)
+            }
+            JOptionPane.showMessageDialog(this, "Transactions recorded successfully!");
+
     }
 
     private void generateBillAction() throws SQLException {
         boolean flag=false;
-//        printBill();
+//      printBill();
 
-       flag=  updateStockInDatabase();
+        flag=  updateStockInDatabase();
         if (flag) {
-            JOptionPane.showMessageDialog(null,
-                    "Stock successfully updated for all products!",
-                    "Stock Update Success",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } else {
+            JOptionPane.showMessageDialog(null, "Bill Generated", "Information", JOptionPane.INFORMATION_MESSAGE);
 
+        }
 
             loadProductsByCategory(activeCategoryButton.getText()); // Repaint the panel to reflect changes
             cart.resetBill();
@@ -592,9 +603,10 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
             // Refresh the UI
             billItemsPanel.revalidate();
             billItemsPanel.repaint();
-        }
+
 
     }
+
 
 
     private void logoutAction() {

@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 public class DBConnection {
     private static Connection connection;
-    private static final String DB_URL = "jdbc:mysql://localhost:3306";  // Example, use your database URL
+    private static final String DB_URL = "jdbc:mysql://127.0.0.1:3306";  // Example, use your database URL
     private static final String USER = "root";  // Your MySQL username
     private static final String PASSWORD = "";  // Your MySQL password
     // Private constructor to prevent instantiation

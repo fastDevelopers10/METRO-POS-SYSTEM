@@ -3,11 +3,15 @@ package Controller;
 import Model.Bill;
 import Service.CashierService;
 
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 public class CashierController {
     private CashierService cashierService;
     public CashierController() {
+    this.cashierService =new CashierService();
 
     }
 
@@ -102,15 +106,21 @@ public class CashierController {
 //        }
 //    }
 
+    // Method to insert a transaction, receives Product and quantitySold
+    public void insertTransaction(int branchCode, int productId,int quantitySold, Date transactionDate,
+                                   BigDecimal profit) throws SQLException {
 
+        cashierService.insertTransaction(branchCode, productId,
+                quantitySold,transactionDate, profit);
+    }
 
     public boolean updateStockInDatabase(Bill cart, int branchId) throws SQLException {
-        cashierService = new CashierService(); // Ensure the service instance is initialized
         boolean updateSuccessful = false;
-
+        boolean flag;
              updateSuccessful = cashierService.updateStockInDatabase(cart, branchId);
         return updateSuccessful;
     }
 
 
 }
+

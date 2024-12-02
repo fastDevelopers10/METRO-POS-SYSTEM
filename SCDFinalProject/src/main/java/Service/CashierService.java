@@ -1,12 +1,15 @@
 package Service;
 
 import DAO.ProductDAO;
+import DAO.TransactionDAO;
 import Model.Bill;
 import Model.Product;
 
 import javax.swing.*;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Map;
 
 public class CashierService {
@@ -55,5 +58,11 @@ public class CashierService {
         }
 
         return updateSuccessful; // Return true if all updates were successful, false otherwise
+    }
+    // Method to insert transaction records via TransactionDAO
+    public boolean insertTransaction(int branchCode, int productId,
+                                     int quantitySold, Date transactionDate, BigDecimal profit) throws SQLException {
+        return TransactionDAO.insertTransactions(branchCode, productId,
+                quantitySold,transactionDate, profit);
     }
 }

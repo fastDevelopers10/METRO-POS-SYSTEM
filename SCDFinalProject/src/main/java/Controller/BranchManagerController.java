@@ -3,7 +3,7 @@ package Controller;
 import java.time.LocalDate;
 import java.util.List;
 
-public class BranchManager {
+public class BranchManagerController {
     private static int idCounter = 1000;
     private int id;
     private String name;
@@ -18,7 +18,7 @@ public class BranchManager {
     private LocalDate joiningDate;
 
     // Constructor without setting password or joining date
-    private BranchManager( String name, String address, String phoneNumber, String email, String status, double salary, int branchId) {
+    private BranchManagerController(String name, String address, String phoneNumber, String email, String status, double salary, int branchId) {
 
         this.name = name;
         this.address = address;
@@ -32,8 +32,8 @@ public class BranchManager {
         this.joiningDate = null;
     }
 
-    public static BranchManager addBranchManager(List<BranchManager> branchManagers, String name, String address, String phoneNumber, String email, String status, double salary, int branchId) {
-        BranchManager manager = new BranchManager( name, address, phoneNumber, email, status, salary, branchId);
+    public static BranchManagerController addBranchManager(List<BranchManagerController> branchManagers, String name, String address, String phoneNumber, String email, String status, double salary, int branchId) {
+        BranchManagerController manager = new BranchManagerController( name, address, phoneNumber, email, status, salary, branchId);
         manager.username = manager.name.toLowerCase() + manager.id;  // Set username as name + id
         manager.password = "123";  // Default password
         manager.joiningDate = LocalDate.now();  // Set joining date to today

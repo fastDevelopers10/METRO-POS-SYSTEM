@@ -17,34 +17,35 @@ public class ProductDAO {
         this.connection = DBConnection.getConnection();
     }
 
-    public Product getProductByName(String productName, int branchId) {
-        String query = "SELECT * FROM product WHERE product_name = ? AND branch_id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, productName);
-            statement.setInt(2, branchId);  // Use branchId for filtering the products
-
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                // Extract product data from the result set
-                String name = resultSet.getString("product_name");
-                String category = resultSet.getString("product_category");
-                BigDecimal originalPrice = resultSet.getBigDecimal("original_price");
-                BigDecimal salesPrice = resultSet.getBigDecimal("sales_price");
-                int quantity = resultSet.getInt("total_products");
-                boolean status = resultSet.getBoolean("status");
-
-                // Fetch the branch using the branchId
-                Branch branch = getBranchById(branchId);
-
-                // Return Product object created from the database values
-                return new Product(branch, name, category, originalPrice, salesPrice, quantity, status);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null; // Return null if product not found
-    }
-
+//    public Product getProductByName(String productName, int branchId) {
+//        String query = "SELECT * FROM product WHERE product_name = ? AND branch_id = ?";
+//        try (PreparedStatement statement = connection.prepareStatement(query)) {
+//            statement.setString(1, productName);
+//            statement.setInt(2, branchId);  // Use branchId for filtering the products
+//
+//            ResultSet resultSet = statement.executeQuery();
+//            if (resultSet.next()) {
+//                // Extract product data from the result set
+//                int productId = resultSet.getInt("product_id"); // Get product ID from DB
+//                String name = resultSet.getString("product_name");
+//                String category = resultSet.getString("product_category");
+//                BigDecimal originalPrice = resultSet.getBigDecimal("original_price");
+//                BigDecimal salesPrice = resultSet.getBigDecimal("sales_price");
+//                int quantity = resultSet.getInt("total_products");
+//                boolean status = resultSet.getBoolean("status");
+//
+//                // Fetch the branch using the branchId
+//                Branch branch = getBranchById(branchId);
+//
+//                // Return Product object created from the database values
+//                return new Product(productId, branch, name, category, originalPrice, salesPrice, quantity, status);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return null; // Return null if product not found
+//    }
+//
 
 
     public boolean updateStock(String productName, int quantity, int branchId) throws SQLException {
@@ -160,6 +161,7 @@ public class ProductDAO {
                 }
                 uniqueProductNames.add(name);
 
+                int productId = rs.getInt("product_id");  // Fetch product ID from DB
                 String productCategory = rs.getString("product_category");
                 BigDecimal originalPrice = rs.getBigDecimal("original_price");
                 BigDecimal salesPrice = rs.getBigDecimal("sales_price");
@@ -169,8 +171,8 @@ public class ProductDAO {
                 // Fetch the Branch object using branchId
                 Branch branch = getBranchById(branchId);  // Assuming you have a method to get Branch by ID
 
-                // Create the Product with the Branch object
-                Product product = new Product(branch, name, productCategory, originalPrice, salesPrice, quantity, status);
+                // Create the Product with the Branch object and productId
+                Product product = new Product(productId, branch, name, productCategory, originalPrice, salesPrice, quantity, status);
                 productList.add(product);
             }
         } catch (SQLException e) {
@@ -178,6 +180,7 @@ public class ProductDAO {
         }
         return productList;
     }
+
 
     // Helper method to fetch a branch by ID
     private Branch getBranchById(int branchId) {

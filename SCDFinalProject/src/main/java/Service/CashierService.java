@@ -1,12 +1,15 @@
 package Service;
 
 import DAO.ProductDAO;
+import DAO.TransactionDAO;
 import Model.Bill;
 import Model.Product;
 
 import javax.swing.*;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Map;
 
 public class CashierService {
@@ -16,23 +19,6 @@ public class CashierService {
         this.cart = new Bill();
     }
 
-    // Method to add a product to the cart and check for sufficient stock
-    public boolean addProductToBill(Product product, int quantity) {
-        // Logic to add a product to the cart
-        // Assuming there's a method in the Cart class to handle this
-        return cart.addProduct(product, quantity);
-    }
-
-    // Method to get the total bill (subtotal + tax)
-    public BigDecimal getTotalBill() {
-        // Return the total bill (sum of products in cart)
-        return cart.getTotalBill();
-    }
-
-    // Method to reset the cart after generating the bill
-    public void resetCart() {
-        cart.resetBill();  // Assuming clear() removes all products from the cart
-    }
 
     public boolean updateStockInDatabase(Bill cart, int branchId) throws SQLException {
         StringBuilder failedProducts = new StringBuilder(); // To store names of failed products
@@ -55,5 +41,11 @@ public class CashierService {
         }
 
         return updateSuccessful; // Return true if all updates were successful, false otherwise
+    }
+    // Method to insert transaction records via TransactionDAO
+    public boolean insertTransaction(int branchCode, int productId,
+                                     int quantitySold, Date transactionDate, BigDecimal profit) throws SQLException {
+        return TransactionDAO.insertTransactions(branchCode, productId,
+                quantitySold,transactionDate, profit);
     }
 }

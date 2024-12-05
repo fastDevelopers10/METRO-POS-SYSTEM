@@ -24,7 +24,7 @@ public class RoundedPanel extends JPanel {
 
 // Custom RoundedButton class
 class RoundedButton extends JButton {
-    private int cornerRadius;
+    private final int cornerRadius;
 
     public RoundedButton(String text, int radius) {
         super(text);

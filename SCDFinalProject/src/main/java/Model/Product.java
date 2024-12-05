@@ -3,6 +3,7 @@ package Model;
 import java.math.BigDecimal;
 
 public class Product {
+    private int ID;
     private Branch branch; // Now using Branch object instead of branchId
     private String name;
     private String category;
@@ -20,6 +21,10 @@ public class Product {
         this.salesPrice = salesPrice;
         this.quantity = quantity;
         this.status = status;
+    }
+
+    public Product() {
+
     }
 
     // Getters and Setters
@@ -91,5 +96,23 @@ public class Product {
                 ", quantity=" + quantity +
                 ", status=" + status +
                 '}';
+    }
+
+    public int getNoOfProducts() {
+        return 1;
+    }
+
+    public int getProductId() {
+        return 1;
+    }
+
+
+
+    public int getId() {
+        return ID;
+    }
+
+    public void setId(int id) {
+        this.ID=ID;
     }
 }

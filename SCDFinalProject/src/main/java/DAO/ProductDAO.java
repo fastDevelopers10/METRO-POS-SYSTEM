@@ -1,14 +1,13 @@
 package DAO;
 
 import Model.Branch;
+
 import Model.Product;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.Date;
 
 public class ProductDAO {
     private final Connection connection;
@@ -243,5 +242,220 @@ public class ProductDAO {
         }
         return 0;
     }
+    public List<Product> getProductsByBranchWithSearch(int branchId, String searchQuery) {
+        String query = "SELECT * FROM product WHERE branch_id = ? AND " +
+                "(product_name LIKE ? OR product_category LIKE ?)";
+        List<Product> products = new ArrayList<>();
+
+        try (PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, branchId);
+            statement.setString(2, "%" + searchQuery + "%");
+            statement.setString(3, "%" + searchQuery + "%");
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                String name = resultSet.getString("product_name");
+                String category = resultSet.getString("product_category");
+                BigDecimal originalPrice = resultSet.getBigDecimal("original_price");
+                BigDecimal salesPrice = resultSet.getBigDecimal("sales_price");
+                int quantity = resultSet.getInt("total_products");
+                boolean status = resultSet.getBoolean("status");
+
+                Branch branch = getBranchById(branchId); // Existing method in ProductDAO
+                Product product = new Product(branch, name, category, originalPrice, salesPrice, quantity, status);
+                products.add(product);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return products;
+    }
+
+    public List<String> fetchVendors() {
+        List<String> vendors = new ArrayList<>();
+        String query = "SELECT vendor_id, name FROM vendor WHERE status = TRUE";
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String vendorName = rs.getString("name");
+                // Add vendor name to the list
+                vendors.add(vendorName);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return vendors;
+    }
+
+    public List<String> fetchProductsByBranch(int branchId) {
+        String query = "SELECT DISTINCT product_name FROM product WHERE branch_id = ?";
+        List<String> productList = new ArrayList<>();
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, branchId); // Bind branch ID
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String name = rs.getString("product_name");
+                productList.add(name.trim()); // Add only product names
+            }
+        } catch (SQLException e) {
+            e.printStackTrace(); // Handle exceptions appropriately
+        }
+
+        return productList;
+    }
+
+    public boolean addNewProduct(int branchId, int vendorId, String name, String category, int totalProducts,
+                                 double originalPrice, double salesPrice, Date purchaseDate) {
+        String productQuery = "INSERT INTO product (branch_id, product_name, product_category, total_products, original_price, sales_price, status) VALUES (?, ?, ?, ?, ?, ?, TRUE)";
+        String vendorProductQuery = "INSERT INTO vendor_product (vendor_id, branch_id, product_name, product_category, cartons_purchased, items_per_carton, original_price, sales_price, status, purchase_date) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, TRUE, ?)";
+
+        try (Connection connection = DBConnection.getConnection()) {
+            connection.setAutoCommit(false);
+
+            // Insert into the product table
+            try (PreparedStatement productStmt = connection.prepareStatement(productQuery, Statement.RETURN_GENERATED_KEYS)) {
+                productStmt.setInt(1, branchId);
+                productStmt.setString(2, name);
+                productStmt.setString(3, category);
+                productStmt.setInt(4, totalProducts);
+                productStmt.setDouble(5, originalPrice);
+                productStmt.setDouble(6, salesPrice);
+                productStmt.executeUpdate();
+
+                ResultSet rs = productStmt.getGeneratedKeys();
+                if (rs.next()) {
+                    int productId = rs.getInt(1);  // Retrieve generated product_id
+
+                    // Insert into the vendor_product table with the generated product_id
+                    try (PreparedStatement vendorProductStmt = connection.prepareStatement(vendorProductQuery)) {
+                        vendorProductStmt.setInt(1, vendorId);
+                        vendorProductStmt.setInt(2, branchId);
+                        vendorProductStmt.setString(3, name);
+                        vendorProductStmt.setString(4, category);
+                        vendorProductStmt.setInt(5, totalProducts);
+                        vendorProductStmt.setInt(6, 1); // Default items per carton
+                        vendorProductStmt.setDouble(7, originalPrice);
+                        vendorProductStmt.setDouble(8, salesPrice);
+                        vendorProductStmt.setDate(9, new java.sql.Date(purchaseDate.getTime())); // Set the purchase date
+                        vendorProductStmt.executeUpdate();
+                    }
+                }
+            }
+
+            connection.commit();  // Commit the transaction
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateExistingProduct(int branchId, int vendorId, int productId, int totalProducts,
+                                         double originalPrice, double salesPrice, Date purchaseDate) {
+        String updateProductQuery = "UPDATE product SET total_products = total_products + ?, original_price = ?, sales_price = ? WHERE product_id = ? AND branch_id = ?";
+        String vendorProductQuery = "INSERT INTO vendor_product (vendor_id, branch_id, product_id, product_name, product_category, cartons_purchased, items_per_carton, original_price, sales_price, status, purchase_date) " +
+                "SELECT ?, ?, product_id, product_name, product_category, ?, ?, ?, ?, TRUE, ? FROM product WHERE product_id = ?";
+
+        try (Connection connection = DBConnection.getConnection()) {
+            connection.setAutoCommit(false);
+
+            // Update product table
+            try (PreparedStatement productStmt = connection.prepareStatement(updateProductQuery)) {
+                productStmt.setInt(1, totalProducts);
+                productStmt.setDouble(2, originalPrice);
+                productStmt.setDouble(3, salesPrice);
+                productStmt.setInt(4, productId);
+                productStmt.setInt(5, branchId);
+                productStmt.executeUpdate();
+            }
+
+            // Insert into vendor_product table
+            try (PreparedStatement vendorProductStmt = connection.prepareStatement(vendorProductQuery)) {
+                vendorProductStmt.setInt(1, vendorId);
+                vendorProductStmt.setInt(2, branchId);
+                vendorProductStmt.setInt(3, totalProducts);
+                vendorProductStmt.setInt(4, 1); // Default items per carton
+                vendorProductStmt.setDouble(5, originalPrice);
+                vendorProductStmt.setDouble(6, salesPrice);
+                vendorProductStmt.setDate(7, new java.sql.Date(purchaseDate.getTime())); // Set the purchase date
+                vendorProductStmt.setInt(8, productId);
+                vendorProductStmt.executeUpdate();
+            }
+
+            connection.commit();  // Commit the transaction
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+    }
+    public boolean productExistsForBranch(int branchId, String productName, String category) {
+        String query = "SELECT COUNT(*) FROM product WHERE branch_id = ? AND product_name = ? AND product_category = ?";
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, branchId);
+            stmt.setString(2, productName);
+            stmt.setString(3, category);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;  // Returns true if product exists
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    public boolean addOrUpdateProduct(int branchId, int vendorId, int productId, String name, String category,
+                                      int cartons, int itemsPerCarton, double originalPrice, double salesPrice,
+                                      Date purchaseDate) {
+        int totalProducts = cartons * itemsPerCarton;
+
+        // Check if product exists for the branch and category
+        if (productId == -1) {
+            if (productExistsForBranch(branchId, name, category)) {
+                // Product exists, update it
+                int existingProductId = getProductId(branchId, name, category); // Fetch existing product ID
+                return updateExistingProduct(branchId, vendorId, existingProductId, totalProducts, originalPrice, salesPrice, purchaseDate);
+            } else {
+                // Add new product
+                return addNewProduct(branchId, vendorId, name, category, totalProducts, originalPrice, salesPrice, purchaseDate);
+            }
+        } else {
+            // Update existing product directly
+            return updateExistingProduct(branchId, vendorId, productId, totalProducts, originalPrice, salesPrice, purchaseDate);
+        }
+
+    }
+
+    public int getProductId(int branchId, String productName, String category) {
+        String query = "SELECT product_id FROM product WHERE branch_id = ? AND product_name = ? AND product_category = ?";
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, branchId);
+            stmt.setString(2, productName);
+            stmt.setString(3, category);
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("product_id");  // Return the existing product ID
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;  // Return -1 if product doesn't exist
+    }
+
+
+
 
 }

@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import javax.swing.border.EmptyBorder;
@@ -12,17 +14,24 @@ import java.io.IOException;
 
 public class DataOperatorUI extends JFrame {
     private BufferedImage backgroundImage;
-    private JButton activeButton = null; // To track the active button
+
+    private SideMenuButton activebtn = null;
+    private JPanel sideMenuPanel;
 
     public DataOperatorUI() {
         setTitle("Data Operator Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1320, 710); // Set a default size for the window
+        // Set icon
+
+        setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
+
         setResizable(false);
+
 
         // Load the background image
         try {
-            backgroundImage = ImageIO.read(new File("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\DOPN.png"));
+            backgroundImage = ImageIO.read(new File("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\DOP.png"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -43,7 +52,7 @@ public class DataOperatorUI extends JFrame {
         backgroundPanel.setBounds(0, 0, getWidth(), getHeight()); // Ensure background covers the frame
 
         // Create the side menu panel
-        JPanel sideMenuPanel = new JPanel();
+        sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(new GridBagLayout());
         sideMenuPanel.setBackground(Color.WHITE);
         int menuYPosition = 250; // Default Y position of side menu
@@ -59,27 +68,85 @@ public class DataOperatorUI extends JFrame {
         // Button texts and icon paths
         String[] buttonTexts = {"Dashboard", "Change Password", "Add Product", "Add Vendor", "Add Category", "LogOut"};
         String[] iconPaths = {
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\dash_icon.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\pass_icon.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\product.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\inventory.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\category.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logout.png"
+                "\\images\\icons\\dash_icon.png",
+                "\\images\\icons\\pass_icon.png",
+                "\\images\\icons\\product.png",
+                "\\images\\icons\\inventory.png",
+                "\\images\\icons\\category.png",
+                "\\images\\icons\\logout.png"
         };
 
-        // Create buttons and add them to the side menu panel
         for (int i = 0; i < buttonTexts.length; i++) {
             SideMenuButton button = new SideMenuButton(buttonTexts[i], iconPaths[i]);
 
-            // Add action listener
-            button.addActionListener(e -> {
-                if (activeButton != null) {
-                    ((SideMenuButton) activeButton).setActive(false);
-                }
-                button.setActive(true);
-                activeButton = button;
-                System.out.println("Button clicked: " + button.getText());
-            });
+            // Add action listener specific to each button
+            switch (i) {
+                case 0: // Dashboard button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("Dashboard clicked");
+                        // Add your logic for Dashboard button here
+                    });
+                    break;
+                case 1: // Change Password button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("Change Password clicked");
+                        // Add your logic for Change Password button here
+                    });
+                    break;
+                case 2: // Add Product button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("Add Product clicked");
+                        AddProduct addProductWindow = new AddProduct(1);
+                        addProductWindow.setVisible(true);
+
+                        // Add WindowListener to reset active button when the window is closed
+                        addProductWindow.addWindowListener(new WindowAdapter() {
+                            @Override
+                            public void windowClosed(WindowEvent e) {
+                                // Reset active button to Dashboard when the window is closed
+                                addProductWindow.dispose();
+                                resetActiveButtonToDashboard();
+                            }
+                        });
+                    });
+                    break;
+                case 3: // Add Vendor button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);  // Set the clicked button as active
+                        AddVendor addVendorWindow = new AddVendor();
+                        addVendorWindow.setVisible(true);
+
+                        // Add WindowListener to reset active button when the window is closed
+                        addVendorWindow.addWindowListener(new WindowAdapter() {
+                            @Override
+                            public void windowClosed(WindowEvent e) {
+                                // Reset active button to Dashboard when the window is closed
+                                addVendorWindow.dispose();
+                                resetActiveButtonToDashboard();
+
+                            }
+                        });
+                    });
+                    break;
+
+                case 4: // Add Category button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("Add Category clicked");
+                        // Add your logic for Add Category button here
+                    });
+                    break;
+                case 5: // LogOut button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("LogOut clicked");
+                        // Add your logic for LogOut button here
+                    });
+                    break;
+            }
 
             gbc.gridy = i; // Set the row for the button
             gbc.weighty = 0; // Don't let buttons take up any extra vertical space
@@ -88,16 +155,17 @@ public class DataOperatorUI extends JFrame {
             // Set the first button as the active button by default
             if (i == 0) {
                 button.setActive(true);
-                activeButton = button;
+                activebtn = button;
             }
+
+
         }
 
-        // Add vertical space after the buttons to push them upward (using a "filler" component)
+// Add vertical space after the buttons to push them upward (using a "filler" component)
         gbc.gridy = buttonTexts.length; // Set after all buttons
         gbc.weighty = 1.0; // Give the filler component vertical space
         gbc.fill = GridBagConstraints.VERTICAL; // Allow filler to take vertical space
         sideMenuPanel.add(new JLabel(" "), gbc); // Add an empty label as a filler
-
 
 
         // Create the layered pane for stacking components
@@ -137,8 +205,28 @@ public class DataOperatorUI extends JFrame {
         VendorBTN.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                JDialog dialog = new JDialog((Frame) null, "Vendors", true);
+                dialog.setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
+                // Manually set position and size for the dialog window
+                dialog.setBounds(275, 0, 1020, 800); // Position it 200px from top left and size it 800x500px
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                // Create the panel
+                VendorTablePanel panel = new VendorTablePanel();
+                dialog.add(panel);
+
+                // Set bounds manually for the table
+                panel.setTableBounds(50, 50, 700, 350); // Set table bounds manually (x, y, width, height)
+
+                // Create a JScrollPane and manually set bounds for it as well
+                JScrollPane scrollPane = new JScrollPane(panel.vendorTable);
+                scrollPane.setBounds(50, 50, 700, 350); // Set bounds for JScrollPane manually
+                dialog.add(scrollPane);  // Add scroll pane to dialog
+
+                dialog.setVisible(true); // Show the dialog
 
             }
+
         });
         // Add label and button to VendorPanel
         VendorPanel.add(VendorLB, BorderLayout.WEST); // Add label on the left
@@ -193,10 +281,23 @@ public class DataOperatorUI extends JFrame {
         productspanel.add(productslb, BorderLayout.WEST); // Add label on the left
         productspanel.add(productsbtn, BorderLayout.EAST); // Add button on the right
 
-        // Add an action listener to the productsbtn
-//        productsbtn.addActionListener(e -> {
-//
-//        });
+         ////Add an action listener to the productsbtn
+        productsbtn.addActionListener(e -> {
+            JFrame frame = new JFrame("Product Table - Branch 1");
+            frame.setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
+            // Manually set position and size for the dialog window
+            frame.setBounds(275, 0, 1020, 800); // Position it 200px from top left and size it 800x500px
+            frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            // Create an instance of ProductTable with branchId = 1
+            ProductTablePanel productTable = new ProductTablePanel(1);
+
+            // Add the ProductTable JPanel to the frame
+            frame.add(productTable);
+
+            // Make the frame visible
+            frame.setVisible(true);
+        });
 
         transparentPanel.add(VendorPanel);
         transparentPanel.add(categoryPanel);
@@ -208,7 +309,33 @@ public class DataOperatorUI extends JFrame {
         setContentPane(layeredPane);
         // Make the frame visible
         setVisible(true);
+
     }
+    private void handleButtonClick(SideMenuButton button) {
+        // Deactivate the previously active button if it exists
+        if (activebtn != null) {
+            activebtn.setActive(false);
+        }
+
+        // Set the clicked button as the active button
+        button.setActive(true);
+        activebtn = button;
+    }
+
+    private void resetActiveButtonToDashboard() {
+        if (activebtn != null) {
+            activebtn.setActive(false); // Deactivate the current active button
+        }
+
+        // Assume the first button (Dashboard) is the default
+        Component[] components = sideMenuPanel.getComponents();
+        if (components.length > 0 && components[0] instanceof SideMenuButton) {
+            SideMenuButton dashboardButton = (SideMenuButton) components[0];
+            dashboardButton.setActive(true); // Activate the default button
+            activebtn = dashboardButton; // Update the activeButton reference
+        }
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(DataOperatorUI::new);
     }

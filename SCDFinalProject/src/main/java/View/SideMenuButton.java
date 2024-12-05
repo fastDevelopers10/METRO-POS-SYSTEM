@@ -3,7 +3,7 @@ package View;
 import javax.swing.*;
 import java.awt.*;
 
-public class SideMenuButton extends JButton {
+public  class SideMenuButton extends JButton {
     private static final Color DEFAULT_COLOR = Color.WHITE;
     private static final Color ACTIVE_COLOR = new Color(200, 229, 220);
     private static final Font DEFAULT_FONT = new Font("Century Gothic", Font.PLAIN, 14);

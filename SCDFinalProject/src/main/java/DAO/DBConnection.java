@@ -18,10 +18,10 @@ public class DBConnection {
             if (connection == null || connection.isClosed()) {
                 // Establish connection
                 connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
-                // Select the database after connecting
+
                 Statement stmt = connection.createStatement();
-                stmt.executeUpdate("USE METRO_POS_SYSTEM;");
-            }
+
+                createDatabaseAndTables();            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -44,9 +44,6 @@ public class DBConnection {
             createTransactionTable(stmt);
             createVendorProductTable(stmt);
             createEmployeeTable(stmt);
-
-            // Create triggers
-            createTriggers(stmt);
 
             System.out.println("Tables and triggers created successfully.");
         } catch (SQLException e) {
@@ -94,15 +91,10 @@ public class DBConnection {
                         "vendor_id INT AUTO_INCREMENT PRIMARY KEY, " +  // Unique ID for the vendor
                         "name VARCHAR(100) NOT NULL, " +  // Vendor name (required field)
                         "phone VARCHAR(20), " +  // Phone number of the vendor
-                        "no_of_cartons INT, " +  // Number of cartons the vendor provides
-                        "no_of_products_in_carton INT, " +  // Number of products in each carton
-                        "category VARCHAR(50), " +  // Category the vendor belongs to
-                        "carton_price DECIMAL(10, 2), " +  // Price per carton (with 2 decimal places)
                         "status BOOLEAN DEFAULT TRUE" +  // Status to indicate if the vendor is active
                         ")"
         );
     }
-
 
     private static void createProductTable(Statement stmt) throws SQLException {
         stmt.executeUpdate(
@@ -115,8 +107,8 @@ public class DBConnection {
                         "original_price DECIMAL(10, 2), " +
                         "sales_price DECIMAL(10, 2), " +
                         "status BOOLEAN DEFAULT TRUE, " +
-                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
-                        "UNIQUE(product_name, product_category)" +
+                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id) " +
+
                         ")"
         );
     }
@@ -162,58 +154,25 @@ public class DBConnection {
 
     private static void createEmployeeTable(Statement stmt) throws SQLException {
         stmt.executeUpdate(
-                "CREATE TABLE IF NOT EXISTS employee (" +
-                        "employee_id INT AUTO_INCREMENT PRIMARY KEY, " +
-                        "email VARCHAR(100) UNIQUE NOT NULL, " +  // Added email field (unique)
-                        "username VARCHAR(50) UNIQUE NOT NULL, " +  // Added username field (unique)
-                        "password VARCHAR(50) NOT NULL, " +  // Ensure password is not nullable
-                        "name VARCHAR(100) NOT NULL, " +
-                        "position VARCHAR(50) NOT NULL, " +
-                        "branch_id INT NOT NULL, " +  // Assuming there is a foreign key for branch_id
-                        "status BOOLEAN DEFAULT TRUE, " +  // Status column
-                        "first_time_joined BOOLEAN DEFAULT TRUE, " +  // Whether the employee is joining for the first time
-                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id) ON DELETE CASCADE" + // Foreign key constraint
-                        ")"
+                "CREATE TABLE IF NOT EXISTS employee (\n" +
+                        "    employee_id INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                        "    name VARCHAR(100) NOT NULL,\n" +
+                        "    position ENUM('Branch Manager', 'Cashier', 'Data Operator') NOT NULL,\n" +
+                        "    email VARCHAR(100),\n" +
+                        "    branch_id INT,\n" +
+                        "    address VARCHAR(255),\n" +
+                        "    phone_number VARCHAR(15),\n" +
+                        "    salary DECIMAL(10, 2),\n" +
+                        "    joining_date DATE DEFAULT CURRENT_DATE,\n" +
+                        "    username VARCHAR(50) UNIQUE NOT NULL,\n" +
+                        "    password VARCHAR(50) UNIQUE NOT NULL,\n" +
+                        "    status ENUM('active', 'inactive') DEFAULT 'active',\n" +
+                        "    first_time_joined BOOLEAN DEFAULT TRUE,\n" +
+                        "    FOREIGN KEY (branch_id) REFERENCES branch(branch_id)\n" +
+                        ") ENGINE=InnoDB;\n"
         );
     }
 
-    private static void createTriggers(Statement stmt) throws SQLException {
-        // Check if the trigger exists
-        String checkTriggerExists = "SELECT COUNT(*) " +
-                "FROM information_schema.triggers " +
-                "WHERE trigger_name = 'update_product_on_purchase' " +
-                "AND trigger_schema = 'metro_pos_system';";
-        var resultSet = stmt.executeQuery(checkTriggerExists);
-        if (resultSet.next() && resultSet.getInt(1) == 0) {
-            // Create trigger if it doesn't exist
-            stmt.executeUpdate(
-                    "CREATE TRIGGER update_product_on_purchase " +
-                            "AFTER INSERT ON vendor_product " +
-                            "FOR EACH ROW " +
-                            "BEGIN " +
-                            "   DECLARE prod_id INT; " +
-                            "   SELECT product_id INTO prod_id " +
-                            "   FROM product " +
-                            "   WHERE product_name = NEW.product_name AND product_category = NEW.product_category; " +
-                            "   IF prod_id IS NULL THEN " +
-                            "       INSERT INTO product (product_name, product_category, total_products, original_price, sales_price, branch_id, status) " +
-                            "       VALUES (NEW.product_name, NEW.product_category, NEW.products_purchased, NEW.original_price, NEW.sales_price, NEW.branch_id, TRUE); " +
-                            "       SET prod_id = LAST_INSERT_ID(); " +
-                            "   ELSE " +
-                            "       UPDATE product " +
-                            "       SET total_products = total_products + NEW.products_purchased " +
-                            "       WHERE product_id = prod_id; " +
-                            "   END IF; " +
-                            "   UPDATE vendor_product " +
-                            "   SET product_id = prod_id " +
-                            "   WHERE relation_id = NEW.relation_id; " +
-                            "END"
-            );
-            System.out.println("Trigger 'update_product_on_purchase' created.");
-        } else {
-            System.out.println("Trigger 'update_product_on_purchase' already exists.");
-        }
-    }
 
     // Main method to initialize the DB connection and setup
     public static void main(String[] args) {

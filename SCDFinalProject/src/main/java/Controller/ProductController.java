@@ -58,8 +58,6 @@ public class ProductController {
 
     }
 
-
-
     public List<String> getCategories(int branchId) {
         return productService.getCategoriesByBranch(branchId);
     }

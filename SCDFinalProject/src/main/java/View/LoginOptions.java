@@ -17,6 +17,16 @@ public class LoginOptions extends JFrame {
         setSize(screenSize);
         setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
         setResizable(false);
+        try {
+            // Use the class loader to load the image resource
+            ImageIcon icon = new ImageIcon(
+                    Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+            );
+            setIconImage(icon.getImage());
+        } catch (NullPointerException exe) {
+            exe.printStackTrace();
+            System.err.println("Error: Unable to load frame icon image.");
+        }
 
         // Load background image
         try {

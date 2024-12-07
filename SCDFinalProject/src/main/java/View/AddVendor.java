@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.Objects;
 
 public class AddVendor extends JFrame {
     private JTextField nameField;
@@ -21,7 +22,17 @@ public class AddVendor extends JFrame {
         setSize(600, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(null);
-        setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
+
+        try {
+            ImageIcon icon = new ImageIcon(
+                    Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+            );
+            setIconImage(icon.getImage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            System.err.println("Error: Unable to load icon image.");
+        }
+
         setLocationRelativeTo(null); // Center the window
         getContentPane().setBackground(Color.decode("#CCD4E5"));
 

@@ -6,6 +6,7 @@ import Model.Vendor;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.util.Objects;
 
 public class VendorEditDialog extends JDialog {
     private final VendorController vendorController;
@@ -24,6 +25,17 @@ public class VendorEditDialog extends JDialog {
         super(parent, "Edit Vendor", true);
         this.vendorController = new VendorController();
         this.vendor = vendor;
+
+        try {
+            ImageIcon icon = new ImageIcon(
+                    Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+            );
+            setIconImage(icon.getImage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            System.err.println("Error: Unable to load icon image.");
+        }
+
 
         // Default size and position settings
         setSize(dialogWidth, dialogHeight);

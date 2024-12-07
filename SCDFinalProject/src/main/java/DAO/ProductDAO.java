@@ -116,25 +116,37 @@ public class ProductDAO {
         }
     }
 
-
-
     public List<String> getUniqueCategories(int branchId) {
         List<String> categories = new ArrayList<>();
         String query = "SELECT DISTINCT product_category FROM product WHERE branch_id = ?";
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, branchId);  // Use branchId to filter categories
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    categories.add(resultSet.getString("product_category"));
+        // Check connection validity at the start
+        try (Connection connection = DBConnection.getConnection()) {
+            if (connection == null || connection.isClosed()) {
+                System.err.println("Invalid database connection.");
+                return categories;
+            }
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, branchId);  // Use branchId to filter categories
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        categories.add(resultSet.getString("product_category"));
+                    }
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.err.println("Error fetching unique categories: " + e.getMessage());
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("Error fetching unique categories: " + e.getMessage());
+            System.err.println("Failed to get connection: " + e.getMessage());
         }
+
+        System.out.println(categories);  // Debugging output
         return categories;
     }
+
 
     public List<Product> getProductsByCategory(String category, int branchId) {
         String query = "SELECT * FROM product WHERE product_category = ? AND branch_id = ?";
@@ -485,12 +497,13 @@ public class ProductDAO {
         String query = "SELECT COUNT(*) FROM product WHERE branch_id = ?";
         int count = 0;
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnection.getConnection(); // Create a new connection
+             PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, branchId);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                count = rs.getInt(1);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -498,6 +511,7 @@ public class ProductDAO {
 
         return count;
     }
+
     public int getVendorCount() {
         String query = "SELECT COUNT(*) FROM vendor";
         int count = 0;

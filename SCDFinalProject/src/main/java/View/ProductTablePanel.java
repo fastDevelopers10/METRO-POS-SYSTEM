@@ -25,10 +25,12 @@ public class ProductTablePanel extends JPanel {
         setLayout(null);
         initializeComponents();
         loadProducts("");
+
     }
 
     private void initializeComponents() {
         // Search bar
+
         JLabel searchLabel = new JLabel("Search:");
         searchLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
         searchLabel.setBounds(50, 20, 60, 30);
@@ -135,7 +137,16 @@ public class ProductTablePanel extends JPanel {
 //    public static void main(String[] args) {
 //        SwingUtilities.invokeLater(() -> {
 //            JFrame frame = new JFrame("Product Table - Branch 1");
-//            frame.setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
+//
+//        try {
+//            ImageIcon icon = new ImageIcon(
+//                    Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+//            );
+//            setIconImage(icon.getImage());
+//        } catch (NullPointerException e) {
+//            e.printStackTrace();
+//            System.err.println("Error: Unable to load icon image.");
+//        }
 //            frame.setBounds(275, 0, 1020, 800);
 //            frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 //

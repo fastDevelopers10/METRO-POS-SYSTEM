@@ -30,7 +30,6 @@ public class ProductService {
     }
 
     public List<String> getCategoriesByBranch(int branchId) {
-        System.out.println(productDAO.getUniqueCategories(branchId));
         return productDAO.getUniqueCategories(branchId);
 
     }

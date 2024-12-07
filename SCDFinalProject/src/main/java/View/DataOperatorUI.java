@@ -23,12 +23,15 @@ public class DataOperatorUI extends JFrame {
     ProductController controller = new ProductController();
     private SideMenuButton activebtn = null;
     private JPanel sideMenuPanel;
+    private JLabel TotalVendors,TotalProducts;
+    private final int branchnumber;
+
 
     public DataOperatorUI(Employee loggedInEmployee) {
         this.employee = loggedInEmployee;
         String name=loggedInEmployee.getName();
         String role= loggedInEmployee.getPosition();
-        int branchnumber=loggedInEmployee.getBranchId();
+        this.branchnumber=loggedInEmployee.getBranchId();
 
         setTitle("Data Operator Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -87,12 +90,12 @@ public class DataOperatorUI extends JFrame {
         branchLabel.setForeground(Color.BLACK);
         branchLabel.setBounds(445, 67, 300, 30);
 
-        JLabel TotalProducts = new JLabel(String.valueOf(controller.getProductCountByBranch(branchnumber)));
+        TotalProducts = new JLabel(String.valueOf(controller.getProductCountByBranch(branchnumber)));
         TotalProducts.setFont(new Font("Century Gothic", Font.PLAIN, 24));
         TotalProducts.setForeground(Color.BLACK);
         TotalProducts.setBounds(320, 170, 300, 30);
 
-        JLabel TotalVendors = new JLabel(String.valueOf(controller.getVendorCountByBranch()));
+        TotalVendors = new JLabel(String.valueOf(controller.getVendorCountByBranch()));
         TotalVendors.setFont(new Font("Century Gothic", Font.PLAIN, 24));
         TotalVendors.setForeground(Color.BLACK);
         TotalVendors.setBounds(560, 170, 300, 30);
@@ -159,6 +162,7 @@ public class DataOperatorUI extends JFrame {
                             public void windowClosed(WindowEvent e) {
                                 // Reset active button to Dashboard when the window is closed
                                 addProductWindow.dispose();
+                                updateLabelProduct();
                                 resetActiveButtonToDashboard();
                             }
                         });
@@ -176,6 +180,7 @@ public class DataOperatorUI extends JFrame {
                             public void windowClosed(WindowEvent e) {
                                 // Reset active button to Dashboard when the window is closed
                                 addVendorWindow.dispose();
+                                updateLabelVendor();
                                 resetActiveButtonToDashboard();
 
                             }
@@ -272,21 +277,27 @@ public class DataOperatorUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JDialog dialog = new JDialog((Frame) null, "Vendors", true);
-                dialog.setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
-                // Manually set position and size for the dialog window
+                try {
+
+                    ImageIcon icon = new ImageIcon(
+                            Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+                    );
+                    dialog.setIconImage(icon.getImage());
+                } catch (NullPointerException exe) {
+                    exe.printStackTrace();
+                    System.err.println("Error: Unable to load frame icon image.");
+                }
+
                 dialog.setBounds(275, 0, 1020, 800); // Position it 200px from top left and size it 800x500px
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-                // Create the panel
                 VendorTablePanel panel = new VendorTablePanel();
                 dialog.add(panel);
 
-                // Set bounds manually for the table
-                panel.setTableBounds(50, 50, 700, 350); // Set table bounds manually (x, y, width, height)
+                panel.setTableBounds(50, 50, 700, 350);
 
-                // Create a JScrollPane and manually set bounds for it as well
                 JScrollPane scrollPane = new JScrollPane(panel.vendorTable);
-                scrollPane.setBounds(50, 50, 700, 350); // Set bounds for JScrollPane manually
+                scrollPane.setBounds(50, 50, 700, 350);
                 dialog.add(scrollPane);  // Add scroll pane to dialog
 
                 dialog.setVisible(true); // Show the dialog
@@ -325,15 +336,28 @@ public class DataOperatorUI extends JFrame {
 
             JDialog categoriesDialog = new JDialog();
             categoriesDialog.setTitle("Categories");
-            categoriesDialog.setSize(300, 300);
+            categoriesDialog.setSize(400, 500); // Increased size for better scroll panel display
+            categoriesDialog.setLocationRelativeTo(null); // Center dialog on screen
+
+            try {
+                // Use the class loader to load the image resource
+                ImageIcon icon = new ImageIcon(
+                        Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+                );
+                categoriesDialog.setIconImage(icon.getImage());
+            } catch (NullPointerException exe) {
+                exe.printStackTrace();
+                System.err.println("Error: Unable to load frame icon image.");
+            }
 
             JPanel categoriesPanel = new JPanel();
-            categoriesPanel.setLayout(null); // Use null layout for custom positioning
+            categoriesPanel.setLayout(new BoxLayout(categoriesPanel, BoxLayout.Y_AXIS)); // Use Y-axis layout for vertical display
             categoriesPanel.setBackground(Color.decode("#CCD4E5"));
 
+            // Centered heading label
             JLabel headingLabel = new JLabel("Categories", JLabel.CENTER);
             headingLabel.setFont(new Font("Century Gothic", Font.BOLD, 20));
-            headingLabel.setBounds(0, 20, categoriesDialog.getWidth(), 40); // Centered heading
+            headingLabel.setBounds(10, 20, categoriesDialog.getWidth() - 20, 40); // Position centered
             categoriesPanel.add(headingLabel);
 
             if (categories != null && !categories.isEmpty()) {
@@ -341,24 +365,25 @@ public class DataOperatorUI extends JFrame {
                 for (String category : categories) {
                     JLabel categoryLabel = new JLabel(category);
                     categoryLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
-                    categoryLabel.setBounds(10, yPosition, categoriesDialog.getWidth() - 20, 30); // 10px from left, adjusted width
+                    categoryLabel.setBounds(10, yPosition, categoriesDialog.getWidth() - 20, 30); // 10 pixels away from x of dialog
                     categoriesPanel.add(categoryLabel);
                     yPosition += 40; // Space between categories
                 }
             } else {
                 JLabel noCategoryLabel = new JLabel("No categories available.");
                 noCategoryLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
-                noCategoryLabel.setBounds(10, 70, categoriesDialog.getWidth() - 20, 30); // 10px from left
+                noCategoryLabel.setBounds(10, 70, categoriesDialog.getWidth() - 20, 30); // 10 pixels away from x of dialog
                 categoriesPanel.add(noCategoryLabel);
             }
 
-            categoriesDialog.add(categoriesPanel);
+            JScrollPane scrollPane = new JScrollPane(categoriesPanel); // Wrap the panel in a JScrollPane
+            scrollPane.setPreferredSize(new Dimension(380, 500)); // Set preferred size for the scroll pane
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Ensure the scrollbar is always displayed
+            categoriesDialog.add(scrollPane); // Add the scroll pane to the dialog
+
             categoriesDialog.setModal(true);
-            categoriesDialog.setLocationRelativeTo(null); // Center dialog on screen
             categoriesDialog.setVisible(true);
         });
-
-
 
 
         RoundedPanel productspanel = new RoundedPanel(8);
@@ -386,8 +411,17 @@ public class DataOperatorUI extends JFrame {
         ////Add an action listener to the productsbtn
         productsbtn.addActionListener(e -> {
             JFrame frame = new JFrame("Product Table"+ branchnumber);
-            frame.setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
-            // Manually set position and size for the dialog window
+            try {
+                // Use the class loader to load the image resource
+                ImageIcon icon = new ImageIcon(
+                        Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+                );
+                frame.setIconImage(icon.getImage());
+            } catch (NullPointerException exe) {
+                exe.printStackTrace();
+                System.err.println("Error: Unable to load frame icon image.");
+            }
+
             frame.setBounds(275, 0, 1020, 800); // Position it 200px from top left and size it 800x500px
             frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
@@ -438,4 +472,13 @@ public class DataOperatorUI extends JFrame {
             activebtn = dashboardButton; // Update the activeButton reference
         }
     }
+    private void updateLabelVendor() {
+
+        TotalVendors.setText(String.valueOf(controller.getVendorCountByBranch()));
+    }
+    private void updateLabelProduct() {
+
+        TotalProducts.setText(String.valueOf(controller.getProductCountByBranch(branchnumber)));
+    }
+
 }

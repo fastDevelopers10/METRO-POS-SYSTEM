@@ -1,6 +1,5 @@
 package View;
 
-
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
@@ -56,5 +55,20 @@ public class ButtonColumn extends AbstractCellEditor implements TableCellRendere
     @Override
     public Object getCellEditorValue() {
         return text;
+    }
+
+    public int getRowFromActionEvent(ActionEvent event) {
+        Object source = event.getSource();
+        if (source instanceof JButton) {
+            JButton sourceButton = (JButton) source;
+            for (int row = 0; row < table.getRowCount(); row++) {
+                if (table.getCellRenderer(row, column) instanceof ButtonColumn) {
+                    if (table.isCellSelected(row, column)) {
+                        return row;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 }

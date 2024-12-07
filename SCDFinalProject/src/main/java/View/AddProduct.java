@@ -145,14 +145,11 @@ public class AddProduct extends JFrame {
         add(salesPriceField);
         add(submitButton);
 
-        // Load data into dropdowns
         loadVendors();
         loadProductsAndCategories();
 
-        // Add action listeners
         submitButton.addActionListener(e -> handleSubmit());
 
-        // Add text change listeners for enabling/disabling dropdowns
         newCategoryField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
             public void insertUpdate(javax.swing.event.DocumentEvent e) {
@@ -287,9 +284,7 @@ public class AddProduct extends JFrame {
             JOptionPane.showMessageDialog(this, "Please enter valid numeric values.");
         }
     }
-
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new AddProduct(1).setVisible(true));
-    }
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> new AddProduct(1).setVisible(true));
+//    }
 }

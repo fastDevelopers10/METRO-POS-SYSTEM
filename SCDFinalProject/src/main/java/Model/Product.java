@@ -13,7 +13,7 @@ public class Product {
     private boolean status;
 
     // Constructor
-    public Product(Branch branch, String name, String category, BigDecimal originalPrice, BigDecimal salesPrice, int quantity, boolean status) {
+    public Product(int productId, Branch branch, String name, String category, BigDecimal originalPrice, BigDecimal salesPrice, int quantity, boolean status) {
         this.branch = branch;
         this.name = name;
         this.category = category;
@@ -27,7 +27,17 @@ public class Product {
 
     }
 
-    // Getters and Setters
+    public Product(int id, String name, String category, int quantity, double originalPrice, double salesPrice, boolean status) {
+        this.ID=id;
+        this.name=name;
+        this.category=category;
+        this.quantity=quantity;
+        this.originalPrice= BigDecimal.valueOf(originalPrice);
+        this.salesPrice= BigDecimal.valueOf(salesPrice);
+        this.status=status;
+    }
+
+
     public Branch getBranch() {
         return branch;
     }
@@ -97,15 +107,6 @@ public class Product {
                 ", status=" + status +
                 '}';
     }
-
-    public int getNoOfProducts() {
-        return 1;
-    }
-
-    public int getProductId() {
-        return 1;
-    }
-
 
 
     public int getId() {

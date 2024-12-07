@@ -30,7 +30,19 @@ public class ProductController {
     }
 
     Date purchaseDate = new java.sql.Date(System.currentTimeMillis());  // Current date
+    // Fetch products by branch with a search query
+    public List<Product> fetchProductsByBranchForTable(int branchId, String searchQuery) {
+        return productService.fetchProductsByBranchForTable(branchId, searchQuery);
+    }
 
+    // Fetch all products by branch (no search query)
+    public List<Product> fetchProductsByBranchForTable(int branchId) {
+        return productService.fetchProductsByBranchForTable(branchId);
+    }
+
+    public boolean deleteProduct(int productId) {
+        return productService.deleteProduct(productId);
+    }
 
 
     public boolean addOrUpdateProductAction(int branchId, String vendorName, String productName, String category,
@@ -51,6 +63,14 @@ public class ProductController {
     public List<String> getCategories(int branchId) {
         return productService.getCategoriesByBranch(branchId);
     }
+    public int getProductCountByBranch(int branchId) {
+        return productService.getProductCountByBranch(branchId);
+    }
+
+    public int getVendorCountByBranch() {
+        return productService.getVendorCountByBranch();
+    }
+
 
 //    public static void main(String[] args) {
 //        ProductController ctr=new ProductController();

@@ -6,6 +6,8 @@ import Model.Product;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
@@ -20,21 +22,21 @@ public class ProductTablePanel extends JPanel {
     public ProductTablePanel(int branchId) {
         this.branchId = branchId;
         this.productController = new ProductController();
-        setLayout(null); // Manual positioning of components
+        setLayout(null);
         initializeComponents();
-        loadProducts(""); // Load all products initially
+        loadProducts("");
     }
 
     private void initializeComponents() {
         // Search bar
         JLabel searchLabel = new JLabel("Search:");
         searchLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
-        searchLabel.setBounds(50, 20, 60, 30); // Adjusted position
+        searchLabel.setBounds(50, 20, 60, 30);
         add(searchLabel);
 
         searchField = new JTextField();
         searchField.setFont(new Font("Century Gothic", Font.PLAIN, 16));
-        searchField.setBounds(120, 20, 300, 30); // Adjusted position
+        searchField.setBounds(120, 20, 300, 30);
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -45,58 +47,101 @@ public class ProductTablePanel extends JPanel {
 
         // Table model with columns
         tableModel = new DefaultTableModel(new String[]{
-                "ID", "Name", "Category", "Quantity", "Original Price", "Sales Price", "Status"
+                "ID", "Name", "Category", "Quantity", "Original Price", "Sales Price", "Status", "Action"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // All cells are non-editable
+                return column == 7;
             }
         };
 
         productTable = new JTable(tableModel);
         productTable.setRowHeight(30);
 
-        // Add scroll pane for the table
+        new ButtonColumn(productTable, new DeleteButtonActionListener(), 7);
+
         JScrollPane scrollPane = new JScrollPane(productTable);
-        scrollPane.setBounds(50, 70, 900, 600); // Adjusted position and size
+        scrollPane.setBounds(50, 70, 900, 600);
         add(scrollPane);
     }
 
     private void loadProducts(String searchQuery) {
         tableModel.setRowCount(0); // Clear the table
-        List<Product> products = productController.fetchProductsByBranch(branchId, searchQuery);
+        List<Product> products = productController.fetchProductsByBranchForTable(branchId, searchQuery);
 
         for (Product product : products) {
-            System.out.println("Product ID: " + product.getId()); // Debugging output
+            String status = (product.getQuantity() == 0) ? "Inactive" : (product.isStatus() ? "Active" : "Inactive");
             tableModel.addRow(new Object[]{
-                    product.getId(), // Ensure the ID is correctly added
+                    product.getId(),
                     product.getName(),
                     product.getCategory(),
                     product.getQuantity(),
                     product.getOriginalPrice(),
                     product.getSalesPrice(),
-                    product.isStatus() ? "Active" : "Inactive"
+                    status,
+                    "Delete"
             });
         }
     }
 
+    // ActionListener for the delete button
+    private class DeleteButtonActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int row = productTable.getSelectedRow();
+            if (row != -1) {
+                int productId = (int) tableModel.getValueAt(row, 0);
+                String status = (String) tableModel.getValueAt(row, 6);
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            // Create the main application frame
-            JFrame frame = new JFrame("Product Table - Branch 1");
-            frame.setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
-            frame.setBounds(275, 0, 1020, 800); // Set bounds on the screen
-            frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                if ("Inactive".equals(status)) {
+                    int confirm = JOptionPane.showConfirmDialog(
+                            ProductTablePanel.this,
+                            "Are you sure you want to delete this product?",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION
+                    );
 
-            // Create an instance of ProductTablePanel with branchId = 1
-            ProductTablePanel productTable = new ProductTablePanel(1);
-
-            // Add the ProductTable JPanel to the frame
-            frame.add(productTable);
-
-            // Make the frame visible
-            frame.setVisible(true);
-        });
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        boolean deleted = productController.deleteProduct(productId);
+                        if (deleted) {
+                            tableModel.removeRow(row); // Remove the row from the table
+                            JOptionPane.showMessageDialog(
+                                    ProductTablePanel.this,
+                                    "Product deleted successfully!",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE
+                            );
+                        } else {
+                            JOptionPane.showMessageDialog(
+                                    ProductTablePanel.this,
+                                    "Failed to delete the product.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(
+                            ProductTablePanel.this,
+                            "Only inactive products with quantity 0 can be deleted.",
+                            "Invalid Action",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                }
+            }
+        }
     }
+
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            JFrame frame = new JFrame("Product Table - Branch 1");
+//            frame.setIconImage(new ImageIcon("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logo.PNG").getImage());
+//            frame.setBounds(275, 0, 1020, 800);
+//            frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+//
+//            ProductTablePanel productTable = new ProductTablePanel(2);
+//            frame.add(productTable);
+//            frame.setVisible(true);
+//        });
+//    }
 }

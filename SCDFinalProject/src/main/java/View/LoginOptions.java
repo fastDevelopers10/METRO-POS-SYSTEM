@@ -11,10 +11,11 @@ public class LoginOptions extends JFrame {
     private Image backgroundImage;
 
     public LoginOptions() {
-        setTitle("METRO");
-        setSize(1350, 750);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        // Get screen size and set JFrame to this
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize(screenSize);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
         setResizable(false);
 
         // Load background image

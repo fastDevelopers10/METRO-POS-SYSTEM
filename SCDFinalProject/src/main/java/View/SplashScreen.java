@@ -1,8 +1,11 @@
-package SCDFinalProject.src.main.java.View;
+package View;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
+import java.io.IOException;
+import java.util.Objects;
 
 public class SplashScreen extends JPanel {
     private int progress = 0;
@@ -10,13 +13,20 @@ public class SplashScreen extends JPanel {
     static JFrame frame;
 
     public SplashScreen() {
-        backgroundImage = new ImageIcon("SCDFinalProject\\src\\main\\resources\\images\\Splash.png").getImage();
 
+        try {
+            // Use class loader to load the resource
+            backgroundImage = ImageIO.read(Objects.requireNonNull(
+                    getClass().getClassLoader().getResourceAsStream("images/Splash.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error: Unable to load background image.");
+        }
         Timer timer = new Timer(30, e -> {
             progress += 1;
             if (progress > 100) {
                 ((Timer) e.getSource()).stop();
-                LoginFrame fr = new LoginFrame();
+                LoginOptions fr = new LoginOptions();
                 fr.setVisible(true);
                 frame.dispose();
             }
@@ -54,7 +64,7 @@ public class SplashScreen extends JPanel {
         frame.setBackground(new Color(0, 0, 0, 0));
 
         SplashScreen panel = new SplashScreen();
-        panel.setPreferredSize(new Dimension(600, 400));
+        panel.setPreferredSize(new Dimension(602, 401));
 
         frame.add(panel);
         frame.pack();

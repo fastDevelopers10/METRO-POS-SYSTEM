@@ -47,21 +47,21 @@ public class UpdatePasswordUI extends JFrame {
         JTextField tfUsername = new JTextField();
         tfUsername.setOpaque(true); // Make background visible (transparent is false)
         tfUsername.setBorder(new LineBorder(Color.BLACK, 1)); // Add a black border
-        tfUsername.setBounds(490, 250, 350, 30); // Position and size (x, y, width, height)
+        tfUsername.setBounds(482, 250, 350, 30); // Position and size (x, y, width, height)
         panel.add(tfUsername); // Add to the panel
 
         // Create the second text field (password)
         JTextField tfPassword = new JTextField();
         tfPassword.setOpaque(true); // Make background visible (transparent is false)
         tfPassword.setBorder(new LineBorder(Color.BLACK, 1)); // Add a black border
-        tfPassword.setBounds(490, 320, 350, 30); // Position and size (x, y, width, height)
+        tfPassword.setBounds(482, 320, 350, 30); // Position and size (x, y, width, height)
         panel.add(tfPassword); // Add to the panel
 
         // Create the second text field (password)
         JTextField tfCFPassword = new JTextField();
         tfCFPassword.setOpaque(true); // Make background visible (transparent is false)
         tfCFPassword.setBorder(new LineBorder(Color.BLACK, 1)); // Add a black border
-        tfCFPassword.setBounds(490, 390, 350, 30); // Position and size (x, y, width, height)
+        tfCFPassword.setBounds(482, 390, 350, 30); // Position and size (x, y, width, height)
         panel.add(tfCFPassword); // Add to the panel
 
         // Create the "Login" button

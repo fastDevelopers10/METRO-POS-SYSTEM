@@ -11,17 +11,18 @@ public class Bill {
     public BigDecimal totalBill = BigDecimal.ZERO;
     public BigDecimal subtotal = BigDecimal.ZERO;
     public BigDecimal tax = BigDecimal.ZERO;
-
+    private int branchid;
     private static final BigDecimal TAX_RATE = BigDecimal.valueOf(0.10); // 10% tax
 
     // Add a product to the cart with specified quantity
-    public void addProduct(Product product, int quantity) {
+    public boolean addProduct(Product product, int quantity) {
         // Check if the product already exists in the cart, if so, update the quantity
         if (cart.containsKey(product)) {
             quantity += cart.get(product); // Increment the quantity if the product already exists
         }
         cart.put(product, quantity);  // Add or update the product in the cart
         updateBill(); // Recalculate bill after adding/updating the product
+        return true;
     }
 
     // Method to remove a product from the cart

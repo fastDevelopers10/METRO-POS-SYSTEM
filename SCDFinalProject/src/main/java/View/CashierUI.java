@@ -1,31 +1,29 @@
 package View;
 
+import Controller.CashierController;
 import DAO.ProductDAO;
 import Model.Bill;
+import Model.Employee;
 import Model.Product;
+import Model.Transaction;
+import Service.CashierService;
 
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Date;
 import java.sql.SQLException;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.border.EmptyBorder;
-import java.io.File;
 import java.io.IOException;
 import java.awt.image.BufferedImage;
-import java.util.Objects;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 public class CashierUI extends JFrame {
+
+
     private static final String TAX_PERCENTAGE = "17";
     private BufferedImage backgroundImage;
     private JButton activeButton = null;
@@ -35,17 +33,28 @@ public class CashierUI extends JFrame {
     private JLabel subtotalLabel, taxLabel, totalBillLabel; // Labels for subtotal, tax, and total
     private Bill cart; // Use Bill instead of a Map for cart    private final double TAX_PERCENTAGE = 8.5; // Tax percentage
     private JPanel horizontalScrollPanel = new JPanel();
-    private JButton activeCategoryButton = null; // Tracks the currently active category button
+    private JButton activeCategoryButton; // Tracks the currently active category button
 
     private ProductDAO productDAO;
+    private Employee employee;
+    CashierController cashierController ;
+    List<String> categories;
+
 
     // Constructor to initialize the UI
-    public CashierUI() {
-        cart = new Bill(); // Correct initialization of cart as Bill        productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
+    public CashierUI(Employee loggedInEmployee) {
+        this.employee=loggedInEmployee;
+        this.cashierController=new CashierController();
         this.productDAO = new ProductDAO(); // Initialize with the proper constructor
+        this.categories=productDAO.getUniqueCategories(employee.getBranchId()); // Fetch categories from DAO
+        cart = new Bill(); // Correct initialization of cart as Bill
+        //      productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
         setTitle("Cashier Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1320, 710); // Set a default size for the window
+        // Get screen size and set JFrame to this
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize(screenSize);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
         setResizable(false);
 
         try {
@@ -120,12 +129,12 @@ public class CashierUI extends JFrame {
                 switch (button.getText()) {
                     case "Start Sale":
                         System.out.println("Starting Sale...");
-                        startSaleAction();
+//                        startSaleAction();
                         break;
 
                     case "View Bills":
                         System.out.println("Viewing Bills...");
-                        viewBillsAction();
+                  //      viewBillsAction();
                         break;
 
                     case "Generate Bill":
@@ -147,6 +156,10 @@ public class CashierUI extends JFrame {
                         break;
                 }
             });
+            if (i == 0) {
+                button.setActive(true);  // Set the "Start Sale" button as active
+                activeButton[0] = button;  // Track it as the active button
+            }
 
             // Add button to the panel
             sideMenuPanel.add(button);
@@ -154,9 +167,12 @@ public class CashierUI extends JFrame {
             // Update Y position for next button
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
-
+JLabel branchid=new JLabel(""+employee.getEmployeeId());
+        branchid.setBounds(118,145,22,22);
 // Add side menu panel to your background panel
         backgroundPanel.add(sideMenuPanel);
+        backgroundPanel.add(branchid);
+
 
 
         // Create a label for categories
@@ -271,22 +287,10 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         this.add(layeredPane);
     }
 
-    private void initializeCategoryButtons() {
-        List<String> categories = productDAO.getUniqueCategories(); // Fetch categories from DAO
-
+    private void initializeCategoryButtons()
+    {
         for (String category : categories) {
-            String iconPath;
-
-            // Determine icon based on category
-            if (category.equalsIgnoreCase("Shampoo")) {
-                iconPath = "images/icons/washingprod_icon.png"; // Path to Shampoo icon
-            } else if (category.equalsIgnoreCase("Food")) {
-                iconPath = "images/icons/food_icon.png"; // Path to Food icon
-            } else if (category.equalsIgnoreCase("Fruit")) {
-                iconPath = "images/icons/food_icon.png"; // Path to Bathtub icon
-            } else {
-                iconPath = "images/icons/Product.png"; // Default icon for other categories
-            }
+            String iconPath = getCategoryIcon(category); // Fetch appropriate icon for the category
 
             // Create a category button with the determined icon
             SideMenuButton categoryButton = new SideMenuButton(category, iconPath);
@@ -294,20 +298,20 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
             // Add action listener to handle button clicks
             categoryButton.addActionListener(e -> {
                 // Deactivate the previously active button, if any
-                if (activeCategoryButton != null) {
-                    ((SideMenuButton) activeCategoryButton).setActive(false);
+                if (categoryButton != null) {
+                    categoryButton.setActive(false); // Deactivate previous button
                 }
 
                 // Activate the clicked button
                 categoryButton.setActive(true);
-                activeCategoryButton = categoryButton;
+                activeCategoryButton = categoryButton; // Set this button as active
 
                 // Log and load products for the selected category
                 System.out.println("Category clicked: " + category);
-                loadProductsByCategory(category); // Load relevant products
+              loadProductsByCategory(category); // Load products based on selected category
             });
 
-            // Add the button to the horizontal scroll panel
+            // Add the category button to the horizontal scroll panel
             horizontalScrollPanel.add(categoryButton);
         }
 
@@ -316,81 +320,99 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         horizontalScrollPanel.repaint();
     }
 
+    // Helper method to determine the correct icon path based on category
+    private String getCategoryIcon(String category) {
+        String iconPath;
+
+        // Determine the icon based on the category
+        switch (category.toLowerCase()) {
+            case "shampoo":
+                iconPath = "images/icons/washingprod_icon.png"; // Path to Shampoo icon
+                break;
+            case "food":
+                iconPath = "images/icons/food_icon.png"; // Path to Food icon
+                break;
+            case "fruit":
+                iconPath = "images/icons/food_icon.png"; // Path to Fruit icon
+                break;
+            default:
+                iconPath = "images/icons/Product.png"; // Default icon for other categories
+                break;
+        }
+
+        return iconPath;
+    }
+
     private Map<Product, JLabel> productStockLabels = new HashMap<>();
 
     private void loadProductsByCategory(String category) {
-        try {
-            // Fetch products based on the selected category from the database
-            List<Product> products = productDAO.getProductsByCategory(category);
+        // Fetch products based on the selected category from the database
+        List<Product> products = productDAO.getProductsByCategory(category,employee.getBranchId());
 
-            // Clear the current products displayed
-            productPanel.removeAll();
-            productStockLabels.clear(); // Clear previous stock labels
+        // Clear the current products displayed
+        productPanel.removeAll();
+        productStockLabels.clear(); // Clear previous stock labels
 
-            for (Product product : products) {
-                // Create a rounded panel for each product
-                RoundedPanel productInfoPanel = new RoundedPanel(15); // Corner radius of 15
-                productInfoPanel.setLayout(new BoxLayout(productInfoPanel, BoxLayout.Y_AXIS)); // Stack vertically
-                productInfoPanel.setBackground(new Color(198, 227, 218));
-                productInfoPanel.setPreferredSize(new Dimension(200, 200)); // Ensure consistent size for the product panel
-                productInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        for (Product product : products) {
+            // Create a rounded panel for each product
+            RoundedPanel productInfoPanel = new RoundedPanel(15); // Corner radius of 15
+            productInfoPanel.setLayout(new BoxLayout(productInfoPanel, BoxLayout.Y_AXIS)); // Stack vertically
+            productInfoPanel.setBackground(new Color(198, 227, 218));
+            productInfoPanel.setPreferredSize(new Dimension(200, 200)); // Ensure consistent size for the product panel
+            productInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-                // Product name label
-                JLabel productNameLabel = new JLabel(product.getName());
-                productNameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-                productNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                productNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            // Product name label
+            JLabel productNameLabel = new JLabel(product.getName());
+            productNameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            productNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            productNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-                // Product price label
-                JLabel productPriceLabel = new JLabel("Rs. " + product.getPrice());
-                productPriceLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-                productPriceLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                productPriceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            // Product price label
+            JLabel productPriceLabel = new JLabel("Rs. " + product.getOriginalPrice());
+            productPriceLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            productPriceLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            productPriceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-                // Product stock label
-                JLabel productStockLabel = new JLabel("Stock: " + productDAO.getProductQuantityByName(product.getName()));
-                productStockLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
-                productStockLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                productStockLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            // Product stock label
+            JLabel productStockLabel = new JLabel("Stock: " + productDAO.getProductQuantityByName(product.getName(), employee.getBranchId()));
+            productStockLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
+            productStockLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            productStockLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-                // Store the stock label for later updates
-                productStockLabels.put(product, productStockLabel);
+            // Store the stock label for later updates
+            productStockLabels.put(product, productStockLabel);
 
-                // Add labels to the product info panel
-                productInfoPanel.add(Box.createVerticalGlue()); // Add space above
-                productInfoPanel.add(productNameLabel);
-                productInfoPanel.add(Box.createRigidArea(new Dimension(0, 5))); // Small spacing
-                productInfoPanel.add(productPriceLabel);
-                productInfoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
-                productInfoPanel.add(productStockLabel);
-                productInfoPanel.add(Box.createVerticalGlue()); // Add space below
+            // Add labels to the product info panel
+            productInfoPanel.add(Box.createVerticalGlue()); // Add space above
+            productInfoPanel.add(productNameLabel);
+            productInfoPanel.add(Box.createRigidArea(new Dimension(0, 5))); // Small spacing
+            productInfoPanel.add(productPriceLabel);
+            productInfoPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+            productInfoPanel.add(productStockLabel);
+            productInfoPanel.add(Box.createVerticalGlue()); // Add space below
 
-                // Button for adding the product to the cart
-                RoundedButton addProductButton = new RoundedButton("Add to Cart", 15); // Corner radius of 15
-                addProductButton.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-                addProductButton.setBackground(Color.WHITE);
-                addProductButton.setForeground(Color.BLACK);
-                addProductButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-                addProductButton.addActionListener(e -> {
-                    System.out.println("Product clicked: " + product.getName());
-                    addProductToCart(product);  // Add the product to the cart when clicked
-                });
+            // Button for adding the product to the cart
+            RoundedButton addProductButton = new RoundedButton("Add to Cart", 15); // Corner radius of 15
+            addProductButton.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            addProductButton.setBackground(Color.WHITE);
+            addProductButton.setForeground(Color.BLACK);
+            addProductButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            addProductButton.addActionListener(e -> {
+                System.out.println("Product clicked: " + product.getName());
+                addProductToCart(product);  // Add the product to the cart when clicked
+            });
 
-                // Add the button to the product info panel
-                productInfoPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add space before the button
-                productInfoPanel.add(addProductButton);
+            // Add the button to the product info panel
+            productInfoPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add space before the button
+            productInfoPanel.add(addProductButton);
 
-                // Add the product info panel to the main product panel
-                productPanel.add(productInfoPanel);
-            }
-
-            // Revalidate and repaint to update the UI
-            productPanel.revalidate();
-            productPanel.repaint();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading products from the database.", "Error", JOptionPane.ERROR_MESSAGE);
+            // Add the product info panel to the main product panel
+            productPanel.add(productInfoPanel);
         }
+
+        // Revalidate and repaint to update the UI
+        productPanel.revalidate();
+        productPanel.repaint();
     }
 
 
@@ -415,13 +437,8 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
             BigDecimal productPrice = BigDecimal.ZERO;
             int availableQuantity = 0;  // Fetch quantity available in stock
 
-            try {
-                productPrice = productDAO.getProductPriceByName(product.getName());  // Get product price from DB (using product.getName())
-                availableQuantity = productDAO.getProductQuantityByName(product.getName());  // Get available quantity from DB (using product.getName())
-            } catch (SQLException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error fetching product details.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            productPrice = productDAO.getProductPriceByName(product.getName(), employee.getBranchId());  // Get product price from DB (using product.getName())
+            availableQuantity = productDAO.getProductQuantityByName(product.getName(), employee.getBranchId());  // Get available quantity from DB (using product.getName())
 
             // Update subtotal
             cart.subtotal = cart.subtotal.add(productPrice.multiply(BigDecimal.valueOf(quantity)));
@@ -548,92 +565,74 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         System.out.println("Bills displayed");
     }
 
-    private void updateStockInDatabase() throws SQLException {
-        // Iterate over the cart and update stock for each product
-        for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
-            Product product = entry.getKey();
-            int quantitySold = entry.getValue();
+    private boolean updateStockInDatabase() throws SQLException {
+        boolean flag=false;
 
-            // Update the stock for each product by calling ProductDAO's updateStock method
-            ProductDAO productDAO = new ProductDAO();
-            productDAO.updateStock(product.getName(), quantitySold);  // Deduct quantity from stock
-        }
+      flag=  cashierController.updateStockInDatabase(cart,employee.getBranchId());
+      return flag;
     }
-    private void generateBillAction() throws SQLException {
-        printBill();
-        updateStockInDatabase();
-    }
+    // Method to create transactions from the cart
+    public void createTransactionsFromCart() throws SQLException {
+        // Assuming connection to database is already established
+            for (Product product : cart.getProducts()) {
 
-
-        private void printBill() {
-            PrinterJob printerJob = PrinterJob.getPrinterJob();
-
-            // Set the print job to print the bill
-            printerJob.setPrintable(new Printable() {
-                public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-                    if (pageIndex > 0) {
-                        return NO_SUCH_PAGE; // Only one page of content
-                    }
-
-                    // Set up the graphics context for printing
-                    Graphics2D g2d = (Graphics2D) graphics;
-                    g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
-
-                    // Print the bill title
-                    g2d.setFont(new Font("Arial", Font.BOLD, 16));
-                    g2d.drawString("Bill", 100, 100);  // Adjust the X and Y positions as needed
-
-                    // Set the font for the body of the bill
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-
-                    // Starting Y position for printing
-                    int yPosition = 120;
-
-                    // Loop through the cart and print product details
-                    for (Map.Entry<Product, Integer> entry : cart.getCart().entrySet()) {
-                        String productName = entry.getKey().getName();
-                        int quantity = entry.getValue();
-                        BigDecimal productPrice = entry.getKey().getSalesPrice();
-
-                        // Print the product details on the bill
-                        String line = productName + " x" + quantity + " - $" + productPrice;
-                        g2d.drawString(line, 100, yPosition);
-                        yPosition += 20;  // Move down for the next line
-                    }
-
-                    // Now, print the stored subtotal, tax, and total
-                    g2d.drawString("Subtotal: $" + cart.getSubtotal(), 100, yPosition);
-                    yPosition += 20;
-                    g2d.drawString("Tax (10%): $" + cart.getTax(), 100, yPosition);
-                    yPosition += 20;
-                    g2d.drawString("Total: $" + cart.getTotalBill(), 100, yPosition);
-
-                    return PAGE_EXISTS;  // Indicating that the page has content
-                }
-            });
-
-            // Show the print dialog
-            if (printerJob.printDialog()) {
-                try {
-                    printerJob.print();  // Execute the printing job
-                } catch (PrinterException e) {
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(this, "Error printing the bill.", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+               cashierController.insertTransaction(employee.getBranchId(), product.getProductId(), cart.getCart().get(product), Date.valueOf(LocalDate.now()),product.calculateProfit());//get give val of key(quantity)
             }
+            JOptionPane.showMessageDialog(this, "Transactions recorded successfully!");
+
+    }
+
+    private void generateBillAction() throws SQLException {
+        boolean flag=false;
+//      printBill();
+
+        flag=  updateStockInDatabase();
+        if (flag) {
+            JOptionPane.showMessageDialog(null, "Bill Generated", "Information", JOptionPane.INFORMATION_MESSAGE);
+
         }
 
+            loadProductsByCategory(activeCategoryButton.getText()); // Repaint the panel to reflect changes
+            cart.resetBill();
+            billItemsPanel.removeAll();
+            // Reset bill summary labels
+            subtotalLabel.setText("Subtotal: Rs.0");
+            taxLabel.setText("Tax (" + TAX_PERCENTAGE + "%): Rs.0");
+            totalBillLabel.setText("Total: Rs.0");
+
+            // Refresh the UI
+            billItemsPanel.revalidate();
+            billItemsPanel.repaint();
 
 
-        private void logoutAction() {
-        // Logic for logging out here
-        System.out.println("Logged out");
     }
 
-    // Main method to launch the UI
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new CashierUI().setVisible(true);
-        });
+
+
+    private void logoutAction() {
+        int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to log out?",
+                "Logout Confirmation",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            // Dispose of the current frame
+            this.dispose();
+
+            // Open the login options
+            new LoginOptions().setVisible(true);
+        }
     }
+
+
+
+//    // Main method to launch the UI
+//    public static void main(String[] args) {
+//        SwingUtilities.invokeLater(() -> {
+//            new CashierUI(loggedInEmployee).setVisible(true);
+//        });
+//    }
 }

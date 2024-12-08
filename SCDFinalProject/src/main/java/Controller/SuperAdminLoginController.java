@@ -1,27 +1,28 @@
-package SCDFinalProject.src.main.java.Controller;
+package Controller;
 
-import SCDFinalProject.src.main.java.Model.SuperAdmin;
-import SCDFinalProject.src.main.java.View.SuperAdminLogin;
-import SCDFinalProject.src.main.java.View.SuperAdminUI;
+import DAO.SuperAdminDAO;
+import View.LoginOptions;
+import View.SuperAdminLogin;
+import View.SuperAdminUI;
 
 import javax.swing.*;
 
 public class SuperAdminLoginController {
 
-    private static SuperAdmin admin;
+    private static SuperAdminDAO admin;
     private SuperAdminLogin loginView;
 
     public SuperAdminLoginController() {
         this.loginView = new SuperAdminLogin();
-        this.admin = new SuperAdmin();
+        this.admin = new SuperAdminDAO();
 
         // Add action listeners for login and exit buttons
         loginView.addLoginListener(e ->
         {
-                      handleLogin();
+            handleLogin();
 
         });
-        loginView.addExitListener(e -> System.exit(0));
+        loginView.addExitListener(e -> new LoginOptions() );
     }
 
     public static String getUsername() {
@@ -50,3 +51,7 @@ public class SuperAdminLoginController {
     }
 
 }
+
+
+
+

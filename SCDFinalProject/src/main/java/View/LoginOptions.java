@@ -1,6 +1,6 @@
-package SCDFinalProject.src.main.java.View;
+package View;
 
-import SCDFinalProject.src.main.java.Controller.SuperAdminLoginController;
+import Controller.SuperAdminLoginController;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -104,7 +104,8 @@ public class LoginOptions extends JFrame {
     }
 
     private void OpenCredentials(String role) {
-        new View.Credentials(role).setVisible(true);
+        System.out.println(role+" Creds opened");
+        new Credentials(role).setVisible(true);
         this.dispose(); // Close the current window
     }
 

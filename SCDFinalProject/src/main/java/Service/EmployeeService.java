@@ -1,7 +1,7 @@
-package SCDFinalProject.src.main.java.Service;
+package Service;
 
 import Model.Employee;
-import SCDFinalProject.src.main.java.DAO.EmployeeDAO;
+import DAO.EmployeeDAO;
 
 import javax.swing.table.DefaultTableModel;
 import java.math.BigDecimal;
@@ -18,8 +18,8 @@ public class EmployeeService {
     }
 
     // Get employee by username and role
-    public Employee getEmployeeByUsernameAndRole(String username, String role) {
-        return employeeDAO.findEmployeeByUsernameAndRole(username, role);
+    public Employee getEmployeeByUsernameAndPass(String username, String pass) {
+        return employeeDAO.findEmployeeByUsernameAndPass(username, pass);
     }
 
     // Method to update the employee password
@@ -60,4 +60,8 @@ public class EmployeeService {
         }
     }
 
+    public boolean insertEmployee(Employee employee) {
+        EmployeeDAO emp= new EmployeeDAO();
+       return emp.insertEmployee(employee);
+    }
 }

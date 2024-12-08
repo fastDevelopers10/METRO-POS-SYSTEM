@@ -16,7 +16,7 @@ public class Employee {
     private String status;
     private Date joiningDate;
     private String position;
-    private boolean firstTimeJoined;
+    private boolean firstTimeJoined ;
 
     // Constructor to initialize all fields except employeeId, as it's auto-generated
     public Employee(String username, String name, String email, String password, int branchId,
@@ -49,7 +49,53 @@ public class Employee {
         this.joiningDate = joiningDate;
         this.status = status;
     }
+    public Employee(int employeeId, String name, String email, int branchId,
+                    String address, String phoneNumber, BigDecimal salary, Date joiningDate,
+                    String status) {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.email = email;
+        this.branchId = branchId;
+        this.address = address;
+        this.phone = phoneNumber;
+        this.salary = salary;
+        this.joiningDate = joiningDate;
+        this.status=status;
+    }
+    public Employee( String name, String email, int branchId,
+                    String address, String phoneNumber, BigDecimal salary, Date joiningDate,
+                    String status)
+    {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.email = email;
+        this.branchId = branchId;
+        this.address = address;
+        this.phone = phoneNumber;
+        this.salary = salary;
+        this.joiningDate = joiningDate;
+        this.status=status;
+    }
+public Employee()
+{
 
+}
+    // Constructor to initialize all fields
+    public Employee(String name, String email, String position, int branchId, String address, String phone, BigDecimal salary, java.sql.Date joiningDate, String active) {
+        this.name = name;
+        this.email = email;
+        this.position = position;
+        this.branchId = branchId;
+        this.address = address;
+        this.phone = phone;
+        this.salary = salary;
+        this.joiningDate = joiningDate;
+        this.status = active;
+
+//        // Username and password can be set dynamically
+//        this.username = "emp" + this.hashCode(); // Example: dynamically set the username based on the object hashCode (or another logic)
+//        this.password = "123"; // Default password can be set here
+    }
 
     // Getter and setter for employeeId (set after inserting into DB)
     public int getEmployeeId() {

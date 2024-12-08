@@ -1,12 +1,12 @@
-package SCDFinalProject.src.main.java.View;
+package View;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.SQLException;
 
-import SCDFinalProject.src.main.java.Controller.EmpCtrlr;
-import SCDFinalProject.src.main.java.Controller.SuperAdminLoginController;
+import Controller.EmpCtrlr;
+import Controller.SuperAdminLoginController;
 
 public class BranchManagerTableUI extends JFrame {
     private JTable employeeTable;
@@ -25,7 +25,7 @@ public class BranchManagerTableUI extends JFrame {
         lblBackground.setBounds(0, 0, 1320, 710);
         add(lblBackground);
 
-        String username = SuperAdminLoginController.getUsername();
+        String username = "Anas";
         JLabel lblUsername = new JLabel(username);
         lblUsername.setBounds(105, 125, 220, 40);
         lblUsername.setFont(new Font("Century Gothic", Font.PLAIN, 20));
@@ -95,7 +95,7 @@ public class BranchManagerTableUI extends JFrame {
         btnChangePassword.addActionListener(e -> {
             dispose();
             try {
-                new ChangePasswordUI(); // Replace with your Change Password UI class
+//                new UpdatePasswordUI("Branch Manager",employeeTable.getColumn("password")); // Replace with your Change Password UI class
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

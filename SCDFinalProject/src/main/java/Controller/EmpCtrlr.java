@@ -1,7 +1,7 @@
-package SCDFinalProject.src.main.java.Controller;
+package Controller;
 
-import SCDFinalProject.src.main.java.Service.EmployeeService;
-import SCDFinalProject.src.main.java.View.BranchManagerTableUI;
+import Service.EmployeeService;
+import View.BranchManagerTableUI;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

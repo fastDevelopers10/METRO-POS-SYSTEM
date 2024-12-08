@@ -1,6 +1,7 @@
-package SCDFinalProject.src.main.java.DAO;
+package DAO;
 
 import Model.Employee;
+import View.UpdatePasswordUI;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -14,10 +15,13 @@ public class EmployeeDAO {
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 
     private static final String FIND_EMPLOYEE_QUERY =
-            "SELECT * FROM employee WHERE username = ? AND position = ?";
+            "SELECT * FROM employee WHERE username = ? AND password = ?";
 
     private static final String UPDATE_PASSWORD_QUERY =
             "UPDATE employee SET password = ? WHERE username = ?";
+    private static final String UPDATE_FIRST_TIME_JOINED_QUERY =
+            "UPDATE employee SET first_time_joined = FALSE WHERE username = ?";
+
 
     // Method to fetch employees by branch ID
     public List<Employee> getEmployeesByBranch(int branchId) throws Exception {
@@ -44,109 +48,193 @@ public class EmployeeDAO {
         return employees;
     }
 
-    public List<Model.Employee> getAllBranchManagers() throws SQLException {
-        String query = "SELECT * FROM Employee WHERE position='branch manager';";
-        List<Model.Employee> employees = new ArrayList<>();
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(query);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                employees.add(new Model.Employee(
-                        rs.getInt("employee_id"),
-                        rs.getString("name"),
-                        rs.getString("position"),
-                        rs.getString("email"),
-                        rs.getInt("branch_id"),
-                        rs.getString("address"),
-                        rs.getString("phone_number"),
-                        rs.getBigDecimal("salary"),
-                        rs.getDate("joining_date"),
-                        rs.getString("status")
-                ));
-            }
-        }
-
-        return employees;
-    }
-
-    // Insert a new employee into the database
     public boolean insertEmployee(Employee employee) {
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_EMPLOYEE_QUERY, Statement.RETURN_GENERATED_KEYS)) {
+        boolean isSuccess = false;
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet generatedKeys = null;
 
-            // Set all parameters for the employee (except employeeId, as it's auto-generated)
-            preparedStatement.setString(1, employee.getName());
-            preparedStatement.setString(2, employee.getPosition());
-            preparedStatement.setString(3, employee.getEmail());
-            preparedStatement.setInt(4, employee.getBranchId());
-            preparedStatement.setString(5, employee.getAddress());
-            preparedStatement.setString(6, employee.getPhone());
-            preparedStatement.setBigDecimal(7, employee.getSalary());
-            preparedStatement.setDate(8, new java.sql.Date(employee.getJoiningDate().getTime()));
-            preparedStatement.setString(9, employee.getUsername());
-            preparedStatement.setString(10, employee.getPassword());
-            preparedStatement.setString(11, employee.getStatus());
-            preparedStatement.setBoolean(12, employee.isFirstTimeJoined());
+        try {
+            // Assuming you have a Database connection utility class to get the connection
+            connection = DBConnection.getConnection();
 
-            // Execute the query and get the generated keys (auto-generated employee_id)
-            int rowsAffected = preparedStatement.executeUpdate();
+            // Insert the employee without the username (we'll generate it later)
+            String sql = "INSERT INTO employee (name, position, email, branch_id, address, phone_number, salary, joining_date, status, first_time_joined) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            // Check if the insertion was successful and retrieve the generated employee_id
+            statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS); // To retrieve generated keys
+            statement.setString(1, employee.getName());
+            statement.setString(2, employee.getPosition());
+            statement.setString(3, employee.getEmail());
+            statement.setInt(4, employee.getBranchId());
+            statement.setString(5, employee.getAddress());
+            statement.setString(6, employee.getPhone());
+            statement.setBigDecimal(7, employee.getSalary());
+            statement.setDate(8, new java.sql.Date(employee.getJoiningDate().getTime()));
+            statement.setString(9, employee.getStatus());
+            statement.setBoolean(10, true);
+
+            int rowsAffected = statement.executeUpdate();
+
+            // Check if the employee was inserted successfully
             if (rowsAffected > 0) {
-                try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        int generatedEmployeeId = generatedKeys.getInt(1);  // Get the auto-generated ID
-                        employee.setEmployeeId(generatedEmployeeId);  // Set the generated ID in the Employee object
+                // Retrieve the generated employee ID (assuming auto-increment for employeeId)
+                generatedKeys = statement.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    int employeeId = generatedKeys.getInt(1); // Get the generated employee ID
+
+                    // Dynamically set the username by concatenating "name" with the generated employee ID
+                    String username = employee.getName() + employeeId;
+
+                    // Now, update the employee record with the generated username
+                    String updateSql = "UPDATE employee SET username = ? WHERE employee_id = ?";
+                    try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+                        updateStatement.setString(1, username);
+                        updateStatement.setInt(2, employeeId);
+                        int updateRows = updateStatement.executeUpdate();
+
+                        // Check if the update was successful
+                        if (updateRows > 0) {
+                            isSuccess = true;
+                        }
                     }
                 }
-                return true; // Successfully inserted and set the ID
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            // Clean up the resources
+            try {
+                if (generatedKeys != null) {
+                    generatedKeys.close();
+                }
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
-        return false; // Insertion failed
+        return isSuccess;
     }
 
-    // Find an employee by username and role
-    public Employee findEmployeeByUsernameAndRole(String username, String role) {
+
+    // Authenticate and check first-time login
+    public Employee findEmployeeByUsernameAndPass(String username, String password) {
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_EMPLOYEE_QUERY)) {
-
+            System.out.println("hello fmr dao " + username + password);
             preparedStatement.setString(1, username);
-            preparedStatement.setString(2, role);
+            preparedStatement.setString(2, password);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return mapResultSetToEmployee(resultSet);
+                    // Map the result set to an Employee object
+                    Employee employee = mapResultSetToEmployee(resultSet);
+
+                    // Check if this is the first time the employee is logging in (first_time_joined == true)
+                    boolean firstTimeLogin = resultSet.getBoolean("first_time_joined");
+
+                    if (firstTimeLogin) {
+                        System.out.println("Welcome! This is your first login. Please set up your profile.");
+
+                        // Show the profile setup UI (password update page)
+                        UpdatePasswordUI updatePasswordUI = new UpdatePasswordUI(employee);
+                        updatePasswordUI.setModal(true);  // Make the UI modal
+
+
+                        // After profile setup, update the 'first_time_joined' field to false
+                        updateFirstTimeLoginFlag(employee.getEmployeeId()); // Update the flag in the database
+
+                        // Optionally, you can confirm password update or any additional logic here
+                    }
+                    System.out.println(employee.getPassword());
+                    return employee; // Return authenticated employee after UI interaction
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return null; // Return null if authentication fails
     }
 
-    // Method to update employee's password
-    public boolean updatePassword(String username, String newPassword) {
+
+    // Method to update the 'first_time_joined' flag to false after profile setup
+    private void updateFirstTimeLoginFlag(int employeeId) {
+        String updateQuery = "UPDATE employee SET first_time_joined = false WHERE employee_id = ?";
+
         try (Connection connection = DBConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_PASSWORD_QUERY)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+            preparedStatement.setInt(1, employeeId); // Set the employee's ID
 
-            // Set the new password
-            preparedStatement.setString(1, newPassword);
-
-            preparedStatement.setString(2, username);
-
-            // Execute the update
             int rowsAffected = preparedStatement.executeUpdate();
-
-            // Return true if the password was updated successfully
-            return rowsAffected > 0;
+            if (rowsAffected > 0) {
+                System.out.println("Employee profile has been set up. First-time login flag updated to false.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+    }
+    public boolean updatePassword(String username,String newPassword) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        PreparedStatement stmt = null;
+
+        try {
+            connection = DBConnection.getConnection();
+            connection.setAutoCommit(false); // Start a transaction
+
+            // First update the password
+            preparedStatement = connection.prepareStatement(UPDATE_PASSWORD_QUERY);
+            preparedStatement.setString(1, newPassword);
+            preparedStatement.setString(2, username);
+            int rowsAffected = preparedStatement.executeUpdate();
+            System.out.println(rowsAffected);
+            // If the password update is successful, update the 'first_time_joined' field
+            if (rowsAffected > 0) {
+                System.out.println("status");
+                stmt = connection.prepareStatement(UPDATE_FIRST_TIME_JOINED_QUERY);
+                stmt.setString(1, username);
+                stmt.executeUpdate();
+            }
+
+            // Commit the transaction if both updates were successful
+            connection.commit();
+
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            // Rollback in case of error
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackException) {
+                    rollbackException.printStackTrace();
+                }
+            }
+            e.printStackTrace();
+            return false;
+        } finally {
+            // Close resources
+            try {
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+                if (connection != null) {
+                    connection.setAutoCommit(true); // Reset auto-commit to true
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private Employee mapResultSetToEmployee(ResultSet resultSet) throws SQLException {
@@ -171,4 +259,29 @@ public class EmployeeDAO {
 
         return employee;
     }
+    public List<Employee> getAllBranchManagers() throws SQLException {
+        String query = "SELECT * FROM Employee WHERE position='branch manager';";
+        List<Employee> employees = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                employees.add(new Employee(
+                        rs.getInt("employee_id"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getInt("branch_id"),
+                        rs.getString("address"),
+                        rs.getString("phone_number"),
+                        rs.getBigDecimal("salary"),
+                        rs.getDate("joining_date"),
+                        rs.getString("status")
+                ));
+            }
+        }
+
+        return employees;
+}
+
 }

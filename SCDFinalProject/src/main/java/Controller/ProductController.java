@@ -4,6 +4,8 @@ import DAO.ProductDAO;
 import Model.Product;
 import Service.ProductService;
 
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
 
@@ -15,10 +17,10 @@ public class ProductController {
         this.productService = new ProductService();
     }
 
-    public List<Product> fetchProductsByBranch(int branchId, String searchQuery) {
-        return productService.getProductsByBranch(branchId, searchQuery);
+    // Method to check if internet is available (by checking database connectivity)
+    public boolean isInternetAvailable() {
+        return productService.isInternetAvailable();
     }
-
     // Fetch list of vendors (vendor ID and name as ComboItem objects)
     public List<String> getVendors() {
         return productService.getVendors();

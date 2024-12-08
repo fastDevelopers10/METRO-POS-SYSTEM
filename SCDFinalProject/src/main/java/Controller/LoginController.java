@@ -12,8 +12,8 @@ public class LoginController {
     }
 
     // Validate login credentials
-    public boolean validateLogin(String role, String username, String password) {
-        Employee employee = employeeService.getEmployeeByUsernameAndRole(username, role);
-        return employee != null && employee.getPassword().equals(password);
+    public Employee validateLogin( String username, String password) {
+        Employee employee = employeeService.getEmployeeByUsernameAndPass(username, password);
+        return employee ;
     }
 }

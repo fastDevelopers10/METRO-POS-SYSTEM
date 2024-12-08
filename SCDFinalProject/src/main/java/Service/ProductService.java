@@ -13,9 +13,7 @@ public class ProductService {
         this.productDAO = new ProductDAO();
     }
 
-    public List<Product> getProductsByBranch(int branchId, String searchQuery) {
-        return productDAO.getProductsByBranchWithSearch(branchId, searchQuery);
-    }
+
     public List<String> getVendors() {
         return productDAO.fetchVendors();
     }
@@ -27,6 +25,10 @@ public class ProductService {
                                       int cartons, int itemsPerCarton, double originalPrice, double salesPrice,
                                       Date purchaseDate) {
         return productDAO.addOrUpdateProduct(branchId, vendorId, productId, name, category, cartons, itemsPerCarton, originalPrice, salesPrice, purchaseDate);
+    }
+    // Method to check if internet is available (by checking database connectivity)
+    public boolean isInternetAvailable() {
+        return productDAO.isInternetAvailable();
     }
 
     public List<String> getCategoriesByBranch(int branchId) {

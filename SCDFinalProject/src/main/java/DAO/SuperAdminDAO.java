@@ -1,14 +1,15 @@
-package SCDFinalProject.src.main.java.Model;
+package DAO;
+
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static SCDFinalProject.src.main.java.DAO.DBConnection.getConnection;
+import static DAO.DBConnection.getConnection;
 
 
-public class SuperAdmin {
+public class SuperAdminDAO {
     private String username; // Store the username here
 
     public boolean validateLogin(String username, String password) {

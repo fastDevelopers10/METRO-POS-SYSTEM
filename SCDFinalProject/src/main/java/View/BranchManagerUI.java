@@ -18,6 +18,7 @@ public class BranchManagerUI extends JFrame {
     private BufferedImage backgroundImage;
     private static Employee employee;
     private JPanel employeePanel;  // Panel for adding employee buttons
+    JPanel reportsPanel;
     private static int menuYPosition = 220; // Y position for the menu
     private static int menuWidth = 157;
     private static JPanel backgroundPanel;
@@ -76,7 +77,6 @@ public class BranchManagerUI extends JFrame {
         // Button text and optional icon paths
         String[][] menuItems = {
                 {"Dashboard", "images/icons/dash_icon.png"},
-                {"Employees", "icons/Products.png"},
                 {"Reports", "icons/Product.png"},
                 {"Logout", "images/icons/Product.png"}
         };
@@ -110,17 +110,18 @@ public class BranchManagerUI extends JFrame {
                 // Perform specific actions based on the button clicked
                 switch (button.getText()) {
                     case "Dashboard":
-                        System.out.println("Starting Sale...");
-                        // startSaleAction();
-                        break;
-
-                    case "Employees":
                         System.out.println("Viewing Employees...");
+                        if(reportsPanel!=null)
+                        {backgroundPanel.remove(reportsPanel); }// Remove employee panel
                         showEmployeePanel();
                         break;
 
                     case "Reports":
                         System.out.println("View Reports...");
+
+                        if(employeePanel!=null)
+                        {backgroundPanel.remove(employeePanel); }// Remove employee panel
+                        showReportsPanel();
                         break;
 
                     case "Logout":
@@ -146,6 +147,7 @@ public class BranchManagerUI extends JFrame {
             // Update Y position for next button
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
+
 
         // Display Branch ID
         JLabel branchIdLabel = new JLabel("" + employee.getBranchId());
@@ -229,8 +231,8 @@ public class BranchManagerUI extends JFrame {
         employeePanel.add(employeeLabel);
 
         // Create and add the "Add Cashier" button
-        RoundedButton addCashierButton = new RoundedButton("Add Cashier", 20);
-        addCashierButton.setBounds(570, 570, 280, 50);
+        RoundedButton addCashierButton = new RoundedButton("Add Employee", 20);
+        addCashierButton.setBounds(employeePanel.getWidth()/3, 570, 280, 50);
         addCashierButton.setBackground(new Color(0, 102, 204));
         addCashierButton.setForeground(Color.WHITE);
         addCashierButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -246,12 +248,12 @@ public class BranchManagerUI extends JFrame {
         // Add Cashier button to the employee panel
         employeePanel.add(addCashierButton);
 
-        // Create and add the "Add Data Operator" button
-        RoundedButton addDataOpButton = new RoundedButton("Add Data Operator", 20);
-        addDataOpButton.setBounds(870, 570, 280, 50);
-        addDataOpButton.setBackground(new Color(0, 102, 204));
-        addDataOpButton.setForeground(Color.WHITE);
-        addDataOpButton.setFont(new Font("Arial", Font.BOLD, 16));
+//        // Create and add the "Add Data Operator" button
+//        RoundedButton addDataOpButton = new RoundedButton("Add Data Operator", 20);
+//        addDataOpButton.setBounds(870, 570, 280, 50);
+//        addDataOpButton.setBackground(new Color(0, 102, 204));
+//        addDataOpButton.setForeground(Color.WHITE);
+//        addDataOpButton.setFont(new Font("Arial", Font.BOLD, 16));
 
 //        addDataOpButton.addActionListener(e -> {
 //            // Add Data Operator Logic
@@ -261,13 +263,33 @@ public class BranchManagerUI extends JFrame {
 //            JOptionPane.showMessageDialog(this, "Data Operator Added Successfully");
 //        });
 
-        // Add Data Operator button to the employee panel
-        employeePanel.add(addDataOpButton);
+//        // Add Data Operator button to the employee panel
+//        employeePanel.add(addDataOpButton);
 
         // Add the employee panel to the background panel
         backgroundPanel.add(employeePanel);
 
         // Refresh the frame to show updated employee panel
+        revalidate();
+        repaint();
+    }
+    private void showReportsPanel() {
+        // Create and display the reports panel here
+         reportsPanel = new JPanel();
+        reportsPanel.setLayout(null);
+        reportsPanel.setBounds(menuWidth + 26, 0, getWidth() - menuWidth, getHeight()); // Set bounds of the panel
+
+        // Add a placeholder label for the reports section
+        JLabel reportsLabel = new JLabel("Reports Section", JLabel.CENTER);
+        reportsLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        reportsLabel.setForeground(new Color(70, 130, 180));
+        reportsLabel.setBounds(0, 25, getWidth() - menuWidth - 30, 100);
+        reportsPanel.add(reportsLabel);
+
+        // Add the reports panel to the background panel
+        backgroundPanel.add(reportsPanel);
+
+        // Refresh the frame to show updated reports panel
         revalidate();
         repaint();
     }

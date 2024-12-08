@@ -1,6 +1,7 @@
 package View;
 
 import Controller.CashierController;
+import Controller.ProductController;
 import DAO.ProductDAO;
 import Model.Bill;
 import Model.Employee;
@@ -8,10 +9,13 @@ import Model.Product;
 import Model.Transaction;
 import Service.CashierService;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.*;
 import javax.swing.*;
@@ -20,6 +24,7 @@ import java.io.IOException;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import javax.imageio.ImageIO;
+
 
 public class CashierUI extends JFrame {
 
@@ -33,7 +38,7 @@ public class CashierUI extends JFrame {
     private JLabel subtotalLabel, taxLabel, totalBillLabel; // Labels for subtotal, tax, and total
     private Bill cart; // Use Bill instead of a Map for cart    private final double TAX_PERCENTAGE = 8.5; // Tax percentage
     private JPanel horizontalScrollPanel = new JPanel();
-    private JButton activeCategoryButton; // Tracks the currently active category button
+    private JButton activeCategoryButton= new JButton(); // Tracks the currently active category button
 
     private ProductDAO productDAO;
     private Employee employee;
@@ -347,6 +352,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
     private void loadProductsByCategory(String category) {
         // Fetch products based on the selected category from the database
+        System.out.println("Loding prods");
         List<Product> products = productDAO.getProductsByCategory(category,employee.getBranchId());
 
         // Clear the current products displayed
@@ -574,28 +580,69 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
 
     private void generateBillAction() throws SQLException {
-        boolean flag=false;
-//      printBill();
+        boolean flag = false;
 
-        flag=  updateStockInDatabase();
-        if (flag) {
-            JOptionPane.showMessageDialog(null, "Bill Generated", "Information", JOptionPane.INFORMATION_MESSAGE);
-
+        // Check if the internet connection is available
+        if (!isInternetAvailable()) {
+            // If no internet connection, save the stock update to a file for later processing
+            flag = saveUpdateToFile();
+            if (flag) {
+                JOptionPane.showMessageDialog(null, "Bill generated offline. Stock update will be processed when internet is available.",
+                        "Offline Mode", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Failed to save the stock update offline.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            // If internet is available, attempt to update stock in the database
+            flag = updateStockInDatabase();
+            if (flag) {
+                JOptionPane.showMessageDialog(null, "Bill Generated and Stock Updated", "Information", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Failed to update stock. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
 
-            loadProductsByCategory(activeCategoryButton.getText()); // Repaint the panel to reflect changes
-            cart.resetBill();
-            billItemsPanel.removeAll();
-            // Reset bill summary labels
-            subtotalLabel.setText("Subtotal: Rs.0");
-            taxLabel.setText("Tax (" + TAX_PERCENTAGE + "%): Rs.0");
-            totalBillLabel.setText("Total: Rs.0");
+        // Reload products by category to update the UI
+        loadProductsByCategory(activeCategoryButton.getText());
 
-            // Refresh the UI
-            billItemsPanel.revalidate();
-            billItemsPanel.repaint();
+        // Reset the cart and bill information
+        cart.resetBill();
 
+        // Clear the bill items panel and reset the labels
+        billItemsPanel.removeAll();
+        subtotalLabel.setText("Subtotal: Rs.0");
+        taxLabel.setText("Tax (" + TAX_PERCENTAGE + "%): Rs.0");
+        totalBillLabel.setText("Total: Rs.0");
 
+        // Revalidate and repaint the bill items panel to reflect changes
+        billItemsPanel.revalidate();
+        billItemsPanel.repaint();
+    }
+
+    // Method to check if internet is available (by checking database connectivity)
+    private boolean isInternetAvailable() {
+        ProductController productController= new ProductController();
+       return productController.isInternetAvailable();
+    }
+
+    // Method to save the stock update to a file when no internet is available
+    private boolean saveUpdateToFile() {
+        // Get product details and save them to a file for later synchronization
+        String productName = "Sample Product";  // Example, replace with actual product details
+        int quantity = 10;  // Example quantity, replace with actual quantity
+        int branchId = 1;  // Example branchId, replace with actual branchId
+
+        try (FileWriter writer = new FileWriter("stock_updates.txt", true);
+             BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+
+            String updateData = productName + "," + quantity + "," + branchId + "," + System.currentTimeMillis();
+            bufferedWriter.write(updateData);
+            bufferedWriter.newLine();
+            return true;
+        } catch (IOException e) {
+            System.err.println("Error saving update to file: " + e.getMessage());
+            return false;
+        }
     }
 
 

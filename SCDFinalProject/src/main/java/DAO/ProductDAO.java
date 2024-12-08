@@ -4,10 +4,12 @@ import Model.Branch;
 
 import Model.Product;
 
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+
 
 public class ProductDAO {
     private final Connection connection;
@@ -46,41 +48,95 @@ public class ProductDAO {
 //        return null; // Return null if product not found
 //    }
 //
+// Method to update stock by decreasing the total products for a given product and branch
+public boolean updateStock(String productName, int quantity, int branchId) throws SQLException {
+    String updateStockQuery = "UPDATE product SET total_products = total_products - ? " +
+            "WHERE product_name = ? AND branch_id = ? AND total_products >= ?";
 
+    if (!isDatabaseConnected()) {
+        // If no internet, save the stock update to a file
+        saveUpdateToFile(productName, quantity, branchId);
+        return false;
+    }
 
-    public boolean updateStock(String productName, int quantity, int branchId) throws SQLException {
-        String updateStockQuery = "UPDATE product SET total_products = total_products - ? " +
-                "WHERE product_name = ? AND branch_id = ? AND total_products >= ?";
-        try (PreparedStatement statement = connection.prepareStatement(updateStockQuery)) {
-            connection.setAutoCommit(false); // Disable auto-commit for transaction handling
+    try (PreparedStatement statement = connection.prepareStatement(updateStockQuery)) {
+        connection.setAutoCommit(false);
 
-            statement.setInt(1, quantity);
-            statement.setString(2, productName);
-            statement.setInt(3, branchId);
-            statement.setInt(4, quantity);
+        statement.setInt(1, quantity);
+        statement.setString(2, productName);
+        statement.setInt(3, branchId);
+        statement.setInt(4, quantity);
 
+        int rowsAffected = statement.executeUpdate();
 
-            int rowsAffected = statement.executeUpdate();
+        if (rowsAffected == 0) {
+            connection.rollback();
+            return false;
+        }
 
-            if (rowsAffected == 0) {
+        connection.commit();
+        return true;
 
-                connection.rollback();
-                System.err.println("Stock update failed for product: " + productName);
-                return false;
+    } catch (SQLException e) {
+        connection.rollback();
+        throw e;
+    } finally {
+        connection.setAutoCommit(true);
+    }
+}
+
+    // Check for internet connection by attempting a simple query
+    public boolean isDatabaseConnected() {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeQuery("SELECT 1");
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    // Save the stock update to a file when no internet connection is available
+    private void saveUpdateToFile(String productName, int quantity, int branchId) {
+        try (FileWriter writer = new FileWriter("stock_updates.txt", true);
+             BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+
+            String updateData = productName + "," + quantity + "," + branchId + "," + System.currentTimeMillis();
+            bufferedWriter.write(updateData);
+            bufferedWriter.newLine();
+        } catch (IOException e) {
+            System.err.println("Error saving update to file: " + e.getMessage());
+        }
+    }
+
+    // Load and process pending updates from the file (if internet is restored)
+    public void processPendingUpdates() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("stock_updates.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                String productName = data[0];
+                int quantity = Integer.parseInt(data[1]);
+                int branchId = Integer.parseInt(data[2]);
+                long timestamp = Long.parseLong(data[3]);
+
+                // Process the saved update
+                updateStock(productName, quantity, branchId);
             }
 
-            connection.commit();
-            System.out.println("Stock updated successfully for product: " + productName);
+            // After processing, clear the file
+            new FileWriter("stock_updates.txt", false).close();  // Clear the file
+
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    // Method to check if internet is available (by checking database connectivity)
+    public boolean isInternetAvailable() {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeQuery("SELECT 1");  // Simple query to check internet connection
             return true;
-
         } catch (SQLException e) {
-
-            connection.rollback();
-            System.err.println("Transaction failed, rolling back changes: " + e.getMessage());
-            throw e;
-        } finally {
-
-            connection.setAutoCommit(true);
+            return false;  // No internet connection
         }
     }
 
@@ -147,64 +203,81 @@ public class ProductDAO {
         return categories;
     }
 
-
     public List<Product> getProductsByCategory(String category, int branchId) {
         String query = "SELECT * FROM product WHERE product_category = ? AND branch_id = ?";
         List<Product> productList = new ArrayList<>();
         Set<String> uniqueProductNames = new HashSet<>();
 
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        // Fetch branch details before querying the product table
+        Branch branch = getBranchById(branchId);
+        if (branch == null) {
+            System.err.println("Branch not found for branchId: " + branchId);
+            return productList; // Return empty list if branch is not found
+        }
+
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
             stmt.setString(1, category);
             stmt.setInt(2, branchId);
 
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String name = rs.getString("product_name");
 
-            while (rs.next()) {
-                String name = rs.getString("product_name");
+                    // Skip duplicate product names
+                    if (uniqueProductNames.contains(name)) {
+                        continue;
+                    }
+                    uniqueProductNames.add(name);
 
-                if (uniqueProductNames.contains(name)) {
-                    continue;
+                    // Extract product details
+                    int productId = rs.getInt("product_id");
+                    String productCategory = rs.getString("product_category");
+                    BigDecimal originalPrice = rs.getBigDecimal("original_price");
+                    BigDecimal salesPrice = rs.getBigDecimal("sales_price");
+                    int quantity = rs.getInt("total_products");
+                    boolean status = rs.getBoolean("status");
+
+                    // Create Product object
+                    Product product = new Product(productId, branch, name, productCategory, originalPrice, salesPrice, quantity, status);
+                    productList.add(product);
                 }
-                uniqueProductNames.add(name);
-
-                int productId = rs.getInt("product_id");
-                String productCategory = rs.getString("product_category");
-                BigDecimal originalPrice = rs.getBigDecimal("original_price");
-                BigDecimal salesPrice = rs.getBigDecimal("sales_price");
-                int quantity = rs.getInt("total_products");
-                boolean status = rs.getBoolean("status");
-
-                Branch branch = getBranchById(branchId);
-
-                Product product = new Product(productId, branch, name, productCategory, originalPrice, salesPrice, quantity, status);
-                productList.add(product);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Log detailed error message
+            System.err.println("Error retrieving products: " + e.getMessage());
         }
         return productList;
     }
 
+
+
     private Branch getBranchById(int branchId) {
         String query = "SELECT * FROM branch WHERE branch_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+
             stmt.setInt(1, branchId); // Set branch ID parameter
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
 
-                String city = rs.getString("city");
-                String name = rs.getString("name");
-                String status = rs.getString("status");
-                String address = rs.getString("address");
-                String phone = rs.getString("phone");
-                int numberOfEmployees = rs.getInt("no_of_employees");
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String city = rs.getString("city");
+                    String name = rs.getString("name");
+                    String status = rs.getString("status");
+                    String address = rs.getString("address");
+                    String phone = rs.getString("phone");
+                    int numberOfEmployees = rs.getInt("no_of_employees");
 
-                return new Branch(branchId, city, name, status, address, phone, numberOfEmployees);
+                    // Create and return the Branch object
+                    return new Branch(branchId, city, name, status, address, phone, numberOfEmployees);
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Replace with proper logging for production environments
+            System.err.println("Error retrieving branch details: " + e.getMessage());
         }
-        return null;
+        return null; // Return null if no branch found or in case of an error
     }
 
 
@@ -213,7 +286,8 @@ public class ProductDAO {
 
     public BigDecimal getProductPriceByName(String productName, int branchId) {
         String sql = "SELECT sales_price FROM product WHERE product_name = ? AND branch_id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DBConnection.getConnection();
+        PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, productName);
             ps.setInt(2, branchId); // Use branchId to filter by branch
             ResultSet rs = ps.executeQuery();
@@ -228,25 +302,26 @@ public class ProductDAO {
         return null;
     }
 
-
     public int getProductQuantityByName(String productName, int branchId) {
         String query = "SELECT total_products FROM product WHERE product_name = ? AND branch_id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
             statement.setString(1, productName);
             statement.setInt(2, branchId);
 
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt("total_products");
-            } else {
-                System.out.println("Product '" + productName + "' not found in branch with ID " + branchId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("total_products");
+                } else {
+                    System.out.println("Product '" + productName + "' not found in branch with ID " + branchId);
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Error retrieving product quantity: " + e.getMessage());
         }
-        return 0;
+        return 0; // Return 0 if no result or an error occurs
     }
-
 
     public List<String> fetchVendors() {
         List<String> vendors = new ArrayList<>();

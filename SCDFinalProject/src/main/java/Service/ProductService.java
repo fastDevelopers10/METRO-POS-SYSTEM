@@ -26,6 +26,10 @@ public class ProductService {
                                       Date purchaseDate) {
         return productDAO.addOrUpdateProduct(branchId, vendorId, productId, name, category, cartons, itemsPerCarton, originalPrice, salesPrice, purchaseDate);
     }
+    // Method to check if internet is available (by checking database connectivity)
+    public boolean isInternetAvailable() {
+        return productDAO.isInternetAvailable();
+    }
 
     public List<String> getCategoriesByBranch(int branchId) {
         return productDAO.getUniqueCategories(branchId);

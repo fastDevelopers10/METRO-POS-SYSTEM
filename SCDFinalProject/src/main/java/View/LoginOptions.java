@@ -1,6 +1,6 @@
-package SCDFinalProject.src.main.java.View;
+package View;
 
-import SCDFinalProject.src.main.java.Controller.SuperAdminLoginController;
+import Controller.SuperAdminLoginController;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

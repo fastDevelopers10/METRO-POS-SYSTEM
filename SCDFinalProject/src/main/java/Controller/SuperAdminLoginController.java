@@ -1,8 +1,8 @@
 package Controller;
 
-import SCDFinalProject.src.main.java.Model.SuperAdmin;
-import SCDFinalProject.src.main.java.View.SuperAdminLogin;
-import SCDFinalProject.src.main.java.View.SuperAdminUI;
+import Model.SuperAdmin;
+import View.SuperAdminLogin;
+import View.SuperAdminUI;
 
 import javax.swing.*;
 

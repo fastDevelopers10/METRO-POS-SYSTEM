@@ -95,7 +95,7 @@ public class BranchManagerTableUI extends JFrame {
         btnChangePassword.addActionListener(e -> {
             dispose();
             try {
-                new ChangePasswordUI(); // Replace with your Change Password UI class
+                new UpdatePasswordUI(); // Replace with your Change Password UI class
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

@@ -57,7 +57,6 @@ public class ProductController {
                 originalPrice, salesPrice, purchaseDate);
 
     }
-
     public List<String> getCategories(int branchId) {
         return productService.getCategoriesByBranch(branchId);
     }

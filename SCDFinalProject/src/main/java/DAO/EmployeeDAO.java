@@ -58,11 +58,11 @@ public class EmployeeDAO {
             // Assuming you have a Database connection utility class to get the connection
             connection = DBConnection.getConnection();
 
-            // First, insert the employee without the username (we'll generate it later)
+            // Insert the employee without the username (we'll generate it later)
             String sql = "INSERT INTO employee (name, position, email, branch_id, address, phone_number, salary, joining_date, status, first_time_joined) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);  // To retrieve generated keys
+            statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS); // To retrieve generated keys
             statement.setString(1, employee.getName());
             statement.setString(2, employee.getPosition());
             statement.setString(3, employee.getEmail());
@@ -83,8 +83,8 @@ public class EmployeeDAO {
                 if (generatedKeys.next()) {
                     int employeeId = generatedKeys.getInt(1); // Get the generated employee ID
 
-                    // Dynamically set the username by concatenating "emp" with the generated employee ID
-                    String username = "emp" + employeeId;
+                    // Dynamically set the username by concatenating "name" with the generated employee ID
+                    String username = employee.getName() + employeeId;
 
                     // Now, update the employee record with the generated username
                     String updateSql = "UPDATE employee SET username = ? WHERE employee_id = ?";

@@ -163,8 +163,8 @@ public class DBConnection {
                         "    phone_number VARCHAR(15),\n" +
                         "    salary DECIMAL(10, 2),\n" +
                         "    joining_date DATE DEFAULT CURRENT_DATE,\n" +
-                        "    username VARCHAR(50) UNIQUE NOT NULL,\n" +
-                        "    password VARCHAR(50) UNIQUE NOT NULL,\n" +
+                        "username VARCHAR(50) UNIQUE NOT NULL DEFAULT 'User', " +
+                        "password VARCHAR(50) UNIQUE NOT NULL DEFAULT '12345', " +
                         "    status ENUM('active', 'inactive') DEFAULT 'active',\n" +
                         "    first_time_joined BOOLEAN DEFAULT TRUE,\n" +
                         "    FOREIGN KEY (branch_id) REFERENCES branch(branch_id)\n" +

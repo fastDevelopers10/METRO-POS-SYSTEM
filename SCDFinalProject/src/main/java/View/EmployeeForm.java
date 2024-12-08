@@ -52,9 +52,6 @@ public class EmployeeForm extends JFrame {
         panel.add(positionComboBox);
 
 
-        panel.add(new JLabel("Username:"));
-        usernameField = new JTextField();
-        panel.add(usernameField);
 
         // Buttons
         submitButton = new JButton("Submit");
@@ -67,6 +64,7 @@ public class EmployeeForm extends JFrame {
         cancelButton.addActionListener(e -> dispose());
 
         add(panel);
+        setVisible(true);
     }
 
     private void submitForm() {
@@ -99,5 +97,5 @@ public class EmployeeForm extends JFrame {
         }
     }
 
-    
+
 }

@@ -1,17 +1,19 @@
 package View;
 
+import Controller.EmpCtrlr;
+import Controller.SuperAdminLoginController;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.SQLException;
 
-import Controller.EmpCtrlr;
-import Controller.SuperAdminLoginController;
+
 
 public class BranchManagerTableUI extends JFrame {
     private JTable employeeTable;
     private DefaultTableModel tableModel;
-    private EmpCtrlr controller;
+    EmpCtrlr controller;
 
     public BranchManagerTableUI() throws SQLException {
         setTitle("METRO");
@@ -25,7 +27,7 @@ public class BranchManagerTableUI extends JFrame {
         lblBackground.setBounds(0, 0, 1320, 710);
         add(lblBackground);
 
-        String username = "Anas";
+        String username = SuperAdminLoginController.getUsername();
         JLabel lblUsername = new JLabel(username);
         lblUsername.setBounds(105, 125, 220, 40);
         lblUsername.setFont(new Font("Century Gothic", Font.PLAIN, 20));
@@ -38,7 +40,7 @@ public class BranchManagerTableUI extends JFrame {
         lblMenu.setBounds(115, 215, 100, 20);
         lblBackground.add(lblMenu);
 
-        JLabel lblEmpTitle = new JLabel("Super Admin");
+        JLabel lblEmpTitle = new JLabel("Branch Managers");
         lblEmpTitle.setFont(new Font("Century Gothic", Font.BOLD, 25));
         lblEmpTitle.setForeground(Color.BLACK);
         lblEmpTitle.setBounds(300, 10, 200, 40);
@@ -95,7 +97,7 @@ public class BranchManagerTableUI extends JFrame {
         btnChangePassword.addActionListener(e -> {
             dispose();
             try {
-//                new UpdatePasswordUI("Branch Manager",employeeTable.getColumn("password")); // Replace with your Change Password UI class
+                //new ChangePasswordUI(); // Replace with your Change Password UI class
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -109,17 +111,17 @@ public class BranchManagerTableUI extends JFrame {
         btnLogout.addActionListener(e -> {
             dispose();
             try {
-                new LoginOptions(); // Replace with your Login UI class
+               // new LoginOptions(); // Replace with your Login UI class
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         });
 
         // Add Employee button
-        JButton addEmployeeButton = new JButton("Add Employee");
-        addEmployeeButton.setBounds(650, 580, 200, 50);
+        JButton addEmployeeButton = new JButton("Add Branch Manager");
+        addEmployeeButton.setBounds(640, 580, 230, 50);
         addEmployeeButton.setForeground(Color.BLACK);
-        addEmployeeButton.setFont(new Font("Century Gothic", Font.PLAIN, 18));
+        addEmployeeButton.setFont(new Font("Century Gothic", Font.PLAIN, 16));
         addEmployeeButton.setBackground(new Color(0xf9f9f9));
         lblBackground.add(addEmployeeButton);
         addEmployeeButton.addActionListener(e -> {
@@ -132,8 +134,8 @@ public class BranchManagerTableUI extends JFrame {
 
         controller = new EmpCtrlr(this);
 
-        String[] columns = {"ID", "Name", "Position", "Email", "Branch ID", "Address",
-                "Phone Number", "Salary", "Joining Date", "Username", "Status", "Update"};
+        String[] columns = {"ID", "Name", "Email", "Branch ID", "Address",
+                "Phone Number", "Salary", "Joining Date", "Status", "Update"};
         tableModel = new DefaultTableModel(columns, 0);
         employeeTable = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(employeeTable);

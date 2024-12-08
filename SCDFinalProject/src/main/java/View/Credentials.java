@@ -7,7 +7,6 @@ import Model.Employee;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -123,10 +122,10 @@ public class Credentials extends JFrame {
     }
 
     // Open the dashboard based on the role
-    private void openDashboard(String role) {
+    private void openDashboard(String txtPassword) {
         // After login validation, get the Employee object
         EmployeeDAO employeeDAO = new EmployeeDAO();
-        Employee loggedInEmployee = employeeDAO.findEmployeeByUsernameAndRole(txtUsername.getText(), role);
+        Employee loggedInEmployee = employeeDAO.findEmployeeByUsernameAndPass(txtUsername.getText(), txtPassword);
 
         if (loggedInEmployee == null) {
             JOptionPane.showMessageDialog(this, "Error retrieving employee details.", "Error", JOptionPane.ERROR_MESSAGE);

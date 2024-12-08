@@ -17,7 +17,7 @@ public class EmployeeService {
 
     // Get employee by username and role
     public Employee getEmployeeByUsernameAndRole(String username, String role) {
-        return employeeDAO.findEmployeeByUsernameAndRole(username, role);
+        return employeeDAO.findEmployeeByUsernameAndPass(username, role);
     }
 
     // Method to update the employee password
@@ -42,4 +42,8 @@ public class EmployeeService {
         }
     }
 
+    public boolean insertEmployee(Employee employee) {
+        EmployeeDAO emp= new EmployeeDAO();
+       return emp.insertEmployee(employee);
+    }
 }

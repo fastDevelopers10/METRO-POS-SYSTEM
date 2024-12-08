@@ -16,16 +16,16 @@ import java.util.List;
 public class BranchManagerUI extends JFrame {
 
     private BufferedImage backgroundImage;
-    private Employee employee;
+    private static Employee employee;
     private JPanel employeePanel;  // Panel for adding employee buttons
-    private static    int menuYPosition = 220; // Y position for the menu
-    private static     int menuWidth = 157;
+    private static int menuYPosition = 220; // Y position for the menu
+    private static int menuWidth = 157;
     private static JPanel backgroundPanel;
     private EmployeeController employeeController;
     // Constructor to initialize UI with the logged-in Employee
     public BranchManagerUI(Employee loggedInEmployee) {
         this.employee = loggedInEmployee; // Assign the received employee object
-        this.employeeController=new EmployeeController();
+        this.employeeController = new EmployeeController();
         setTitle("Branch Manager Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -51,8 +51,7 @@ public class BranchManagerUI extends JFrame {
     // Method to set up UI components
     private void setupComponents() {
         // Background Panel
-         backgroundPanel = new JPanel() {
-
+        backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -71,7 +70,6 @@ public class BranchManagerUI extends JFrame {
         JPanel sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(null); // Use null layout for manual positioning
         sideMenuPanel.setBackground(Color.WHITE);
-
 
         sideMenuPanel.setBounds(14, menuYPosition, menuWidth, getHeight() - menuYPosition);
         sideMenuPanel.setOpaque(false);
@@ -177,11 +175,12 @@ public class BranchManagerUI extends JFrame {
         employeePanel.setBounds(menuWidth + 26, 0, getWidth() - menuWidth, getHeight()); // Set bounds of the panel
 
         // Fetch and display all employees based on the branchId
-        int branchId =employee.getBranchId(); // Assuming 'employee' is the logged-in employee
+        int branchId = employee.getBranchId(); // Assuming 'employee' is the logged-in employee
         List<Employee> employeeList = employeeController.getEmployeesByBranch(branchId); // Fetch employees from the DB
         System.out.println("Number of employees: " + employeeList.size());
+
         // Convert the list of employees to a 2D Object array for the JTable
-        String[] columnNames = {"employee_id",	"name", 	"position","email", 	"branch_id", 	"address "	,"phone_number", 	"salary "	,"joining_date ",	"username" 	,"password", 	"status" 	,"first_time_joined "	};
+        String[] columnNames = {"employee_id", "name", "position", "email", "branch_id", "address", "phone_number", "salary", "joining_date", "username", "password", "status", "first_time_joined"};
         Object[][] rowData = new Object[employeeList.size()][columnNames.length];
         for (int i = 0; i < employeeList.size(); i++) {
             Employee emp = employeeList.get(i);
@@ -190,7 +189,6 @@ public class BranchManagerUI extends JFrame {
             rowData[i][2] = emp.getPosition();
             rowData[i][3] = emp.getEmail();
             rowData[i][4] = emp.getBranchId();
-
             rowData[i][5] = emp.getAddress();
             rowData[i][6] = emp.getPhone();
             rowData[i][7] = emp.getSalary();
@@ -199,10 +197,6 @@ public class BranchManagerUI extends JFrame {
             rowData[i][10] = emp.getPassword();
             rowData[i][11] = emp.getStatus();
             rowData[i][12] = emp.getJoiningDate();
-
-
-
-
         }
 
         // Create a JTable to display the employees
@@ -219,70 +213,89 @@ public class BranchManagerUI extends JFrame {
 
         // Wrap the JTable in a JScrollPane
         JScrollPane tableScrollPane = new JScrollPane(employeeTable);
-        tableScrollPane.setBounds(50, 50, getWidth() - menuWidth - 100, 400); // Set bounds for the scroll pane
+        tableScrollPane.setBounds(0, 100, getWidth() - menuWidth - 40, 420); // Set bounds for the scroll pane
 
         // Add the JScrollPane to the employee panel
         employeePanel.add(tableScrollPane);
 
-        // Create and add the "Add Cashier" button (use RoundedButton)
-        RoundedButton addCashierButton = new RoundedButton("Add Cashier", 20); // Set corner radius for rounded corners
-        addCashierButton.setBounds(615, 600, 280, 50); // Position and size of the button
-        addCashierButton.setBackground(new Color(0, 102, 204)); // Set button color (example blue)
-        addCashierButton.setForeground(Color.WHITE); // Set text color (white)
-        addCashierButton.addActionListener(e -> {
-            System.out.println("Add Cashier clicked");
-            // Implement Add Cashier functionality here
-        });
+        // Create and set the label for the employee section
+        JLabel employeeLabel = new JLabel("Your Employees", JLabel.CENTER);
+        employeeLabel.setFont(new Font("Arial", Font.BOLD, 32));
+        employeeLabel.setForeground(new Color(70, 130, 180));
+
+        // Set bounds for the label
+        employeeLabel.setBounds(0, 25, getWidth() - menuWidth - 30, 100);
+
+        // Add the label to the employee panel
+        employeePanel.add(employeeLabel);
+
+        // Create and add the "Add Cashier" button
+        RoundedButton addCashierButton = new RoundedButton("Add Cashier", 20);
+        addCashierButton.setBounds(570, 570, 280, 50);
+        addCashierButton.setBackground(new Color(0, 102, 204));
+        addCashierButton.setForeground(Color.WHITE);
+        addCashierButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+//        addCashierButton.addActionListener(e -> {
+//            // Add Cashier Logic
+//            boolean flag=false;
+//            if(employee.getPosition().equalsIgnoreCase("Super Admin"))
+//            {
+//                flag=true;
+//
+//            }
+//            EmployeeForm form= new EmployeeForm(employee.getPosition(),flag,employee.getBranchId());
+//            Employee newemp = form.returnNewEmployee();
+//            Employee newCashier = newemp;
+//            newCashier.setPosition("Cashier");
+//            employeeController.insertEmployee(newCashier); // Insert new Cashier employee
+//            JOptionPane.showMessageDialog(this, "Cashier Added Successfully");
+//        });
+
+        // Add Cashier button to the employee panel
         employeePanel.add(addCashierButton);
 
-        // Create and add the "Add Data Operator" button (use RoundedButton)
-        RoundedButton addDataOperatorButton = new RoundedButton("Add Data Operator", 20); // Set corner radius for rounded corners
-        addDataOperatorButton.setBounds(320, 600, 280, 50); // Position and size of the button
-        addDataOperatorButton.setBackground(new Color(73, 174, 66)); // Set button color (example green)
-        addDataOperatorButton.setForeground(Color.WHITE); // Set text color (white)
-        addDataOperatorButton.addActionListener(e -> {
-            System.out.println("Add Data Operator clicked");
-            // Implement Add Data Operator functionality here
-        });
-        employeePanel.add(addDataOperatorButton);
+        // Create and add the "Add Data Operator" button
+        RoundedButton addDataOpButton = new RoundedButton("Add Data Operator", 20);
+        addDataOpButton.setBounds(870, 570, 280, 50);
+        addDataOpButton.setBackground(new Color(0, 102, 204));
+        addDataOpButton.setForeground(Color.WHITE);
+        addDataOpButton.setFont(new Font("Arial", Font.BOLD, 16));
 
-        // Add the employee panel to the main background panel
-        backgroundPanel.add(employeePanel); // Ensure it's added to the backgroundPanel
+//        addDataOpButton.addActionListener(e -> {
+//            // Add Data Operator Logic
+//            Employee newDataOp = new Employee();
+//            newDataOp.setPosition("Data Operator");
+//            employeeController.insertEmployee(newDataOp); // Insert new Data Operator employee
+//            JOptionPane.showMessageDialog(this, "Data Operator Added Successfully");
+//        });
 
-        // Revalidate and repaint to update the UI
+        // Add Data Operator button to the employee panel
+        employeePanel.add(addDataOpButton);
+
+        // Add the employee panel to the background panel
+        backgroundPanel.add(employeePanel);
+
+        // Refresh the frame to show updated employee panel
         revalidate();
         repaint();
     }
 
-
-
-
-
-    // Logout action method
+    // Method for handling logout action
     private void logoutAction() {
-        int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to log out?",
-                "Logout Confirmation",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            this.dispose(); // Close the current window
-            new LoginOptions(); // Navigate to login options
-        }
+        // Close current frame and show the login screen again
+        dispose();
+        new LoginOptions().setVisible(true);
     }
 
+    // Main method to launch the application
     public static void main(String[] args) {
+        // Simulating the logged-in employee with branchId
+
+
+        // Launch Branch Manager UI
         SwingUtilities.invokeLater(() -> {
-            BranchManagerUI ui = new BranchManagerUI(new Employee(
-                    "anas1", "anas", "anas@gmail.com", "1", 1, "lhr",
-                    new BigDecimal(22222), "12345", "true", new Date(), "Branch Manager"
-            ));
-            ui.setVisible(true); // Make sure the UI is visible
+            new BranchManagerUI(employee).setVisible(true);
         });
     }
 }
-
-

@@ -241,8 +241,7 @@ public class BranchManagerUI extends JFrame {
             // Add Cashier Logic
             String [] positions={"Cashier","Data Operator"};
             EmployeeForm form= new EmployeeForm(positions,employee.getBranchId());
-            Employee newEmp = new Employee();
-            JOptionPane.showMessageDialog(this, "Cashier Added Successfully");
+
         });
 
         // Add Cashier button to the employee panel

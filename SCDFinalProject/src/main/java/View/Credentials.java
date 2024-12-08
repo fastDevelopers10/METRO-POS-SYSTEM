@@ -84,9 +84,10 @@ public class Credentials extends JFrame {
         btnLogin.addActionListener(e -> {
             String username = txtUsername.getText();
             String password = new String(txtPassword.getPassword());
+
              loggedInEmployee= loginController.validateLogin( username, password);
            boolean flag = loggedInEmployee != null && loggedInEmployee.getPassword().equals(password);
-
+            System.out.println(flag);
             if (flag) {
                 JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 openDashboard(role); // Open appropriate dashboard based on role
@@ -145,7 +146,8 @@ public class Credentials extends JFrame {
                 new BranchManagerUI(loggedInEmployee).setVisible(true);
                 break;
             case "data operator":
-                // new DataOperatorUI(loggedInEmployee);
+                System.out.println("dopppp");
+                new DataOperatorUI(loggedInEmployee).setVisible(true);
                 break;
             case "super admin":
                 // new SuperAdminUI(loggedInEmployee);

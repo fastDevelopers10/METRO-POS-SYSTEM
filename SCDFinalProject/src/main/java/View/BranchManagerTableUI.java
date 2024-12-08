@@ -1,5 +1,6 @@
 package View;
 
+import Controller.BranchController;
 import Controller.EmpCtrlr;
 import Controller.SuperAdminLoginController;
 
@@ -7,7 +8,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.SQLException;
-
+import java.util.List;
 
 
 public class BranchManagerTableUI extends JFrame {
@@ -125,11 +126,11 @@ public class BranchManagerTableUI extends JFrame {
         addEmployeeButton.setBackground(new Color(0xf9f9f9));
         lblBackground.add(addEmployeeButton);
         addEmployeeButton.addActionListener(e -> {
-            try {
-               // new AddEmployeeUI(); // Replace with your Add Employee UI class
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+            // Add Cashier Logic
+            String [] positions={"Branch Manager"};
+            BranchController bc=new BranchController();
+            List<Integer> branchids=bc.getAllBranchIds();
+            EmployeeForm form= new EmployeeForm(positions,branchids);
         });
 
         controller = new EmpCtrlr(this);

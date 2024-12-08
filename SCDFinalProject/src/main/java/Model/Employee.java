@@ -35,6 +35,34 @@ public class Employee {
         this.position = position;
     }
 
+    public Employee(int employeeId, String name, String position, String email, int branchId,
+                    String address, String phoneNumber, BigDecimal salary, Date joiningDate,
+                    String status) {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.position = position;
+        this.email = email;
+        this.branchId = branchId;
+        this.address = address;
+        this.phone = phoneNumber;
+        this.salary = salary;
+        this.joiningDate = joiningDate;
+        this.status = status;
+    }
+    public Employee(int employeeId, String name, String email, int branchId,
+                    String address, String phoneNumber, BigDecimal salary, Date joiningDate,
+                    String status) {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.email = email;
+        this.branchId = branchId;
+        this.address = address;
+        this.phone = phoneNumber;
+        this.salary = salary;
+        this.joiningDate = joiningDate;
+        this.status=status;
+    }
+
     // Getter and setter for employeeId (set after inserting into DB)
     public int getEmployeeId() {
         return employeeId;

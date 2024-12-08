@@ -1,10 +1,12 @@
 package Service;
 
-import DAO.EmployeeDAO;
 import Model.Employee;
+import DAO.EmployeeDAO;
 
+import javax.swing.table.DefaultTableModel;
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.util.List;
 
 public class EmployeeService {
@@ -23,6 +25,22 @@ public class EmployeeService {
     // Method to update the employee password
     public boolean updateEmployeePassword(String username, String newPassword) {
         return employeeDAO.updatePassword(username, newPassword); // Call DAO to update password
+    }
+
+    public void populateBranchManagerTable(DefaultTableModel tableModel) {
+        try {
+            tableModel.setRowCount(0); // Clears the table before repopulating
+            employeeDAO.getAllBranchManagers().forEach(employee -> {
+                tableModel.addRow(new Object[]{
+                        employee.getEmployeeId(), employee.getName(), employee.getPosition(),
+                        employee.getEmail(), employee.getBranchId(), employee.getAddress(),
+                        employee.getPhone(), employee.getSalary(), employee.getJoiningDate(),
+                        employee.getUsername(), employee.getStatus(), "Update"
+                });
+            });
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     // Method to add a new employee

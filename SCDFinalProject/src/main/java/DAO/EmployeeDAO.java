@@ -177,5 +177,29 @@ public class EmployeeDAO {
 
         return employee;
     }
+    public List<Employee> getAllBranchManagers() throws SQLException {
+        String query = "SELECT * FROM Employee WHERE position='branch manager';";
+        List<Employee> employees = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                employees.add(new Employee(
+                        rs.getInt("employee_id"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getInt("branch_id"),
+                        rs.getString("address"),
+                        rs.getString("phone_number"),
+                        rs.getBigDecimal("salary"),
+                        rs.getDate("joining_date"),
+                        rs.getString("status")
+                ));
+            }
+        }
+
+        return employees;
+}
 
 }

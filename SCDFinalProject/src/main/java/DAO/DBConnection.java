@@ -7,36 +7,36 @@ import java.sql.Statement;
 
 public class DBConnection {
     private static Connection connection;
-    private static final String DB_URL = "jdbc:mysql://localhost:3306";  // Example, use your database URL
-    private static final String USER = "root";  // Your MySQL username
-    private static final String PASSWORD = "";  // Your MySQL password
-    // Private constructor to prevent instantiation
+    private static final String DB_URL = "jdbc:mysql://localhost:3306";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
+
     private DBConnection() {}
 
     public static Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                // Establish connection
+
                 connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
 
-                Statement stmt = connection.createStatement();
 
+                Statement stmt = connection.createStatement();
                 createDatabaseAndTables();            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return connection;
     }
-    // Create database and tables if they do not exist
+
     private static void createDatabaseAndTables() {
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
-            // Drop and create database
+
             stmt.executeUpdate("CREATE DATABASE IF NOT EXISTS METRO_POS_SYSTEM;");
             stmt.executeUpdate("USE METRO_POS_SYSTEM;");
 
-            // Create tables
+
             createSuperAdminTable(stmt);
             createBranchTable(stmt);
             createVendorTable(stmt);
@@ -45,14 +45,11 @@ public class DBConnection {
             createVendorProductTable(stmt);
             createEmployeeTable(stmt);
 
-            // Create triggers
-            createTriggers(stmt);
-
             System.out.println("Tables and triggers created successfully.");
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            // Ensure statement is closed to prevent resource leaks
+
             if (stmt != null) {
                 try {
                     stmt.close();
@@ -63,7 +60,6 @@ public class DBConnection {
         }
     }
 
-    // Helper methods to create individual tables
     private static void createSuperAdminTable(Statement stmt) throws SQLException {
         stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS super_admin (" +
@@ -99,7 +95,6 @@ public class DBConnection {
         );
     }
 
-
     private static void createProductTable(Statement stmt) throws SQLException {
         stmt.executeUpdate(
                 "CREATE TABLE IF NOT EXISTS product (" +
@@ -111,8 +106,8 @@ public class DBConnection {
                         "original_price DECIMAL(10, 2), " +
                         "sales_price DECIMAL(10, 2), " +
                         "status BOOLEAN DEFAULT TRUE, " +
-                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id), " +
-                        "UNIQUE(product_name, product_category)" +
+                        "FOREIGN KEY (branch_id) REFERENCES branch(branch_id) " +
+
                         ")"
         );
     }
@@ -174,46 +169,9 @@ public class DBConnection {
                         "    first_time_joined BOOLEAN DEFAULT TRUE,\n" +
                         "    FOREIGN KEY (branch_id) REFERENCES branch(branch_id)\n" +
                         ") ENGINE=InnoDB;\n"
-                );
+        );
     }
 
-    private static void createTriggers(Statement stmt) throws SQLException {
-        // Check if the trigger exists
-        String checkTriggerExists = "SELECT COUNT(*) " +
-                "FROM information_schema.triggers " +
-                "WHERE trigger_name = 'update_product_on_purchase' " +
-                "AND trigger_schema = 'metro_pos_system';";
-        var resultSet = stmt.executeQuery(checkTriggerExists);
-        if (resultSet.next() && resultSet.getInt(1) == 0) {
-            // Create trigger if it doesn't exist
-            stmt.executeUpdate(
-                    "CREATE TRIGGER update_product_on_purchase " +
-                            "AFTER INSERT ON vendor_product " +
-                            "FOR EACH ROW " +
-                            "BEGIN " +
-                            "   DECLARE prod_id INT; " +
-                            "   SELECT product_id INTO prod_id " +
-                            "   FROM product " +
-                            "   WHERE product_name = NEW.product_name AND product_category = NEW.product_category; " +
-                            "   IF prod_id IS NULL THEN " +
-                            "       INSERT INTO product (product_name, product_category, total_products, original_price, sales_price, branch_id, status) " +
-                            "       VALUES (NEW.product_name, NEW.product_category, NEW.products_purchased, NEW.original_price, NEW.sales_price, NEW.branch_id, TRUE); " +
-                            "       SET prod_id = LAST_INSERT_ID(); " +
-                            "   ELSE " +
-                            "       UPDATE product " +
-                            "       SET total_products = total_products + NEW.products_purchased " +
-                            "       WHERE product_id = prod_id; " +
-                            "   END IF; " +
-                            "   UPDATE vendor_product " +
-                            "   SET product_id = prod_id " +
-                            "   WHERE relation_id = NEW.relation_id; " +
-                            "END"
-            );
-            System.out.println("Trigger 'update_product_on_purchase' created.");
-        } else {
-            System.out.println("Trigger 'update_product_on_purchase' already exists.");
-        }
-    }
 
     // Main method to initialize the DB connection and setup
     public static void main(String[] args) {
@@ -222,12 +180,13 @@ public class DBConnection {
         // Get the connection, which will trigger database and table creation
         try (Connection connection = DBConnection.getConnection()) {
             if (connection != null) {
+
                 System.out.println("Database setup complete. Connection established successfully.");
             } else {
                 System.out.println("Failed to establish database connection.");
             }
         } catch (Exception e) {
             e.printStackTrace();
- }
-}
+        }
+    }
 }

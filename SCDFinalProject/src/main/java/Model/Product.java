@@ -1,22 +1,19 @@
 package Model;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class Product {
-    private int productId;  // Product ID field (mapped to the DB auto-increment column)
-    private Branch branch;  // Branch object (instead of just branchId)
+    private int ID;
+    private Branch branch; // Now using Branch object instead of branchId
     private String name;
     private String category;
-    private int quantity;
     private BigDecimal originalPrice;
     private BigDecimal salesPrice;
+    private int quantity;
     private boolean status;
-    private static String tax="0.17";
+
     // Constructor
-    public Product(int productId, Branch branch, String name, String category,
-                   BigDecimal originalPrice, BigDecimal salesPrice, int quantity, boolean status) {
-        this.productId = productId;
+    public Product(int productId, Branch branch, String name, String category, BigDecimal originalPrice, BigDecimal salesPrice, int quantity, boolean status) {
         this.branch = branch;
         this.name = name;
         this.category = category;
@@ -26,14 +23,20 @@ public class Product {
         this.status = status;
     }
 
-    // Getters and Setters
-    public int getProductId() {
-        return productId;
+    public Product() {
+
     }
 
-    public void setProductId(int productId) {
-        this.productId = productId;
+    public Product(int id, String name, String category, int quantity, double originalPrice, double salesPrice, boolean status) {
+        this.ID=id;
+        this.name=name;
+        this.category=category;
+        this.quantity=quantity;
+        this.originalPrice= BigDecimal.valueOf(originalPrice);
+        this.salesPrice= BigDecimal.valueOf(salesPrice);
+        this.status=status;
     }
+
 
     public Branch getBranch() {
         return branch;
@@ -59,14 +62,6 @@ public class Product {
         this.category = category;
     }
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
     public BigDecimal getOriginalPrice() {
         return originalPrice;
     }
@@ -83,6 +78,14 @@ public class Product {
         this.salesPrice = salesPrice;
     }
 
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     public boolean isStatus() {
         return status;
     }
@@ -91,12 +94,11 @@ public class Product {
         this.status = status;
     }
 
-    // toString() method for debugging/logging
+    // toString() Method for debugging and logging
     @Override
     public String toString() {
         return "Product{" +
-                "productId=" + productId +
-                ", branch=" + branch +
+                "branch=" + branch +
                 ", name='" + name + '\'' +
                 ", category='" + category + '\'' +
                 ", originalPrice=" + originalPrice +
@@ -106,16 +108,12 @@ public class Product {
                 '}';
     }
 
-    // Calculate Profit method: Sales price minus 17% tax and the original price
-    public BigDecimal calculateProfit() {
-        BigDecimal taxRate = new BigDecimal(tax);  // 17% tax
-        BigDecimal salesAfterTax = salesPrice.subtract(salesPrice.multiply(taxRate)); // Sales price after tax
-        BigDecimal profit = salesAfterTax.subtract(originalPrice); // Profit = after-tax sales price - original price
 
-        // Round the result to two decimal places (standard currency rounding)
-        profit = profit.setScale(2, RoundingMode.HALF_UP);
-
-        return profit;
+    public int getId() {
+        return ID;
     }
 
+    public void setId(int id) {
+        this.ID=ID;
+    }
 }

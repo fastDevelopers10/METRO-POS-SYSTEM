@@ -1,30 +1,63 @@
 package View;
 
+import Model.Employee;
+import Controller.ProductController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import javax.swing.border.EmptyBorder;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 public class DataOperatorUI extends JFrame {
     private BufferedImage backgroundImage;
-    private JButton activeButton = null; // To track the active button
+    private Employee employee;
+    ProductController controller = new ProductController();
+    private SideMenuButton activebtn = null;
+    private JPanel sideMenuPanel;
+    private JLabel TotalVendors,TotalProducts;
+    private final int branchnumber;
 
-    public DataOperatorUI() {
+
+    public DataOperatorUI(Employee loggedInEmployee) {
+        this.employee = loggedInEmployee;
+        String name=loggedInEmployee.getName();
+        String role= loggedInEmployee.getPosition();
+        this.branchnumber=loggedInEmployee.getBranchId();
+
         setTitle("Data Operator Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1320, 710); // Set a default size for the window
+        // Set icon
+
+        try {
+            ImageIcon icon = new ImageIcon(
+                    Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+            );
+            setIconImage(icon.getImage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            System.err.println("Error: Unable to load icon image.");
+        }
+
+
         setResizable(false);
 
-        // Load the background image
         try {
-            backgroundImage = ImageIO.read(new File("D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\DOPN.png"));
+            // Use class loader to load the resource
+            backgroundImage = ImageIO.read(Objects.requireNonNull(
+                    getClass().getClassLoader().getResourceAsStream("images/DOP.png")));
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
+            System.err.println("Error: Unable to load background image.");
         }
 
         JPanel backgroundPanel = new JPanel() {
@@ -34,20 +67,51 @@ public class DataOperatorUI extends JFrame {
                 if (backgroundImage != null) {
                     g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
                 } else {
-                    g.setColor(Color.LIGHT_GRAY); // Fallback color if image is not found
+                    g.setColor(Color.LIGHT_GRAY);
                     g.fillRect(0, 0, getWidth(), getHeight());
                 }
             }
         };
-        backgroundPanel.setLayout(null); // Use null layout for manual positioning
-        backgroundPanel.setBounds(0, 0, getWidth(), getHeight()); // Ensure background covers the frame
+        backgroundPanel.setLayout(null);
+        backgroundPanel.setBounds(0, 0, getWidth(), getHeight());
+        JLabel nameLabel = new JLabel("Name: " + name);
+        nameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
+        nameLabel.setForeground(Color.BLACK);
+        nameLabel.setBounds(100, 105, 300, 30);
 
-        // Create the side menu panel
-        JPanel sideMenuPanel = new JPanel();
+        JLabel positionLabel = new JLabel("Position: " + role);
+        positionLabel.setFont(new Font("Century Gothic", Font.PLAIN, 10));
+        positionLabel.setForeground(Color.BLACK);
+        positionLabel.setBounds(100, 125, 300, 30);
+
+
+        JLabel branchLabel = new JLabel(" # "+branchnumber);
+        branchLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+        branchLabel.setForeground(Color.BLACK);
+        branchLabel.setBounds(445, 67, 300, 30);
+
+        TotalProducts = new JLabel(String.valueOf(controller.getProductCountByBranch(branchnumber)));
+        TotalProducts.setFont(new Font("Century Gothic", Font.PLAIN, 24));
+        TotalProducts.setForeground(Color.BLACK);
+        TotalProducts.setBounds(320, 170, 300, 30);
+
+        TotalVendors = new JLabel(String.valueOf(controller.getVendorCountByBranch()));
+        TotalVendors.setFont(new Font("Century Gothic", Font.PLAIN, 24));
+        TotalVendors.setForeground(Color.BLACK);
+        TotalVendors.setBounds(560, 170, 300, 30);
+
+        backgroundPanel.add(nameLabel);
+        backgroundPanel.add(positionLabel);
+        backgroundPanel.add(branchLabel);
+        backgroundPanel.add(TotalProducts);
+        backgroundPanel.add(TotalVendors);
+
+
+        sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(new GridBagLayout());
         sideMenuPanel.setBackground(Color.WHITE);
-        int menuYPosition = 250; // Default Y position of side menu
-        int menuWidth = 240;     // Width of the side menu
+        int menuYPosition = 250;
+        int menuWidth = 240;
         sideMenuPanel.setBounds(10, menuYPosition, menuWidth, getHeight() - menuYPosition);
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -57,29 +121,103 @@ public class DataOperatorUI extends JFrame {
         gbc.anchor = GridBagConstraints.NORTH;
 
         // Button texts and icon paths
-        String[] buttonTexts = {"Dashboard", "Change Password", "Add Product", "Add Vendor", "Add Category", "LogOut"};
+        String[] buttonTexts = {"Dashboard", "Change Password", "Add Product", "Add Vendor", "LogOut"};
         String[] iconPaths = {
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\dash_icon.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\pass_icon.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\product.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\inventory.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\category.png",
-                "D:\\Users\\Alien\\OneDrive\\Documents\\GitHubProject\\METRO-POS-SYSTEM\\SCDFinalProject\\src\\main\\resources\\images\\icons\\logout.png"
+                "\\images\\icons\\dash_icon.png",
+                "\\images\\icons\\pass_icon.png",
+                "\\images\\icons\\product.png",
+                "\\images\\icons\\inventory.png",
+                "\\images\\icons\\logout.png"
         };
 
-        // Create buttons and add them to the side menu panel
         for (int i = 0; i < buttonTexts.length; i++) {
             SideMenuButton button = new SideMenuButton(buttonTexts[i], iconPaths[i]);
 
-            // Add action listener
-            button.addActionListener(e -> {
-                if (activeButton != null) {
-                    ((SideMenuButton) activeButton).setActive(false);
-                }
-                button.setActive(true);
-                activeButton = button;
-                System.out.println("Button clicked: " + button.getText());
-            });
+            // Add action listener specific to each button
+            switch (i) {
+                case 0: // Dashboard button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("Dashboard clicked");
+                        // Add your logic for Dashboard button here
+                    });
+                    break;
+                case 1: // Change Password button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("Change Password clicked");
+                        // Add your logic for Change Password button here
+                    });
+                    break;
+                case 2: // Add Product button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);
+                        System.out.println("Add Product clicked");
+                        AddProduct addProductWindow = new AddProduct(branchnumber);
+                        addProductWindow.setVisible(true);
+
+                        // Add WindowListener to reset active button when the window is closed
+                        addProductWindow.addWindowListener(new WindowAdapter() {
+                            @Override
+                            public void windowClosed(WindowEvent e) {
+                                // Reset active button to Dashboard when the window is closed
+                                addProductWindow.dispose();
+                                updateLabelProduct();
+                                resetActiveButtonToDashboard();
+                            }
+                        });
+                    });
+                    break;
+                case 3: // Add Vendor button
+                    button.addActionListener(e -> {
+                        handleButtonClick(button);  // Set the clicked button as active
+                        AddVendor addVendorWindow = new AddVendor();
+                        addVendorWindow.setVisible(true);
+
+                        // Add WindowListener to reset active button when the window is closed
+                        addVendorWindow.addWindowListener(new WindowAdapter() {
+                            @Override
+                            public void windowClosed(WindowEvent e) {
+                                // Reset active button to Dashboard when the window is closed
+                                addVendorWindow.dispose();
+                                updateLabelVendor();
+                                resetActiveButtonToDashboard();
+
+                            }
+                        });
+                    });
+                    break;
+
+                case 4: // Add Category button
+                    button.addActionListener(e -> {
+                        // Get the current frame (parent window) for positioning the dialog
+                        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(button);
+
+                        // Show a confirmation dialog before logging out
+                        int confirmation = JOptionPane.showConfirmDialog(parentFrame,
+                                "Are you sure you want to exit?",
+                                "Confirm Exit", JOptionPane.YES_NO_OPTION);
+
+                        if (confirmation == JOptionPane.YES_OPTION) {
+                            // If user clicks Yes, dispose the current screen and open LoginOptions
+                            System.out.println("LogOut clicked"); // Close the current window
+                            this.dispose();  // Dispose the current window
+
+                            SwingUtilities.invokeLater(() -> {
+                                LoginOptions frame = new LoginOptions();
+                                frame.setVisible(true); // Make LoginOptions visible
+                            });
+                        } else {
+                            // If user clicks No, close the dialog and reset the active button to dashboard
+                            System.out.println("LogOut cancelled");
+                            // Reset the active button to the dashboard or handle accordingly
+                        }
+                    });
+                    break;
+
+
+
+            }
 
             gbc.gridy = i; // Set the row for the button
             gbc.weighty = 0; // Don't let buttons take up any extra vertical space
@@ -88,16 +226,17 @@ public class DataOperatorUI extends JFrame {
             // Set the first button as the active button by default
             if (i == 0) {
                 button.setActive(true);
-                activeButton = button;
+                activebtn = button;
             }
+
+
         }
 
-        // Add vertical space after the buttons to push them upward (using a "filler" component)
+// Add vertical space after the buttons to push them upward (using a "filler" component)
         gbc.gridy = buttonTexts.length; // Set after all buttons
         gbc.weighty = 1.0; // Give the filler component vertical space
         gbc.fill = GridBagConstraints.VERTICAL; // Allow filler to take vertical space
         sideMenuPanel.add(new JLabel(" "), gbc); // Add an empty label as a filler
-
 
 
         // Create the layered pane for stacking components
@@ -137,14 +276,39 @@ public class DataOperatorUI extends JFrame {
         VendorBTN.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                JDialog dialog = new JDialog((Frame) null, "Vendors", true);
+                try {
+
+                    ImageIcon icon = new ImageIcon(
+                            Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+                    );
+                    dialog.setIconImage(icon.getImage());
+                } catch (NullPointerException exe) {
+                    exe.printStackTrace();
+                    System.err.println("Error: Unable to load frame icon image.");
+                }
+
+                dialog.setBounds(275, 0, 1020, 800); // Position it 200px from top left and size it 800x500px
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                VendorTablePanel panel = new VendorTablePanel();
+                dialog.add(panel);
+
+                panel.setTableBounds(50, 50, 700, 350);
+
+                JScrollPane scrollPane = new JScrollPane(panel.vendorTable);
+                scrollPane.setBounds(50, 50, 700, 350);
+                dialog.add(scrollPane);  // Add scroll pane to dialog
+
+                dialog.setVisible(true); // Show the dialog
 
             }
+
         });
-        // Add label and button to VendorPanel
+
         VendorPanel.add(VendorLB, BorderLayout.WEST); // Add label on the left
         VendorPanel.add(VendorBTN, BorderLayout.EAST); // Add button on the right
 
-        // Rounded categoryPanel
         RoundedPanel categoryPanel = new RoundedPanel(8);
         categoryPanel.setBounds(400, 100, 300, 70); // Set bounds for the entire panel
         categoryPanel.setBackground(Color.decode("#CCD4E5")); // Set background color for the panel
@@ -167,10 +331,61 @@ public class DataOperatorUI extends JFrame {
         categoryPanel.add(categorylabel, BorderLayout.WEST); // Add label on the left
         categoryPanel.add(categorybtn, BorderLayout.EAST);
 
-        // Add an action listener to the update button
-        // categorybtn.addActionListener();
+        categorybtn.addActionListener(e -> {
+            List<String> categories = controller.getCategories(branchnumber);
 
-        // Rounded BillingPanel
+            JDialog categoriesDialog = new JDialog();
+            categoriesDialog.setTitle("Categories");
+            categoriesDialog.setSize(400, 500); // Increased size for better scroll panel display
+            categoriesDialog.setLocationRelativeTo(null); // Center dialog on screen
+
+            try {
+                // Use the class loader to load the image resource
+                ImageIcon icon = new ImageIcon(
+                        Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+                );
+                categoriesDialog.setIconImage(icon.getImage());
+            } catch (NullPointerException exe) {
+                exe.printStackTrace();
+                System.err.println("Error: Unable to load frame icon image.");
+            }
+
+            JPanel categoriesPanel = new JPanel();
+            categoriesPanel.setLayout(new BoxLayout(categoriesPanel, BoxLayout.Y_AXIS)); // Use Y-axis layout for vertical display
+            categoriesPanel.setBackground(Color.decode("#CCD4E5"));
+
+            // Centered heading label
+            JLabel headingLabel = new JLabel("Categories", JLabel.CENTER);
+            headingLabel.setFont(new Font("Century Gothic", Font.BOLD, 20));
+            headingLabel.setBounds(10, 20, categoriesDialog.getWidth() - 20, 40); // Position centered
+            categoriesPanel.add(headingLabel);
+
+            if (categories != null && !categories.isEmpty()) {
+                int yPosition = 70; // Starting position for categories after the heading
+                for (String category : categories) {
+                    JLabel categoryLabel = new JLabel(category);
+                    categoryLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
+                    categoryLabel.setBounds(10, yPosition, categoriesDialog.getWidth() - 20, 30); // 10 pixels away from x of dialog
+                    categoriesPanel.add(categoryLabel);
+                    yPosition += 40; // Space between categories
+                }
+            } else {
+                JLabel noCategoryLabel = new JLabel("No categories available.");
+                noCategoryLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
+                noCategoryLabel.setBounds(10, 70, categoriesDialog.getWidth() - 20, 30); // 10 pixels away from x of dialog
+                categoriesPanel.add(noCategoryLabel);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(categoriesPanel); // Wrap the panel in a JScrollPane
+            scrollPane.setPreferredSize(new Dimension(380, 500)); // Set preferred size for the scroll pane
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Ensure the scrollbar is always displayed
+            categoriesDialog.add(scrollPane); // Add the scroll pane to the dialog
+
+            categoriesDialog.setModal(true);
+            categoriesDialog.setVisible(true);
+        });
+
+
         RoundedPanel productspanel = new RoundedPanel(8);
         productspanel.setBounds(750, 100, 250, 70); // Set bounds for the entire panel
         productspanel.setBackground(Color.decode("#FAE7D5")); // Set background color for the panel
@@ -193,10 +408,32 @@ public class DataOperatorUI extends JFrame {
         productspanel.add(productslb, BorderLayout.WEST); // Add label on the left
         productspanel.add(productsbtn, BorderLayout.EAST); // Add button on the right
 
-        // Add an action listener to the productsbtn
-//        productsbtn.addActionListener(e -> {
-//
-//        });
+        ////Add an action listener to the productsbtn
+        productsbtn.addActionListener(e -> {
+            JFrame frame = new JFrame("Product Table"+ branchnumber);
+            try {
+                // Use the class loader to load the image resource
+                ImageIcon icon = new ImageIcon(
+                        Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+                );
+                frame.setIconImage(icon.getImage());
+            } catch (NullPointerException exe) {
+                exe.printStackTrace();
+                System.err.println("Error: Unable to load frame icon image.");
+            }
+
+            frame.setBounds(275, 0, 1020, 800); // Position it 200px from top left and size it 800x500px
+            frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            // Create an instance of ProductTable with branchId = 1
+            ProductTablePanel productTable = new ProductTablePanel(branchnumber);
+
+            // Add the ProductTable JPanel to the frame
+            frame.add(productTable);
+
+            // Make the frame visible
+            frame.setVisible(true);
+        });
 
         transparentPanel.add(VendorPanel);
         transparentPanel.add(categoryPanel);
@@ -208,8 +445,40 @@ public class DataOperatorUI extends JFrame {
         setContentPane(layeredPane);
         // Make the frame visible
         setVisible(true);
+
     }
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(DataOperatorUI::new);
+
+    private void handleButtonClick(SideMenuButton button) {
+        // Deactivate the previously active button if it exists
+        if (activebtn != null) {
+            activebtn.setActive(false);
+        }
+
+        // Set the clicked button as the active button
+        button.setActive(true);
+        activebtn = button;
     }
+
+    private void resetActiveButtonToDashboard() {
+        if (activebtn != null) {
+            activebtn.setActive(false); // Deactivate the current active button
+        }
+
+        // Assume the first button (Dashboard) is the default
+        Component[] components = sideMenuPanel.getComponents();
+        if (components.length > 0 && components[0] instanceof SideMenuButton) {
+            SideMenuButton dashboardButton = (SideMenuButton) components[0];
+            dashboardButton.setActive(true); // Activate the default button
+            activebtn = dashboardButton; // Update the activeButton reference
+        }
+    }
+    private void updateLabelVendor() {
+
+        TotalVendors.setText(String.valueOf(controller.getVendorCountByBranch()));
+    }
+    private void updateLabelProduct() {
+
+        TotalProducts.setText(String.valueOf(controller.getProductCountByBranch(branchnumber)));
+    }
+
 }

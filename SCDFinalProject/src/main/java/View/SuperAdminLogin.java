@@ -1,5 +1,7 @@
 package SCDFinalProject.src.main.java.View;
 
+import SCDFinalProject.src.main.java.Controller.SuperAdminLoginController;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -90,7 +92,6 @@ public class SuperAdminLogin extends JFrame {
         return new String(pfPassword.getPassword());
     }
 
-    // Methods to add action listeners
     public void addLoginListener(ActionListener listener) {
         btnLogin.addActionListener(listener);
 
@@ -98,5 +99,9 @@ public class SuperAdminLogin extends JFrame {
 
     public void addExitListener(ActionListener listener) {
         btnExit.addActionListener(listener);
+    }
+
+    public static void main(String[] args) {
+        new SuperAdminLoginController();
     }
 }

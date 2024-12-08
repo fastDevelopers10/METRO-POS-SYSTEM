@@ -164,7 +164,7 @@ public class BranchManagerUI extends JFrame {
     }
 
     // Method to show the employee panel on the right side
-    private void showEmployeePanel() {
+    public void showEmployeePanel() {
         // Remove any existing employee panel
         if (employeePanel != null) {
             remove(employeePanel);

@@ -172,7 +172,7 @@ public class CashierUI extends JFrame {
             // Update Y position for next button
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
-JLabel branchid=new JLabel(""+employee.getEmployeeId());
+    JLabel branchid=new JLabel(""+employee.getEmployeeId());
         branchid.setBounds(118,145,22,22);
 // Add side menu panel to your background panel
         backgroundPanel.add(sideMenuPanel);
@@ -290,6 +290,10 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
 
         this.add(layeredPane);
+    }
+
+    public CashierUI() {
+
     }
 
     private void initializeCategoryButtons()

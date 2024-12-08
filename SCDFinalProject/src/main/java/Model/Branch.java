@@ -20,6 +20,10 @@ public class Branch {
         this.numberOfEmployees = numberOfEmployees;
     }
 
+    public Branch() {
+
+    }
+
     // Getters and Setters
     public int getBranchId() {
         return branchId;

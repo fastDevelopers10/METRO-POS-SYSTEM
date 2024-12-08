@@ -1,7 +1,7 @@
 package Controller;
 
 import DAO.SuperAdminDAO;
-import Model.SuperAdmin;
+import View.LoginOptions;
 import View.SuperAdminLogin;
 import View.SuperAdminUI;
 
@@ -19,13 +19,15 @@ public class SuperAdminLoginController {
         // Add action listeners for login and exit buttons
         loginView.addLoginListener(e ->
         {
-                      handleLogin();
+            handleLogin();
 
         });
-        loginView.addExitListener(e -> System.exit(0));
+        loginView.addExitListener(e -> new LoginOptions() );
     }
 
-
+    public static String getUsername() {
+        return admin.getUsername();
+    }
 
 
     private void handleLogin() {
@@ -49,3 +51,7 @@ public class SuperAdminLoginController {
     }
 
 }
+
+
+
+

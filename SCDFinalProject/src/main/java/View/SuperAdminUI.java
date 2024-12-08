@@ -1,31 +1,28 @@
 package View;
 
-import Controller.SuperAdminLoginController;
-import DAO.SuperAdminDAO;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 
+import static Controller.SuperAdminLoginController.getUsername;
+
+
 public class SuperAdminUI extends JFrame {
-    private SuperAdminDAO admin;
     public SuperAdminUI() {
         setTitle("Super Admin UI");
         setSize(1320, 710);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null); // Absolute layout for precise positioning
         setResizable(false);
-        admin=new SuperAdminDAO();
         // Background image
         JLabel lblBackground = new JLabel(new ImageIcon("SCDFinalProject\\src\\main\\resources\\images\\Super Admin Dashboard (1).png"));
         lblBackground.setBounds(0, 0, 1320, 710);
         add(lblBackground);
 
         // Get username from SuperAdminController
-        String username = "ANAS";
-
+        String username = getUsername();
         JLabel lblUsername = new JLabel(username);
         lblUsername.setBounds(105, 125, 180, 40);
         lblUsername.setFont(new Font("Century Gothic", Font.PLAIN, 20));
@@ -76,7 +73,7 @@ public class SuperAdminUI extends JFrame {
         lblBackground.add(btnDashboard);
 
         JButton btnbranchManagers = new JButton("Branch Managers");
-        btnbranchManagers.setBounds(50, 320, 140, 30); // Position of the branchManagers button
+        btnbranchManagers.setBounds(50, 320, 180, 30); // Position of the branchManagers button
         styleButton(btnbranchManagers);
         lblBackground.add(btnbranchManagers);
 

@@ -246,35 +246,7 @@ public class ProductDAO {
         }
         return 0;
     }
-    public List<Product> getProductsByBranchWithSearch(int branchId, String searchQuery) {
-        String query = "SELECT * FROM product WHERE branch_id = ? AND " +
-                "(product_name LIKE ? OR product_category LIKE ?)";
-        List<Product> products = new ArrayList<>();
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, branchId);
-            statement.setString(2, "%" + searchQuery + "%");
-            statement.setString(3, "%" + searchQuery + "%");
-
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                String name = resultSet.getString("product_name");
-                String category = resultSet.getString("product_category");
-                BigDecimal originalPrice = resultSet.getBigDecimal("original_price");
-                BigDecimal salesPrice = resultSet.getBigDecimal("sales_price");
-                int quantity = resultSet.getInt("total_products");
-                boolean status = resultSet.getBoolean("status");
-
-                Branch branch = getBranchById(branchId); // Existing method in ProductDAO
-               Product product = new Product(productId, branch, name, category, originalPrice, salesPrice, quantity, status);
-               products.add(product);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return products;
-    }
 
     public List<String> fetchVendors() {
         List<String> vendors = new ArrayList<>();

@@ -571,16 +571,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
       flag=  cashierController.updateStockInDatabase(cart,employee.getBranchId());
       return flag;
     }
-    // Method to create transactions from the cart
-    public void createTransactionsFromCart() throws SQLException {
-        // Assuming connection to database is already established
-            for (Product product : cart.getProducts()) {
 
-               cashierController.insertTransaction(employee.getBranchId(), product.getProductId(), cart.getCart().get(product), Date.valueOf(LocalDate.now()),product.calculateProfit());//get give val of key(quantity)
-            }
-            JOptionPane.showMessageDialog(this, "Transactions recorded successfully!");
-
-    }
 
     private void generateBillAction() throws SQLException {
         boolean flag=false;

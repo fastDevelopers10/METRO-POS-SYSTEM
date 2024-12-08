@@ -16,7 +16,7 @@ public class Credentials extends JFrame {
     private String role; // Role passed to the class
     JTextField txtUsername;
     JPasswordField txtPassword;
-
+    Employee loggedInEmployee;
     // Constructor to initialize the Login frame with a role
     public Credentials(String role) {
         this.role = role;
@@ -84,8 +84,10 @@ public class Credentials extends JFrame {
         btnLogin.addActionListener(e -> {
             String username = txtUsername.getText();
             String password = new String(txtPassword.getPassword());
+             loggedInEmployee= loginController.validateLogin( username, password);
+           boolean flag = loggedInEmployee != null && loggedInEmployee.getPassword().equals(password);
 
-            if (loginController.validateLogin(role, username, password)) {
+            if (flag) {
                 JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 openDashboard(role); // Open appropriate dashboard based on role
                 this.dispose(); // Close the login frame after successful login
@@ -124,8 +126,6 @@ public class Credentials extends JFrame {
     // Open the dashboard based on the role
     private void openDashboard(String txtPassword) {
         // After login validation, get the Employee object
-        EmployeeDAO employeeDAO = new EmployeeDAO();
-        Employee loggedInEmployee = employeeDAO.findEmployeeByUsernameAndPass(txtUsername.getText(), txtPassword);
 
         if (loggedInEmployee == null) {
             JOptionPane.showMessageDialog(this, "Error retrieving employee details.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -139,8 +139,10 @@ public class Credentials extends JFrame {
                 new CashierUI(loggedInEmployee).setVisible(true);; // Pass the Employee object to CashierUI
                 break;
             case "branch manager":
+
                 // You can pass the Employee object here when implementing BranchManagerUI
-                // new BranchManagerUI(loggedInEmployee);
+                this.dispose();
+                new BranchManagerUI(loggedInEmployee).setVisible(true);
                 break;
             case "data operator":
                 // new DataOperatorUI(loggedInEmployee);

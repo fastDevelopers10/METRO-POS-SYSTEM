@@ -28,11 +28,10 @@ public class BranchManagerUI extends JFrame {
         this.employeeController = new EmployeeController();
         setTitle("Branch Manager Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // Get screen size and set JFrame to full screen
+        // Get screen size and set JFrame to this
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize(screenSize);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
         setResizable(false);
 
         try {
@@ -236,21 +235,13 @@ public class BranchManagerUI extends JFrame {
         addCashierButton.setForeground(Color.WHITE);
         addCashierButton.setFont(new Font("Arial", Font.BOLD, 16));
 
-//        addCashierButton.addActionListener(e -> {
-//            // Add Cashier Logic
-//            boolean flag=false;
-//            if(employee.getPosition().equalsIgnoreCase("Super Admin"))
-//            {
-//                flag=true;
-//
-//            }
-//            EmployeeForm form= new EmployeeForm(employee.getPosition(),flag,employee.getBranchId());
-//            Employee newemp = form.returnNewEmployee();
-//            Employee newCashier = newemp;
-//            newCashier.setPosition("Cashier");
-//            employeeController.insertEmployee(newCashier); // Insert new Cashier employee
-//            JOptionPane.showMessageDialog(this, "Cashier Added Successfully");
-//        });
+        addCashierButton.addActionListener(e -> {
+            // Add Cashier Logic
+            String [] positions={"Cashier","Data Operator"};
+            EmployeeForm form= new EmployeeForm(positions,employee.getBranchId());
+            Employee newEmp = new Employee();
+            JOptionPane.showMessageDialog(this, "Cashier Added Successfully");
+        });
 
         // Add Cashier button to the employee panel
         employeePanel.add(addCashierButton);

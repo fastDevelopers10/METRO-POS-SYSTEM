@@ -25,7 +25,7 @@ public class BranchManagerTableUI extends JFrame {
         lblBackground.setBounds(0, 0, 1320, 710);
         add(lblBackground);
 
-        String username = SuperAdminLoginController.getUsername();
+        String username = "Anas";
         JLabel lblUsername = new JLabel(username);
         lblUsername.setBounds(105, 125, 220, 40);
         lblUsername.setFont(new Font("Century Gothic", Font.PLAIN, 20));
@@ -95,7 +95,7 @@ public class BranchManagerTableUI extends JFrame {
         btnChangePassword.addActionListener(e -> {
             dispose();
             try {
-                new UpdatePasswordUI(); // Replace with your Change Password UI class
+//                new UpdatePasswordUI("Branch Manager",employeeTable.getColumn("password")); // Replace with your Change Password UI class
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

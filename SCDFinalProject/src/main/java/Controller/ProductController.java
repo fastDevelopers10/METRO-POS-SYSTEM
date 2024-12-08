@@ -15,9 +15,6 @@ public class ProductController {
         this.productService = new ProductService();
     }
 
-    public List<Product> fetchProductsByBranch(int branchId, String searchQuery) {
-        return productService.getProductsByBranch(branchId, searchQuery);
-    }
 
     // Fetch list of vendors (vendor ID and name as ComboItem objects)
     public List<String> getVendors() {

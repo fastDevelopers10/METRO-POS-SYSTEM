@@ -13,9 +13,7 @@ public class ProductService {
         this.productDAO = new ProductDAO();
     }
 
-    public List<Product> getProductsByBranch(int branchId, String searchQuery) {
-        return productDAO.getProductsByBranchWithSearch(branchId, searchQuery);
-    }
+
     public List<String> getVendors() {
         return productDAO.fetchVendors();
     }

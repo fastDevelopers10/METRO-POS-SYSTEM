@@ -1,4 +1,6 @@
-package View;
+package SCDFinalProject.src.main.java.View;
+
+import SCDFinalProject.src.main.java.Controller.SuperAdminLoginController;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -74,7 +76,17 @@ public class LoginOptions extends JFrame {
         backgroundPanel.add(exitButton);
 
         // Action listeners
-        btnSuperAdmin.addActionListener(e -> OpenCredentials("Super Admin"));
+        btnSuperAdmin.addActionListener(e -> {
+            try {
+                new SuperAdminLoginController(); // Opens the login view and attaches functionality
+                dispose(); // Close the current frame
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error opening Super Admin: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
         btnBranchManager.addActionListener(e -> OpenCredentials("Branch Manager"));
         btnDataOperator.addActionListener(e -> OpenCredentials("Data Operator"));
         btnCashier.addActionListener(e -> OpenCredentials("Cashier"));
@@ -92,7 +104,7 @@ public class LoginOptions extends JFrame {
     }
 
     private void OpenCredentials(String role) {
-        new Credentials(role).setVisible(true);
+        new View.Credentials(role).setVisible(true);
         this.dispose(); // Close the current window
     }
 

@@ -1,4 +1,4 @@
-package DAO;
+package SCDFinalProject.src.main.java.DAO;
 
 import Model.Employee;
 
@@ -40,6 +40,32 @@ public class EmployeeDAO {
             throw new Exception("Error fetching employees by branch ID: " + e.getMessage(), e);
         }
         System.out.println("Number of employees: " +employees.size());
+
+        return employees;
+    }
+
+    public List<Model.Employee> getAllBranchManagers() throws SQLException {
+        String query = "SELECT * FROM Employee WHERE position='branch manager';";
+        List<Model.Employee> employees = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                employees.add(new Model.Employee(
+                        rs.getInt("employee_id"),
+                        rs.getString("name"),
+                        rs.getString("position"),
+                        rs.getString("email"),
+                        rs.getInt("branch_id"),
+                        rs.getString("address"),
+                        rs.getString("phone_number"),
+                        rs.getBigDecimal("salary"),
+                        rs.getDate("joining_date"),
+                        rs.getString("status")
+                ));
+            }
+        }
 
         return employees;
     }

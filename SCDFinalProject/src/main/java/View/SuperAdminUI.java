@@ -120,7 +120,7 @@ public class SuperAdminUI extends JFrame {
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new LoginFrame();  // Exit the application
+                new LoginOptions();  // Exit the application
             }
         });
 

@@ -30,9 +30,10 @@ public class EmployeeForm extends JFrame {
     private JButton submitButton, cancelButton;
     private int branchid;
     String selectedBranch;
-    public EmployeeForm(String []roles, int branchid) {
+    private BranchManagerTableUI bmUI;
+    public EmployeeForm(String []roles, int branchid) throws SQLException {
         this.branchid=branchid;
-
+        this.bmUI=new BranchManagerTableUI();
         setTitle("Add New Employee");
         setSize(400, 450);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -140,46 +141,29 @@ public class EmployeeForm extends JFrame {
         setVisible(true);
     }
 
+
     private void submitForm() {
         try {
             String name = nameField.getText();
             String email = emailField.getText();
             String address = addressField.getText();
             String phone = phoneField.getText();
+
+            // Validate email format
+            if (!email.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+                JOptionPane.showMessageDialog(this, "Invalid email address. Please enter a valid email.");
+                return; // Exit the method if validation fails
+            }
+
+            // Validate phone number length
+            if (phone.length() != 11 || !phone.matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "Phone number must be exactly 11 digits.");
+                return; // Exit the method if validation fails
+            }
+
             BigDecimal salary = new BigDecimal(salaryField.getText());
             String position = (String) positionComboBox.getSelectedItem();
             int branchId = branchid;
-
-            Date joiningDate = new Date(System.currentTimeMillis());
-
-            // Create an Employee object
-            Employee employee = new Employee(name, email,position, branchId, address, phone, salary, joiningDate,"Active");
-
-            // Call DAO to insert employee
-            EmployeeDAO empDAO = new EmployeeDAO();
-            boolean isInserted = empDAO.insertEmployee(employee);
-
-            if (isInserted) {
-                JOptionPane.showMessageDialog(this, "Employee added successfully with default password '123'!");
-                dispose(); // Close the form
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to add employee. Try again.");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
-        }
-    }
-
-    // Submit form and get the selected branch
-    private void submitFormSA() {
-        try {
-            String name = nameField.getText();
-            String email = emailField.getText();
-            String address = addressField.getText();
-            String phone = phoneField.getText();
-            BigDecimal salary = new BigDecimal(salaryField.getText());
-            String position = (String) positionComboBox.getSelectedItem();
-            int branchId = (int) branchComboBox.getSelectedItem();  // Dynamically retrieve selected branch
 
             Date joiningDate = new Date(System.currentTimeMillis());
 
@@ -201,5 +185,55 @@ public class EmployeeForm extends JFrame {
         }
     }
 
+    private void submitFormSA() {
+        try {
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String address = addressField.getText();
+            String phone = phoneField.getText();
 
+            // Validate email format
+            if (!email.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+                JOptionPane.showMessageDialog(this, "Invalid email address. Please enter a valid email.");
+                return; // Exit the method if validation fails
+            }
+
+            // Validate phone number length
+            if (phone.length() != 11 || !phone.matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "Phone number must be exactly 11 digits.");
+                return; // Exit the method if validation fails
+            }
+
+            BigDecimal salary = new BigDecimal(salaryField.getText());
+            String position = (String) positionComboBox.getSelectedItem();
+            int branchId = (int) branchComboBox.getSelectedItem();
+
+            Date joiningDate = new Date(System.currentTimeMillis());
+
+            // Create an Employee object
+            Employee employee = new Employee(name, email, position, branchId, address, phone, salary, joiningDate, "Active");
+
+            // Call DAO to insert employee
+            EmployeeDAO empDAO = new EmployeeDAO();
+            boolean isInserted = empDAO.insertEmployee(employee);
+
+            if (!isInserted) {
+                if ("Branch Manager".equalsIgnoreCase(position)) {
+                    JOptionPane.showMessageDialog(this, "Error: A Branch Manager already exists for this branch.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "Failed to add employee. Try again.");
+                }
+            }
+
+            if (isInserted) {
+                JOptionPane.showMessageDialog(this, "Employee added successfully with default password '123'!");
+                dispose();
+                bmUI.refreshTable();
+            } else {
+                JOptionPane.showMessageDialog(this, "Failed to add employee. Try again.");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+        }
+    }
 }

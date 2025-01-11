@@ -51,52 +51,68 @@ public class EmployeeDAO {
     public boolean insertEmployee(Employee employee) {
         boolean isSuccess = false;
         Connection connection = null;
-        PreparedStatement statement = null;
+        PreparedStatement checkStatement = null;
+        PreparedStatement insertStatement = null;
+        PreparedStatement updateBranchStatement = null;
+        ResultSet resultSet = null;
         ResultSet generatedKeys = null;
 
         try {
-            // Assuming you have a Database connection utility class to get the connection
+            // Get the connection
             connection = DBConnection.getConnection();
 
-            // Insert the employee without the username (we'll generate it later)
-            String sql = "INSERT INTO employee (name, position, email, branch_id, address, phone_number, salary, joining_date, status, first_time_joined) " +
+            // Check if a Branch Manager already exists for the branch
+            if ("Branch Manager".equalsIgnoreCase(employee.getPosition())) {
+                String checkSql = "SELECT COUNT(*) FROM employee WHERE position = 'Branch Manager' AND branch_id = ?";
+                checkStatement = connection.prepareStatement(checkSql);
+                checkStatement.setInt(1, employee.getBranchId());
+                resultSet = checkStatement.executeQuery();
+
+                if (resultSet.next() && resultSet.getInt(1) > 0) {
+                    // A Branch Manager already exists
+                    System.err.println("Error: A Branch Manager already exists for this branch.");
+                    return false;
+                }
+            }
+
+            // Insert the employee
+            String insertSql = "INSERT INTO employee (name, position, email, branch_id, address, phone_number, salary, joining_date, status, first_time_joined) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            insertStatement = connection.prepareStatement(insertSql, PreparedStatement.RETURN_GENERATED_KEYS);
+            insertStatement.setString(1, employee.getName());
+            insertStatement.setString(2, employee.getPosition());
+            insertStatement.setString(3, employee.getEmail());
+            insertStatement.setInt(4, employee.getBranchId());
+            insertStatement.setString(5, employee.getAddress());
+            insertStatement.setString(6, employee.getPhone());
+            insertStatement.setBigDecimal(7, employee.getSalary());
+            insertStatement.setDate(8, new java.sql.Date(employee.getJoiningDate().getTime()));
+            insertStatement.setString(9, employee.getStatus());
+            insertStatement.setBoolean(10, true);
 
-            statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS); // To retrieve generated keys
-            statement.setString(1, employee.getName());
-            statement.setString(2, employee.getPosition());
-            statement.setString(3, employee.getEmail());
-            statement.setInt(4, employee.getBranchId());
-            statement.setString(5, employee.getAddress());
-            statement.setString(6, employee.getPhone());
-            statement.setBigDecimal(7, employee.getSalary());
-            statement.setDate(8, new java.sql.Date(employee.getJoiningDate().getTime()));
-            statement.setString(9, employee.getStatus());
-            statement.setBoolean(10, true);
-
-            int rowsAffected = statement.executeUpdate();
-
-            // Check if the employee was inserted successfully
+            int rowsAffected = insertStatement.executeUpdate();
             if (rowsAffected > 0) {
-                // Retrieve the generated employee ID (assuming auto-increment for employeeId)
-                generatedKeys = statement.getGeneratedKeys();
+                generatedKeys = insertStatement.getGeneratedKeys();
                 if (generatedKeys.next()) {
-                    int employeeId = generatedKeys.getInt(1); // Get the generated employee ID
-
-                    // Dynamically set the username by concatenating "name" with the generated employee ID
+                    int employeeId = generatedKeys.getInt(1);
                     String username = employee.getName() + employeeId;
 
-                    // Now, update the employee record with the generated username
+                    // Update the employee record with the generated username
                     String updateSql = "UPDATE employee SET username = ? WHERE employee_id = ?";
                     try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
                         updateStatement.setString(1, username);
                         updateStatement.setInt(2, employeeId);
-                        int updateRows = updateStatement.executeUpdate();
+                        updateStatement.executeUpdate();
+                    }
 
-                        // Check if the update was successful
-                        if (updateRows > 0) {
-                            isSuccess = true;
-                        }
+                    // Increment the number of employees in the branch
+                    String updateBranchSql = "UPDATE branch SET no_of_employees = no_of_employees + 1 WHERE branch_id = ?";
+                    updateBranchStatement = connection.prepareStatement(updateBranchSql);
+                    updateBranchStatement.setInt(1, employee.getBranchId());
+                    int branchUpdateRows = updateBranchStatement.executeUpdate();
+
+                    if (branchUpdateRows > 0) {
+                        isSuccess = true;
                     }
                 }
             }
@@ -104,17 +120,13 @@ public class EmployeeDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
-            // Clean up the resources
             try {
-                if (generatedKeys != null) {
-                    generatedKeys.close();
-                }
-                if (statement != null) {
-                    statement.close();
-                }
-                if (connection != null) {
-                    connection.close();
-                }
+                if (resultSet != null) resultSet.close();
+                if (generatedKeys != null) generatedKeys.close();
+                if (checkStatement != null) checkStatement.close();
+                if (insertStatement != null) insertStatement.close();
+                if (updateBranchStatement != null) updateBranchStatement.close();
+                if (connection != null) connection.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -122,6 +134,8 @@ public class EmployeeDAO {
 
         return isSuccess;
     }
+
+
 
 
     // Authenticate and check first-time login
@@ -282,6 +296,79 @@ public class EmployeeDAO {
         }
 
         return employees;
-}
+    }
+
+    public static boolean updateBranchManager(Employee employee) {
+        String query = "UPDATE employee SET name = ?, email = ?, branch_id = ?, address = ?, phone_number = ?, salary = ?, status = ? WHERE employee_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, employee.getName());
+            stmt.setString(2, employee.getEmail());
+            stmt.setInt(3, employee.getBranchId());
+            stmt.setString(4, employee.getAddress());
+            stmt.setString(5, employee.getPhone());
+            stmt.setBigDecimal(6, employee.getSalary());
+            stmt.setString(7, employee.getStatus());
+            stmt.setInt(8, employee.getEmployeeId());
+
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0; // Return true if update was successful, false otherwise.
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // In case of error, return false
+        }
+    }
+
+    public List<Employee> getBranchManagersByStatus(String status) throws SQLException {
+        String query = "SELECT * FROM Employee WHERE position='branch manager' AND status=?";
+        List<Employee> employees = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    employees.add(new Employee(
+                            rs.getInt("employee_id"),
+                            rs.getString("name"),
+                            rs.getString("email"),
+                            rs.getInt("branch_id"),
+                            rs.getString("address"),
+                            rs.getString("phone_number"),
+                            rs.getBigDecimal("salary"),
+                            rs.getDate("joining_date"),
+                            rs.getString("status")
+                    ));
+                }
+            }
+        }
+
+        return employees;
+    }
+    // Method to fetch an employee by their ID
+    public Employee getEmployeeById(int employeeId) throws SQLException {
+        String query = "SELECT * FROM employee WHERE employee_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, employeeId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Map the ResultSet to an Employee object
+                    return mapResultSetToEmployee(rs);
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Error fetching employee by ID: " + e.getMessage(), e);
+        }
+
+        return null; // Return null if no employee is found
+    }
+
+
 
 }

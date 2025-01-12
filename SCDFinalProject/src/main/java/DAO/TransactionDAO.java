@@ -436,6 +436,36 @@ public class TransactionDAO {
         }
         return result;
     }
+    // Fetch profit for a specific year based on the given parameter (e.g., 0 for current year, 1 for last year)
+    public double fetchProfitForYear(int years) {
+        double profit = 0.0;
+
+        // Get the current year
+        // Calculate the year based on the number of years ago
+        // SQL query to fetch profit data for the calculated year
+        String query = "SELECT SUM(profit) AS total_profit " +
+                "FROM transaction " +
+                "WHERE YEAR(transaction_date) = ? AND status = TRUE";
+
+        // Connect to the database and execute the query
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, years);  // Set the calculated year in the query
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    profit = resultSet.getDouble("total_profit");  // Get the total profit for the year
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return profit;
+    }
+
 
     // Common method to fetch profit data
     private static Map<Integer, Double> fetchProfitData(String query) {

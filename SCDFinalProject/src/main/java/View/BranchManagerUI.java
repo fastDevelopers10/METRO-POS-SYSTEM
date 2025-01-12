@@ -14,14 +14,23 @@ import java.awt.image.BufferedImage;
 import java.awt.print.PrinterJob;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Map;
 import java.util.Objects;
 import java.util.List;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
-
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 
 public class BranchManagerUI extends JFrame {
@@ -100,7 +109,10 @@ public class BranchManagerUI extends JFrame {
                 {"Dashboard", "images/icons/dash_icon.png"},
                 {"Employees", "icons/Product.png"},
                 {"Stocks Left","images/icons/Product.png"},
+                {"Profit History", "images/icons/Product.png"},
+                {"Sales History", "images/icons/Product.png"},
                 {"Logout", "images/icons/Product.png"}
+
 
         };
 
@@ -155,6 +167,13 @@ public class BranchManagerUI extends JFrame {
                         System.out.println("Checking rem stock...");
                         viewStocksLeft();
                         break;
+
+                    case "Profit History":
+                        showProfitsHistoryDialog();
+                        break;
+                    case "Sales History":
+                        showSalesHistory();
+                        break;
                     case "Logout":
                         System.out.println("Logging out...");
                         logoutAction();
@@ -185,6 +204,12 @@ public class BranchManagerUI extends JFrame {
         branchIdLabel.setBounds(118, 145, 200, 22); // Adjust bounds as needed
         branchIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
         branchIdLabel.setForeground(Color.BLACK);
+
+        // Create and add the Profit Chart Panel
+        RoundedPanel profitChartPanel = createProfitChartPanel();
+        profitChartPanel.setBounds(menuWidth + 98,(backgroundPanel.getHeight() ) / 2 +12 ,455, 235); // Width and height of the button
+// Set the size and position as needed
+        backgroundPanel.add(profitChartPanel);
 
         // Add components to the background panel
         backgroundPanel.add(sideMenuPanel);
@@ -310,6 +335,8 @@ public class BranchManagerUI extends JFrame {
         // Add Cashier button to the employee panel
         employeePanel.add(addCashierButton);
 
+
+
 //        // Create and add the "Add Data Operator" button
 //        RoundedButton addDataOpButton = new RoundedButton("Add Data Operator", 20);
 //        addDataOpButton.setBounds(870, 570, 280, 50);
@@ -335,6 +362,83 @@ public class BranchManagerUI extends JFrame {
         revalidate();
         repaint();
     }
+    private RoundedPanel createProfitChartPanel() {
+        // Create a panel for the chart
+        RoundedPanel panel = new RoundedPanel(3);
+        panel.setLayout(new BorderLayout());
+        panel.setPreferredSize(new Dimension(500, 600));
+
+        // Create the chart
+        JFreeChart chart = createProfitChart();
+
+        // Add the chart to the panel
+        ChartPanel chartPanel = new ChartPanel(chart);
+        panel.add(chartPanel, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JFreeChart createProfitChart() {
+        // Get the current year
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        // Create a TimeSeries object to hold profits over time
+        TimeSeries profitSeries = new TimeSeries("Profit");
+
+        // Variable to track the maximum profit
+        double maxProfit = 0;
+
+        // Fetch profit data for each year from current year to 9 years ago
+        for (int i = 0; i < 10; i++) {
+            int year = currentYear - i; // Calculate the year
+            double profit = transactionController.fetchProfitForYear(year); // Fetch profit for that year
+            System.out.println("Year: " + year + " Profit: " + profit);
+
+            // Update maximum profit
+            if (profit > maxProfit) {
+                maxProfit = profit;
+            }
+
+            // Add the data to the TimeSeries
+            profitSeries.addOrUpdate(new org.jfree.data.time.Year(year), profit);
+        }
+
+        // Create a dataset for the chart
+        TimeSeriesCollection dataset = new TimeSeriesCollection(profitSeries);
+
+        // Create the chart using the dataset
+        JFreeChart chart = ChartFactory.createTimeSeriesChart(
+                "Profit Over Time",   // Title
+                "Year",               // X-axis Label
+                "Profit (Rs.)",         // Y-axis Label
+                dataset,              // Dataset
+                false,                // Include legend
+                true,                 // Tooltips
+                false                 // URLs
+        );
+
+        // Customize chart appearance
+        chart.setBackgroundPaint(Color.white);
+
+        // Get the plot object for further customization (like setting line color)
+        XYPlot plot = (XYPlot) chart.getPlot();
+        plot.setDomainPannable(true);  // Allow horizontal panning
+        plot.setRangePannable(true);   // Allow vertical panning
+        plot.setBackgroundPaint(new Color(200, 229, 220));
+
+        // Dynamically set the Y-axis range based on the maximum profit
+        double upperBound = Math.ceil(maxProfit * 1.1); // Add 10% buffer to the maximum value
+        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        rangeAxis.setRange(0, upperBound); // Set the range from 0 to the calculated upper bound
+
+        // Customize the line style (if needed)
+        plot.getRenderer().setSeriesPaint(0, Color.BLUE); // Set line color to blue
+
+        // Return the chart
+        return chart;
+    }
+
+
     private void showReportsPanel() throws SQLException {
         // Remove any existing reports panel if it exists
         if (reportsPanel != null) {
@@ -374,19 +478,7 @@ public class BranchManagerUI extends JFrame {
             e.printStackTrace();
         }
 
-        // Create a label to display the total sales
-        String profitText = "Rs. " + netProfit;
-        JLabel profitLabel = new JLabel(profitText);
-        profitLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        profitLabel.setForeground(Color.BLACK); // Set text color
 
-        profitLabel.setBounds((reportsPanel.getWidth() - profitLabel.getPreferredSize().width) / 2 +45,
-                (reportsPanel.getHeight() ) / 2 +64,
-                profitLabel.getPreferredSize().width + 10,
-                profitLabel.getPreferredSize().height);
-
-        // Add the label to the reports panel
-        reportsPanel.add(profitLabel);
         // Get the total sales for the current year for the branch (example branchId: 1)
         int totalSales = 0;
         try {
@@ -399,27 +491,41 @@ public class BranchManagerUI extends JFrame {
         String salesText = totalSales +" items sold";
         JLabel salesLabel = new JLabel(salesText);
         salesLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        salesLabel.setForeground(Color.BLACK); // Set text color
+        salesLabel.setForeground(new Color(67, 166, 67, 255)); // Set text color
 
-        salesLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +70,
-                (reportsPanel.getHeight() ) / 3 -28 ,
+        salesLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +170,
+                (reportsPanel.getHeight() ) / 3 +110 ,
                 salesLabel.getPreferredSize().width+20,
                 salesLabel.getPreferredSize().height);
 
         // Add the label to the reports panel
         reportsPanel.add(salesLabel);
 
+        // Create a label to display the total sales
+        String profitText = "Rs. " + netProfit;
+        JLabel profitLabel = new JLabel(profitText);
+        profitLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        profitLabel.setForeground(new Color(253, 193, 0, 255)); // Set text color
+
+        profitLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +172,
+                (reportsPanel.getHeight() ) / 2 +182,
+                profitLabel.getPreferredSize().width +10,
+                profitLabel.getPreferredSize().height+10);
+
+        // Add the label to the reports panel
+        reportsPanel.add(profitLabel);
+
         int totalStock = 0;
         totalStock = productController.getStockByBranch(employee.getBranchId());
 
         // Create a label to display the total sales
-        String stockText = totalStock +" stocked";
+        String stockText = totalStock +" items";
         JLabel stockLabel = new JLabel(stockText);
-        stockLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        stockLabel.setForeground(Color.BLACK); // Set text color
+        stockLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        stockLabel.setForeground(new Color(241, 21, 61, 226)); // Set text color
 
-        stockLabel.setBounds((reportsPanel.getWidth() - stockLabel.getPreferredSize().width) / 2 -4*100 +5,
-                (reportsPanel.getHeight() ) / 3 -28 ,
+        stockLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +170,
+                (reportsPanel.getHeight()/2 -230 ),
                 stockLabel.getPreferredSize().width+20,
                 stockLabel.getPreferredSize().height);
 
@@ -487,198 +593,198 @@ public class BranchManagerUI extends JFrame {
 //        });
 //
 //// Add the button to the reports panel
-//        reportsPanel.add(remStock);
-// "Profits History" Button
-        RoundedButton profitsHistoryButton = new RoundedButton("Profits History", 20);
-        profitsHistoryButton.setBounds(menuWidth + 205, reportsPanel.getHeight() - 120, 140, 40);
-        profitsHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
-        profitsHistoryButton.setBackground(Color.LIGHT_GRAY);
-        profitsHistoryButton.setForeground(Color.BLACK);
-
-        profitsHistoryButton.addActionListener(e -> {
-            // Create dropdown menu for time period selection
-            String[] options = {"Monthly", "Weekly", "Yearly"};
-            JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
-
-            // Display the dropdown menu for time period selection
-            int timePeriodSelection = JOptionPane.showOptionDialog(
-                    null,
-                    timePeriodComboBox,
-                    "Select Time Period",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    null,
-                    null
-            );
-
-            if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
-                String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
-                String selectedYear = null;
-
-                // Ask for year based on period selection
-                if (selectedPeriod != null) {
-                    // Year selection
-                    String[] years = {"2020", "2021", "2022", "2023", "2024"};
-                    JComboBox<String> yearComboBox = new JComboBox<>(years);
-                    int yearSelection = JOptionPane.showOptionDialog(
-                            null,
-                            yearComboBox,
-                            "Select Year",
-                            JOptionPane.DEFAULT_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            null,
-                            null
-                    );
-                    if (yearSelection != JOptionPane.CLOSED_OPTION) {
-                        selectedYear = (String) yearComboBox.getSelectedItem();
-                    }
-
-                    int year = Integer.parseInt(selectedYear);
-
-                    try {
-                        // Fetch profit data based on the selected year and period
-                        Map<Integer, Double> productProfits = transactionController.getAverageProfits(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
-
-                        JPanel panel = new JPanel();
-                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-                        // Add a label displaying the results
-                        StringBuilder profitMessage = new StringBuilder("<html><h3>Average Profits for Products:</h3>");
-                        for (Map.Entry<Integer, Double> entry : productProfits.entrySet()) {
-                            profitMessage.append(String.format("<p>Product ID: %d, Average Profit: %.2f</p>", entry.getKey(), entry.getValue()));
-                        }
-                        profitMessage.append("</html>");
-
-                        JLabel profitLabel2 = new JLabel(profitMessage.toString());
-                        panel.add(profitLabel2);
-
-                        // Print button functionality for the profit data
-                        RoundedButton printButton = new RoundedButton("Print", 20);
-                        printButton.addActionListener(printEvent -> {
-                            try {
-                                MyPrinter printer = new MyPrinter();
-                                printer.setData(profitMessage.toString()); // Update method for profit data
-
-                                PrinterJob job = PrinterJob.getPrinterJob();
-                                job.setPrintable(printer);
-
-                                if (job.printDialog()) {
-                                    job.print();
-                                }
-
-                            } catch (Exception ex) {
-                                JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
-                        panel.add(printButton);
-
-                        // Display the panel with profit data
-                        JOptionPane.showMessageDialog(null, panel, "Product-wise Average Profits", JOptionPane.INFORMATION_MESSAGE);
-
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(null, "Error fetching average profits: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-        });
+////        reportsPanel.add(remStock);
+//// "Profits History" Button
+//        RoundedButton profitsHistoryButton = new RoundedButton("Profits History", 20);
+//        profitsHistoryButton.setBounds(menuWidth + 205, reportsPanel.getHeight() - 120, 140, 40);
+//        profitsHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
+//        profitsHistoryButton.setBackground(Color.LIGHT_GRAY);
+//        profitsHistoryButton.setForeground(Color.BLACK);
+//
+//        profitsHistoryButton.addActionListener(e -> {
+//            // Create dropdown menu for time period selection
+//            String[] options = {"Monthly", "Weekly", "Yearly"};
+//            JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
+//
+//            // Display the dropdown menu for time period selection
+//            int timePeriodSelection = JOptionPane.showOptionDialog(
+//                    null,
+//                    timePeriodComboBox,
+//                    "Select Time Period",
+//                    JOptionPane.DEFAULT_OPTION,
+//                    JOptionPane.PLAIN_MESSAGE,
+//                    null,
+//                    null,
+//                    null
+//            );
+//
+//            if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
+//                String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
+//                String selectedYear = null;
+//
+//                // Ask for year based on period selection
+//                if (selectedPeriod != null) {
+//                    // Year selection
+//                    String[] years = {"2020", "2021", "2022", "2023", "2024"};
+//                    JComboBox<String> yearComboBox = new JComboBox<>(years);
+//                    int yearSelection = JOptionPane.showOptionDialog(
+//                            null,
+//                            yearComboBox,
+//                            "Select Year",
+//                            JOptionPane.DEFAULT_OPTION,
+//                            JOptionPane.PLAIN_MESSAGE,
+//                            null,
+//                            null,
+//                            null
+//                    );
+//                    if (yearSelection != JOptionPane.CLOSED_OPTION) {
+//                        selectedYear = (String) yearComboBox.getSelectedItem();
+//                    }
+//
+//                    int year = Integer.parseInt(selectedYear);
+//
+//                    try {
+//                        // Fetch profit data based on the selected year and period
+//                        Map<Integer, Double> productProfits = transactionController.getAverageProfits(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
+//
+//                        JPanel panel = new JPanel();
+//                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+//
+//                        // Add a label displaying the results
+//                        StringBuilder profitMessage = new StringBuilder("<html><h3>Average Profits for Products:</h3>");
+//                        for (Map.Entry<Integer, Double> entry : productProfits.entrySet()) {
+//                            profitMessage.append(String.format("<p>Product ID: %d, Average Profit: %.2f</p>", entry.getKey(), entry.getValue()));
+//                        }
+//                        profitMessage.append("</html>");
+//
+//                        JLabel profitLabel2 = new JLabel(profitMessage.toString());
+//                        panel.add(profitLabel2);
+//
+//                        // Print button functionality for the profit data
+//                        RoundedButton printButton = new RoundedButton("Print", 20);
+//                        printButton.addActionListener(printEvent -> {
+//                            try {
+//                                MyPrinter printer = new MyPrinter();
+//                                printer.setData(profitMessage.toString()); // Update method for profit data
+//
+//                                PrinterJob job = PrinterJob.getPrinterJob();
+//                                job.setPrintable(printer);
+//
+//                                if (job.printDialog()) {
+//                                    job.print();
+//                                }
+//
+//                            } catch (Exception ex) {
+//                                JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//                            }
+//                        });
+//                        panel.add(printButton);
+//
+//                        // Display the panel with profit data
+//                        JOptionPane.showMessageDialog(null, panel, "Product-wise Average Profits", JOptionPane.INFORMATION_MESSAGE);
+//
+//                    } catch (Exception ex) {
+//                        JOptionPane.showMessageDialog(null, "Error fetching average profits: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//                    }
+//                }
+//            }
+//        });
 
 // "Sales History" Button
-        RoundedButton salesHistoryButton = new RoundedButton("Sales History", 20);
-        salesHistoryButton.setBounds(menuWidth + 355, reportsPanel.getHeight() - 120, 140, 40);
-        salesHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
-        salesHistoryButton.setBackground(Color.LIGHT_GRAY);
-        salesHistoryButton.setForeground(Color.BLACK);
-
-        salesHistoryButton.addActionListener(e -> {
-            // Create dropdown menu for time period selection
-            String[] options = {"Monthly", "Weekly", "Yearly"};
-            JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
-
-            // Display the dropdown menu for time period selection
-            int timePeriodSelection = JOptionPane.showOptionDialog(
-                    null,
-                    timePeriodComboBox,
-                    "Select Time Period",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    null,
-                    null
-            );
-
-            if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
-                String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
-                String selectedYear = null;
-
-                // Ask for year based on period selection
-                if (selectedPeriod != null) {
-                    // Year selection
-                    String[] years = {"2020", "2021", "2022", "2023", "2024"};
-                    JComboBox<String> yearComboBox = new JComboBox<>(years);
-                    int yearSelection = JOptionPane.showOptionDialog(
-                            null,
-                            yearComboBox,
-                            "Select Year",
-                            JOptionPane.DEFAULT_OPTION,
-                            JOptionPane.PLAIN_MESSAGE,
-                            null,
-                            null,
-                            null
-                    );
-                    if (yearSelection != JOptionPane.CLOSED_OPTION) {
-                        selectedYear = (String) yearComboBox.getSelectedItem();
-                    }
-
-                    int year = Integer.parseInt(selectedYear);
-
-                    try {
-                        Map<Integer, Double> productSales = transactionController.getAverageSales(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
-
-                        JPanel panel = new JPanel();
-                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-                        // Add a label displaying the results
-                        StringBuilder salesMessage = new StringBuilder("<html><h3>Average Sales for Products:</h3>");
-                        for (Map.Entry<Integer, Double> entry : productSales.entrySet()) {
-                            salesMessage.append(String.format("<p>Product ID: %d, Average Sales: %.2f</p>", entry.getKey(), entry.getValue()));
-                        }
-                        salesMessage.append("</html>");
-
-                        JLabel salesLabel2 = new JLabel(salesMessage.toString());
-                        panel.add(salesLabel2);
-
-                        RoundedButton printButton = new RoundedButton("Print",20);
-                        printButton.addActionListener(printEvent -> {
-                            try {
-                                MyPrinter printer = new MyPrinter();
-                                printer.setData(salesMessage.toString());
-
-                                PrinterJob job = PrinterJob.getPrinterJob();
-                                job.setPrintable(printer);
-
-                                if (job.printDialog()) {
-                                    job.print();
-                                }
-
-                            } catch (Exception ex) {
-                                JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
-                        panel.add(printButton);
-
-                        JOptionPane.showMessageDialog(null, panel, "Product-wise Average Sales", JOptionPane.INFORMATION_MESSAGE);
-
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(null, "Error fetching average sales: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-        });
+//        RoundedButton salesHistoryButton = new RoundedButton("Sales History", 20);
+//        salesHistoryButton.setBounds(menuWidth + 355, reportsPanel.getHeight() - 120, 140, 40);
+//        salesHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
+//        salesHistoryButton.setBackground(Color.LIGHT_GRAY);
+//        salesHistoryButton.setForeground(Color.BLACK);
+//
+//        salesHistoryButton.addActionListener(e -> {
+//            // Create dropdown menu for time period selection
+//            String[] options = {"Monthly", "Weekly", "Yearly"};
+//            JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
+//
+//            // Display the dropdown menu for time period selection
+//            int timePeriodSelection = JOptionPane.showOptionDialog(
+//                    null,
+//                    timePeriodComboBox,
+//                    "Select Time Period",
+//                    JOptionPane.DEFAULT_OPTION,
+//                    JOptionPane.PLAIN_MESSAGE,
+//                    null,
+//                    null,
+//                    null
+//            );
+//
+//            if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
+//                String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
+//                String selectedYear = null;
+//
+//                // Ask for year based on period selection
+//                if (selectedPeriod != null) {
+//                    // Year selection
+//                    String[] years = {"2020", "2021", "2022", "2023", "2024"};
+//                    JComboBox<String> yearComboBox = new JComboBox<>(years);
+//                    int yearSelection = JOptionPane.showOptionDialog(
+//                            null,
+//                            yearComboBox,
+//                            "Select Year",
+//                            JOptionPane.DEFAULT_OPTION,
+//                            JOptionPane.PLAIN_MESSAGE,
+//                            null,
+//                            null,
+//                            null
+//                    );
+//                    if (yearSelection != JOptionPane.CLOSED_OPTION) {
+//                        selectedYear = (String) yearComboBox.getSelectedItem();
+//                    }
+//
+//                    int year = Integer.parseInt(selectedYear);
+//
+//                    try {
+//                        Map<Integer, Double> productSales = transactionController.getAverageSales(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
+//
+//                        JPanel panel = new JPanel();
+//                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+//
+//                        // Add a label displaying the results
+//                        StringBuilder salesMessage = new StringBuilder("<html><h3>Average Sales for Products:</h3>");
+//                        for (Map.Entry<Integer, Double> entry : productSales.entrySet()) {
+//                            salesMessage.append(String.format("<p>Product ID: %d, Average Sales: %.2f</p>", entry.getKey(), entry.getValue()));
+//                        }
+//                        salesMessage.append("</html>");
+//
+//                        JLabel salesLabel2 = new JLabel(salesMessage.toString());
+//                        panel.add(salesLabel2);
+//
+//                        RoundedButton printButton = new RoundedButton("Print",20);
+//                        printButton.addActionListener(printEvent -> {
+//                            try {
+//                                MyPrinter printer = new MyPrinter();
+//                                printer.setData(salesMessage.toString());
+//
+//                                PrinterJob job = PrinterJob.getPrinterJob();
+//                                job.setPrintable(printer);
+//
+//                                if (job.printDialog()) {
+//                                    job.print();
+//                                }
+//
+//                            } catch (Exception ex) {
+//                                JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//                            }
+//                        });
+//                        panel.add(printButton);
+//
+//                        JOptionPane.showMessageDialog(null, panel, "Product-wise Average Sales", JOptionPane.INFORMATION_MESSAGE);
+//
+//                    } catch (Exception ex) {
+//                        JOptionPane.showMessageDialog(null, "Error fetching average sales: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+//                    }
+//                }
+//            }
+//        });
         // Add both buttons to the reports panel
-        reportsPanel.add(profitsHistoryButton);
-        reportsPanel.add(salesHistoryButton);
+//        reportsPanel.add(profitsHistoryButton);
+//        reportsPanel.add(salesHistoryButton);
 
         // Add the reports panel to the background panel
         backgroundPanel.add(reportsPanel);
@@ -688,6 +794,197 @@ public class BranchManagerUI extends JFrame {
 
     }
 
+
+    public void showSalesHistory() {
+        // Create dropdown menu for time period selection
+        String[] options = {"Monthly", "Weekly", "Yearly"};
+        JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
+
+        // Display the dropdown menu for time period selection
+        int timePeriodSelection = JOptionPane.showOptionDialog(
+                null,
+                timePeriodComboBox,
+                "Select Time Period",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                null
+        );
+
+        if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
+            String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
+            String selectedYear = null;
+
+            // Ask for year based on period selection
+            if (selectedPeriod != null) {
+                // Year selection
+                String[] years = {"2020", "2021", "2022", "2023", "2024"};
+                JComboBox<String> yearComboBox = new JComboBox<>(years);
+                int yearSelection = JOptionPane.showOptionDialog(
+                        null,
+                        yearComboBox,
+                        "Select Year",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        null,
+                        null
+                );
+                if (yearSelection != JOptionPane.CLOSED_OPTION) {
+                    selectedYear = (String) yearComboBox.getSelectedItem();
+                }
+
+                int year = Integer.parseInt(selectedYear);
+
+                try {
+                    // Fetch average sales data based on the selected year and period
+                    Map<Integer, Double> productSales = transactionController.getAverageSales(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
+
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+                    // Prepare the sales message to be displayed
+                    StringBuilder salesMessage = new StringBuilder("<html><h3>Average Sales for Products:</h3>");
+                    for (Map.Entry<Integer, Double> entry : productSales.entrySet()) {
+                        salesMessage.append(String.format("<p>Product ID: %d, Average Sales: %.2f</p>", entry.getKey(), entry.getValue()));
+                    }
+                    salesMessage.append("</html>");
+
+                    JLabel salesLabel = new JLabel(salesMessage.toString());
+
+                    // Wrap the label inside a JScrollPane for scrolling
+                    JScrollPane scrollPane = new JScrollPane(salesLabel);
+                    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                    scrollPane.setPreferredSize(new Dimension(400, 200));  // Adjust size if needed
+
+                    panel.add(scrollPane);
+
+                    // Print button functionality for the sales data
+                    RoundedButton printButton = new RoundedButton("Print", 20);
+                    printButton.addActionListener(printEvent -> {
+                        try {
+                            MyPrinter printer = new MyPrinter();
+                            printer.setData(salesMessage.toString());
+
+                            PrinterJob job = PrinterJob.getPrinterJob();
+                            job.setPrintable(printer);
+
+                            if (job.printDialog()) {
+                                job.print();
+                            }
+
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                    panel.add(printButton);
+
+                    // Display the panel with sales data
+                    JOptionPane.showMessageDialog(null, panel, "Product-wise Average Sales", JOptionPane.INFORMATION_MESSAGE);
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Error fetching average sales: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
+
+
+
+    private void showProfitsHistoryDialog() {
+        // Create dropdown menu for time period selection
+        String[] options = {"Monthly", "Weekly", "Yearly"};
+        JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
+
+        // Display the dropdown menu for time period selection
+        int timePeriodSelection = JOptionPane.showOptionDialog(
+                null,
+                timePeriodComboBox,
+                "Select Time Period",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                null
+        );
+
+        if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
+            String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
+            String selectedYear = null;
+
+            // Ask for year based on period selection
+            if (selectedPeriod != null) {
+                // Year selection
+                String[] years = {"2020", "2021", "2022", "2023", "2024"};
+                JComboBox<String> yearComboBox = new JComboBox<>(years);
+                int yearSelection = JOptionPane.showOptionDialog(
+                        null,
+                        yearComboBox,
+                        "Select Year",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        null,
+                        null
+                );
+                if (yearSelection != JOptionPane.CLOSED_OPTION) {
+                    selectedYear = (String) yearComboBox.getSelectedItem();
+                }
+
+                int year = Integer.parseInt(selectedYear);
+
+                try {
+                    // Fetch profit data based on the selected year and period
+                    Map<Integer, Double> productProfits = transactionController.getAverageProfits(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
+
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+                    // Add a scrollable area for displaying results
+                    StringBuilder profitMessage = new StringBuilder("<html><h3>Average Profits for Products:</h3>");
+                    for (Map.Entry<Integer, Double> entry : productProfits.entrySet()) {
+                        profitMessage.append(String.format("<p>Product ID: %d, Average Profit: %.2f</p>", entry.getKey(), entry.getValue()));
+                    }
+                    profitMessage.append("</html>");
+
+                    JLabel profitLabel = new JLabel(profitMessage.toString());
+
+                    JScrollPane scrollPane = new JScrollPane(profitLabel);
+                    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+                    scrollPane.setPreferredSize(new Dimension(400, 200));
+
+                    panel.add(scrollPane);
+
+                    // Print button functionality for the profit data
+                    RoundedButton printButton = new RoundedButton("Print", 20);
+                    printButton.addActionListener(printEvent -> {
+                        try {
+                            MyPrinter printer = new MyPrinter();
+                            printer.setData(profitMessage.toString()); // Update method for profit data
+
+                            PrinterJob job = PrinterJob.getPrinterJob();
+                            job.setPrintable(printer);
+
+                            if (job.printDialog()) {
+                                job.print();
+                            }
+
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    });
+                    panel.add(printButton);
+
+                    // Display the panel with profit data
+                    JOptionPane.showMessageDialog(null, panel, "Product-wise Average Profits", JOptionPane.INFORMATION_MESSAGE);
+
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Error fetching average profits: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
 
 
 

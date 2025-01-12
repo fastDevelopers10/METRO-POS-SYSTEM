@@ -5,6 +5,8 @@ import Model.Bill;
 import Model.Employee;
 
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +55,13 @@ public class TransactionService {
     public boolean insertTransactionToDatabase(Bill bill, Employee employee) {
         return transactionDAO.insertTransactionToDatabase(bill,employee);
     }
+    public double fetchProfitForYear(int year) {
 
+
+            double profit = transactionDAO.fetchProfitForYear(year);
+
+        return profit;
+    }
 
     public List<Map.Entry<Integer, Integer>> getProductSalesForBranch(int branchId, String periodType, String year) throws SQLException {
         return transactionDAO.getProductSalesForBranch(branchId,periodType, year);

@@ -28,9 +28,16 @@ public class TransactionController {
     public boolean insertTransactionToDatabase(Bill bill, Employee employee) {
         return transactionService.insertTransactionToDatabase(bill,employee);
     }
+    public double fetchProfitForYear(int year) {
 
 
-    public List<Map.Entry<Integer, Integer>> getProductSalesForBranch(int branchId, String periodType, String year) throws SQLException
+        double profit = transactionService.fetchProfitForYear(year);
+
+        return profit;
+    }
+
+
+        public List<Map.Entry<Integer, Integer>> getProductSalesForBranch(int branchId, String periodType, String year) throws SQLException
     {
         return transactionService.getProductSalesForBranch(branchId, periodType,year);
     }

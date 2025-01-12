@@ -17,7 +17,7 @@ public class SuperAdminUI extends JFrame {
         setLayout(null); // Absolute layout for precise positioning
         setResizable(false);
         // Background image
-        JLabel lblBackground = new JLabel(new ImageIcon("SCDFinalProject\\src\\main\\resources\\images\\Super Admin Dashboard (1).png"));
+        JLabel lblBackground = new JLabel(new ImageIcon(getClass().getResource("/images/Super Admin Dashboard (1).png")));
         lblBackground.setBounds(0, 0, 1320, 710);
         add(lblBackground);
 

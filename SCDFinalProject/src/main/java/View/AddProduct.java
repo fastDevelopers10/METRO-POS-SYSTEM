@@ -217,6 +217,7 @@ public class AddProduct extends JFrame {
         List<String> vendors = controller.getVendors();
         vendorDropdown.addItem("Select Vendor");
         for (String vendor : vendors) {
+
             vendorDropdown.addItem(vendor);
         }
     }
@@ -295,7 +296,7 @@ public class AddProduct extends JFrame {
             JOptionPane.showMessageDialog(this, "Please enter valid numeric values.");
         }
     }
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> new AddProduct(1).setVisible(true));
-//    }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new AddProduct(1).setVisible(true));
+    }
 }

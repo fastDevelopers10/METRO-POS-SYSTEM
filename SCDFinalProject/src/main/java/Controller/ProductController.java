@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class ProductController {
     private final ProductService productService;
@@ -71,9 +72,13 @@ public class ProductController {
     }
 
 
-//    public static void main(String[] args) {
-//        ProductController ctr=new ProductController();
-//        System.out.println(ctr.getCategories(1));
-//    }
-
+    public List<Map<String, Object>> fetchVendorProductsByBranchforvendor(int branchId) {
+        return productService.fetchVendorProductsByBranchforvendors(branchId);
+}
+    public int getStockByBranch(int branchId) {
+        return productService.getStockByBranch(branchId);
+    }
+    public List<Object[]> getProductIdAndQuantities() {
+        return productService.getProductIdAndQuantities();
+    }
 }

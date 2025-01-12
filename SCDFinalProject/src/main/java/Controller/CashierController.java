@@ -106,13 +106,6 @@ public class CashierController {
 //        }
 //    }
 
-    // Method to insert a transaction, receives Product and quantitySold
-    public void insertTransaction(int branchCode, int productId,int quantitySold, Date transactionDate,
-                                   BigDecimal profit) throws SQLException {
-
-        cashierService.insertTransaction(branchCode, productId,
-                quantitySold,transactionDate, profit);
-    }
 
     public boolean updateStockInDatabase(Bill cart, int branchId) throws SQLException {
         boolean updateSuccessful = false;

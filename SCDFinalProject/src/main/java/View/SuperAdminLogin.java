@@ -28,7 +28,7 @@ public class SuperAdminLogin extends JFrame {
 
         // Load the background image
         try {
-            backgroundImage = ImageIO.read(new File("SCDFinalProject\\src\\main\\resources\\images\\LoginScreen.png"));
+            backgroundImage = ImageIO.read(getClass().getResource("/images/LoginScreen.png"));
         } catch (IOException e) {
             System.out.println("Error loading background image: " + e.getMessage());
         }
@@ -49,14 +49,14 @@ public class SuperAdminLogin extends JFrame {
         tfUsername = new JTextField();
         tfUsername.setOpaque(true);
         tfUsername.setBorder(new LineBorder(Color.BLACK, 1));
-        tfUsername.setBounds(490, 245, 350, 30);
+        tfUsername.setBounds(490, 255, 350, 30);
         panel.add(tfUsername);
 
         // Password field
         pfPassword = new JPasswordField();
         pfPassword.setOpaque(true);
         pfPassword.setBorder(new LineBorder(Color.BLACK, 1));
-        pfPassword.setBounds(490, 325, 350, 30);
+        pfPassword.setBounds(490, 330, 350, 30);
         panel.add(pfPassword);
 
         // Login button
@@ -66,7 +66,7 @@ public class SuperAdminLogin extends JFrame {
         btnLogin.setBorderPainted(false);
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setFont(new Font("Century Gothic", Font.PLAIN, 16));
-        btnLogin.setBounds(540, 400, 120, 40);
+        btnLogin.setBounds(459, 360, 250, 40);
         panel.add(btnLogin);
 
         // Exit button
@@ -76,7 +76,7 @@ public class SuperAdminLogin extends JFrame {
         btnExit.setBorderPainted(false);
         btnExit.setForeground(Color.BLACK);
         btnExit.setFont(new Font("Century Gothic", Font.PLAIN, 16));
-        btnExit.setBounds(660, 400, 120, 40);
+        btnExit.setBounds(574, 360, 250, 40);
         panel.add(btnExit);
 
         add(panel);

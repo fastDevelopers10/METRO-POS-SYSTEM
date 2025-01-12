@@ -1,2 +1,2 @@
-public class CashierTesting {
-}
+//public class CashierTesting {
+//}

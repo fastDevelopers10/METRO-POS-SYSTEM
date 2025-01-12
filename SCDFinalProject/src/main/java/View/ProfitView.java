@@ -1,7 +1,6 @@
 package View;
 
-import Controller.EmpCtrlr;
-import Controller.SuperAdminLoginController;
+import Controller.EmployeeController;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -15,7 +14,7 @@ import java.sql.SQLException;
 public class ProfitView extends JFrame {
     private JTable employeeTable;
     private DefaultTableModel tableModel;
-    private EmpCtrlr controller;
+    private EmployeeController controller;
 
     public ProfitView() throws SQLException {
         setTitle("METRO");

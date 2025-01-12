@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 
 public class Product {
     private  int productid;
-    private int ID;
     private Branch branch; // Now using Branch object instead of branchId
     private String name;
     private String category;
@@ -31,7 +30,7 @@ public class Product {
     }
 
     public Product(int id, String name, String category, int quantity, double originalPrice, double salesPrice, boolean status) {
-        this.ID=id;
+        this.productid=id;
         this.name=name;
         this.category=category;
         this.quantity=quantity;
@@ -113,10 +112,10 @@ public class Product {
 
 
     public int getId() {
-        return ID;
+        return this.productid;
     }
 
     public void setId(int id) {
-        this.ID=ID;
+        this.productid=id;
     }
 }

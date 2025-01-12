@@ -5,6 +5,7 @@ import Model.Product;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class ProductService {
     private final ProductDAO productDAO;
@@ -17,6 +18,7 @@ public class ProductService {
     public List<String> getVendors() {
         return productDAO.fetchVendors();
     }
+
     public List<String> getProductsByBranch(int branchId) {
         return productDAO.fetchProductsByBranch(branchId);
     }
@@ -26,6 +28,7 @@ public class ProductService {
                                       Date purchaseDate) {
         return productDAO.addOrUpdateProduct(branchId, vendorId, productId, name, category, cartons, itemsPerCarton, originalPrice, salesPrice, purchaseDate);
     }
+
     // Method to check if internet is available (by checking database connectivity)
     public boolean isInternetAvailable() {
         return productDAO.isInternetAvailable();
@@ -66,9 +69,11 @@ public class ProductService {
     public List<Product> fetchProductsByBranchForTable(int branchId) {
         return productDAO.fetchProductsByBranchForTable(branchId, "");
     }
-    public boolean deleteProduct(int productId ) {
+
+    public boolean deleteProduct(int productId) {
         return productDAO.deleteProductById(productId);
     }
+
     public int getProductCountByBranch(int branchId) {
         return productDAO.getProductCountByBranch(branchId);
     }
@@ -77,4 +82,17 @@ public class ProductService {
         return productDAO.getVendorCount();
     }
 
+    public List<Map<String, Object>> fetchVendorProductsByBranchforvendors(int branchId) {
+        return productDAO.fetchVendorProductsByBranchforvendors(branchId);
+    }
+
+    public int getStockByBranch(int branchId) {
+        return ProductDAO.getStockByBranch(branchId);
+    }
+
+    public List<Object[]> getProductIdAndQuantities() {
+        return productDAO.getProductIdAndQuantities();
+    }
 }
+
+

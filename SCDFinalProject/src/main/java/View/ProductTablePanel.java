@@ -5,6 +5,7 @@ import Model.Product;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,12 +26,10 @@ public class ProductTablePanel extends JPanel {
         setLayout(null);
         initializeComponents();
         loadProducts("");
-
     }
 
     private void initializeComponents() {
         // Search bar
-
         JLabel searchLabel = new JLabel("Search:");
         searchLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
         searchLabel.setBounds(50, 20, 60, 30);
@@ -42,7 +41,7 @@ public class ProductTablePanel extends JPanel {
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                loadProducts(searchField.getText());
+                filterTable(searchField.getText());
             }
         });
         add(searchField);
@@ -58,13 +57,20 @@ public class ProductTablePanel extends JPanel {
         };
 
         productTable = new JTable(tableModel);
-        productTable.setRowHeight(30);
+        productTable.setRowHeight(30); // Fixed row height
+        productTable.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+        productTable.getTableHeader().setFont(new Font("Century Gothic", Font.BOLD, 14));
+        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // Set table to be non-resizable
 
         new ButtonColumn(productTable, new DeleteButtonActionListener(), 7);
 
         JScrollPane scrollPane = new JScrollPane(productTable);
         scrollPane.setBounds(50, 70, 900, 600);
         add(scrollPane);
+
+        // Ensure columns adjust to the table size
+        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        productTable.getTableHeader().setReorderingAllowed(false); // Disable column reordering
     }
 
     private void loadProducts(String searchQuery) {
@@ -84,6 +90,7 @@ public class ProductTablePanel extends JPanel {
                     "Delete"
             });
         }
+        filterTable(""); // Apply filter with empty query to reset the table sorting
     }
 
     // ActionListener for the delete button
@@ -134,25 +141,27 @@ public class ProductTablePanel extends JPanel {
         }
     }
 
-//    public static void main(String[] args) {
-//        SwingUtilities.invokeLater(() -> {
-//            JFrame frame = new JFrame("Product Table - Branch 1");
-//
-//        try {
-//            ImageIcon icon = new ImageIcon(
-//                    Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
-//            );
-//            setIconImage(icon.getImage());
-//        } catch (NullPointerException e) {
-//            e.printStackTrace();
-//            System.err.println("Error: Unable to load icon image.");
-//        }
-//            frame.setBounds(275, 0, 1020, 800);
-//            frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-//
-//            ProductTablePanel productTable = new ProductTablePanel(2);
-//            frame.add(productTable);
-//            frame.setVisible(true);
-//        });
-//    }
+    private void filterTable(String query) {
+        DefaultTableModel model = (DefaultTableModel) productTable.getModel();
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+        productTable.setRowSorter(sorter);
+
+        if (query.trim().isEmpty()) {
+            sorter.setRowFilter(null); // Show all rows
+        } else {
+            RowFilter<DefaultTableModel, Object> rowFilter = RowFilter.regexFilter("(?i)" + query.trim());
+            sorter.setRowFilter(rowFilter);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Product Table");
+            frame.setBounds(275, 0, 1020, 800);
+            frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            ProductTablePanel productTable = new ProductTablePanel(1);
+            frame.add(productTable);
+            frame.setVisible(true);
+        });
+    }
 }

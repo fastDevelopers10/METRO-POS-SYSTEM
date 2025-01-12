@@ -1,7 +1,7 @@
 package View;
 
 import Controller.BranchController;
-import Controller.EmpCtrlr;
+import Controller.EmployeeController;
 import Controller.SuperAdminLoginController;
 
 import javax.swing.*;
@@ -14,7 +14,7 @@ import java.util.List;
 public class BranchManagerTableUI extends JFrame {
     private JTable employeeTable;
     private DefaultTableModel tableModel;
-    EmpCtrlr controller;
+    EmployeeController controller;
 
     public BranchManagerTableUI() throws SQLException {
         setTitle("METRO");
@@ -133,7 +133,7 @@ public class BranchManagerTableUI extends JFrame {
             EmployeeForm form= new EmployeeForm(positions,branchids);
         });
 
-        controller = new EmpCtrlr(this);
+        controller = new EmployeeController(this);
 
         String[] columns = {"ID", "Name", "Email", "Branch ID", "Address",
                 "Phone Number", "Salary", "Joining Date", "Status", "Update"};

@@ -17,6 +17,12 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.List;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+
 
 public class BranchManagerUI extends JFrame {
    private BufferedImage reportsImage;
@@ -93,7 +99,9 @@ public class BranchManagerUI extends JFrame {
         String[][] menuItems = {
                 {"Dashboard", "images/icons/dash_icon.png"},
                 {"Employees", "icons/Product.png"},
+                {"Stocks Left","images/icons/Product.png"},
                 {"Logout", "images/icons/Product.png"}
+
         };
 
         final SideMenuButton[] activeButton = {null}; // Track the currently active button
@@ -143,6 +151,10 @@ public class BranchManagerUI extends JFrame {
                     {backgroundPanel.remove(reportsPanel); }// Remove employee panel
                     showEmployeePanel();
                     break;
+                    case "Stocks Left":
+                        System.out.println("Checking rem stock...");
+                        viewStocksLeft();
+                        break;
                     case "Logout":
                         System.out.println("Logging out...");
                         logoutAction();
@@ -181,7 +193,35 @@ public class BranchManagerUI extends JFrame {
         // Add the background panel to the frame
         add(backgroundPanel);
     }
+    public void viewStocksLeft()
+    {
+        JFrame frame = new JFrame("Product Stock Table");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setSize(600, 400);
 
+        // Create a table model
+        DefaultTableModel tableModel = new DefaultTableModel();
+        tableModel.addColumn("Product ID");
+        tableModel.addColumn("Total Products");
+
+        // Fetch the product data from DAO
+        List<Object[]> productList = productController.getProductIdAndQuantities();
+
+        // Add data to the table model
+        for (Object[] productData : productList) {
+            tableModel.addRow(productData);
+        }
+
+        // Create the JTable with the data model
+        JTable table = new JTable(tableModel);
+
+        // Add the table to a scroll pane
+        JScrollPane scrollPane = new JScrollPane(table);
+        frame.add(scrollPane, BorderLayout.CENTER);
+
+        // Make the frame visible
+        frame.setVisible(true);
+    }
     // Method to show the employee panel on the right side
     public void showEmployeePanel() {
         // Remove any existing employee panel
@@ -259,7 +299,11 @@ public class BranchManagerUI extends JFrame {
         addCashierButton.addActionListener(e -> {
             // Add Cashier Logic
             String [] positions={"Cashier","Data Operator"};
-            EmployeeForm form= new EmployeeForm(positions,employee.getBranchId());
+            try {
+                EmployeeForm form= new EmployeeForm(positions,employee.getBranchId());
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
 
         });
 
@@ -383,67 +427,67 @@ public class BranchManagerUI extends JFrame {
         reportsPanel.add(stockLabel);
 
 
-        RoundedButton remStock = new RoundedButton("Remaining Stocks",25);  // Set button text
-        remStock.setBounds(menuWidth + 14, // Positioned on the right with some padding
-                (reportsPanel.getHeight() ) / 2, // Vertically centered
-                270, 100); // Width and height of the button
+//        RoundedButton remStock = new RoundedButton("Remaining Stocks",25);  // Set button text
+//        remStock.setBounds(menuWidth + 14, // Positioned on the right with some padding
+//                (reportsPanel.getHeight() ) / 2, // Vertically centered
+//                270, 100); // Width and height of the button
+//
+//// Load and set the icon for the button (optional, if you still want to include the icon)
+//        try {
+//            ImageIcon buttonIcon = new ImageIcon(Objects.requireNonNull(
+//                    getClass().getClassLoader().getResource("images/icons/graph.png") // Path to your button icon
+//            ));
+//            // Scale the icon to fit the button size
+//            Image scaledImage = buttonIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+//            remStock.setIcon(new ImageIcon(scaledImage));
+//
+//            remStock.setContentAreaFilled(false); // Remove button background to focus on the icon
+//            remStock.setBorderPainted(false); // Remove button border
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.err.println("Error: Unable to load button icon.");
+//        }
 
-// Load and set the icon for the button (optional, if you still want to include the icon)
-        try {
-            ImageIcon buttonIcon = new ImageIcon(Objects.requireNonNull(
-                    getClass().getClassLoader().getResource("images/icons/graph.png") // Path to your button icon
-            ));
-            // Scale the icon to fit the button size
-            Image scaledImage = buttonIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-            remStock.setIcon(new ImageIcon(scaledImage));
+//// Set the font and color for the text
+//        remStock.setFont(new Font("Arial", Font.BOLD, 16)); // Customize font size and style
+//        remStock.setForeground(Color.BLACK); // Set text color to black
+//
+//// Align the text and icon
+//        remStock.setHorizontalTextPosition(SwingConstants.RIGHT);  // Align text to the right of the icon
+//        remStock.setVerticalTextPosition(SwingConstants.CENTER); // Vertically center the text with the icon
 
-            remStock.setContentAreaFilled(false); // Remove button background to focus on the icon
-            remStock.setBorderPainted(false); // Remove button border
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Error: Unable to load button icon.");
-        }
-
-// Set the font and color for the text
-        remStock.setFont(new Font("Arial", Font.BOLD, 16)); // Customize font size and style
-        remStock.setForeground(Color.BLACK); // Set text color to black
-
-// Align the text and icon
-        remStock.setHorizontalTextPosition(SwingConstants.RIGHT);  // Align text to the right of the icon
-        remStock.setVerticalTextPosition(SwingConstants.CENTER); // Vertically center the text with the icon
-
-// Add an action listener to the button
-        remStock.addActionListener(e -> {
-            JFrame frame = new JFrame("Product Stock Table");
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            frame.setSize(600, 400);
-
-            // Create a table model
-            DefaultTableModel tableModel = new DefaultTableModel();
-            tableModel.addColumn("Product ID");
-            tableModel.addColumn("Total Products");
-
-            // Fetch the product data from DAO
-            List<Object[]> productList = productController.getProductIdAndQuantities();
-
-            // Add data to the table model
-            for (Object[] productData : productList) {
-                tableModel.addRow(productData);
-            }
-
-            // Create the JTable with the data model
-            JTable table = new JTable(tableModel);
-
-            // Add the table to a scroll pane
-            JScrollPane scrollPane = new JScrollPane(table);
-            frame.add(scrollPane, BorderLayout.CENTER);
-
-            // Make the frame visible
-            frame.setVisible(true);
-        });
-
-// Add the button to the reports panel
-        reportsPanel.add(remStock);
+//// Add an action listener to the button
+//        remStock.addActionListener(e -> {
+//            JFrame frame = new JFrame("Product Stock Table");
+//            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+//            frame.setSize(600, 400);
+//
+//            // Create a table model
+//            DefaultTableModel tableModel = new DefaultTableModel();
+//            tableModel.addColumn("Product ID");
+//            tableModel.addColumn("Total Products");
+//
+//            // Fetch the product data from DAO
+//            List<Object[]> productList = productController.getProductIdAndQuantities();
+//
+//            // Add data to the table model
+//            for (Object[] productData : productList) {
+//                tableModel.addRow(productData);
+//            }
+//
+//            // Create the JTable with the data model
+//            JTable table = new JTable(tableModel);
+//
+//            // Add the table to a scroll pane
+//            JScrollPane scrollPane = new JScrollPane(table);
+//            frame.add(scrollPane, BorderLayout.CENTER);
+//
+//            // Make the frame visible
+//            frame.setVisible(true);
+//        });
+//
+//// Add the button to the reports panel
+//        reportsPanel.add(remStock);
 // "Profits History" Button
         RoundedButton profitsHistoryButton = new RoundedButton("Profits History", 20);
         profitsHistoryButton.setBounds(menuWidth + 205, reportsPanel.getHeight() - 120, 140, 40);

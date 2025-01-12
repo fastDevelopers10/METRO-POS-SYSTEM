@@ -228,7 +228,7 @@ public class EmployeeForm extends JFrame {
             if (isInserted) {
                 JOptionPane.showMessageDialog(this, "Employee added successfully with default password '123'!");
                 dispose();
-                bmUI.refreshTable();
+//                bmUI.refreshTable();
             } else {
                 JOptionPane.showMessageDialog(this, "Failed to add employee. Try again.");
             }

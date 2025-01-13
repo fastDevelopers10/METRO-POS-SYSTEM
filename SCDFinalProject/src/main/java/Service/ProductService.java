@@ -93,6 +93,10 @@ public class ProductService {
     public List<Object[]> getProductIdAndQuantities() {
         return productDAO.getProductIdAndQuantities();
     }
+
+    public Map<String, Integer> getCategorySales(int branchId) {
+        return productDAO.getCategorySales(branchId);
+    }
 }
 
 

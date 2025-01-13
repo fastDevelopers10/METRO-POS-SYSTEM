@@ -81,4 +81,8 @@ public class ProductController {
     public List<Object[]> getProductIdAndQuantities() {
         return productService.getProductIdAndQuantities();
     }
+
+    public Map<String,  Integer> getCategorySales(int branchId) {
+        return productService.getCategorySales(branchId);
+    }
 }

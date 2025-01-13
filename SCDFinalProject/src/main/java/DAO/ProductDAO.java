@@ -7,6 +7,7 @@ import Model.Product;
 import java.io.*;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.Date;
 
@@ -626,5 +627,53 @@ public boolean updateStock(String productName, int quantity, int branchId) throw
 
         return productList;
     }
+
+    public Map<String, Integer> getCategorySales(int branchId) {
+        Map<String, Integer> categorySales = new HashMap<>();
+        int currentYear = LocalDate.now().getYear();  // Get the current year
+
+        // Query to find transactions in the current year, join with the product table, and count total sales per category
+        String query = "SELECT p.product_category, COUNT(t.product_id) AS total_sales "
+                + "FROM transaction t "
+                + "JOIN product p ON t.product_id = p.product_id "
+                + "WHERE p.branch_id = ? "
+                + "AND YEAR(t.transaction_date) = ? "  // Filter by current year
+                + "GROUP BY p.product_category";  // Group by category
+
+        try (Connection connection = DBConnection.getConnection()) {
+            if (connection == null || connection.isClosed()) {
+                System.err.println("Invalid database connection.");
+                return categorySales;
+            }
+
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, branchId);  // Use branchId to filter categories
+                statement.setInt(2, currentYear);  // Use the current year to filter transactions
+
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String category = resultSet.getString("product_category");
+                        int totalSales = resultSet.getInt("total_sales");
+
+                        // Store total sales by category name
+                        categorySales.put(category, totalSales);
+
+                        // Print the category and total sales to the console for debugging
+                        System.out.println("Category: " + category + ", Total Sales: " + totalSales);
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.err.println("Error fetching sales data: " + e.getMessage());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Failed to get connection: " + e.getMessage());
+        }
+
+        return categorySales;
+    }
+
+
 }
 

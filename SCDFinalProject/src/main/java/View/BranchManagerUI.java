@@ -3,6 +3,7 @@ package View;
 import Controller.EmployeeController;
 import Controller.ProductController;
 import Controller.TransactionController;
+import DAO.ProductDAO;
 import Model.Employee;
 import Model.MyPrinter;
 
@@ -10,27 +11,36 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.Objects;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.List;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.plot.*;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.general.PieDataset;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleEdge;
 
 
 public class BranchManagerUI extends JFrame {
@@ -198,22 +208,22 @@ public class BranchManagerUI extends JFrame {
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
 
+        JLabel employeeName = new JLabel("" + employee.getUsername());
+        employeeName.setBounds(82, 86, 200, 22); // Adjust bounds as needed
+        employeeName.setFont(new Font("Arial", Font.BOLD, 16));
+        employeeName.setForeground(Color.BLACK);
 
         // Display Branch ID
         JLabel branchIdLabel = new JLabel("" + employee.getBranchId());
-        branchIdLabel.setBounds(118, 145, 200, 22); // Adjust bounds as needed
+        branchIdLabel.setBounds(118, 144, 200, 22); // Adjust bounds as needed
         branchIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
         branchIdLabel.setForeground(Color.BLACK);
-
-        // Create and add the Profit Chart Panel
-        RoundedPanel profitChartPanel = createProfitChartPanel();
-        profitChartPanel.setBounds(menuWidth + 98,(backgroundPanel.getHeight() ) / 2 +12 ,455, 235); // Width and height of the button
-// Set the size and position as needed
-        backgroundPanel.add(profitChartPanel);
 
         // Add components to the background panel
         backgroundPanel.add(sideMenuPanel);
         backgroundPanel.add(branchIdLabel);
+        backgroundPanel.add(employeeName);
+
 
         // Add the background panel to the frame
         add(backgroundPanel);
@@ -362,20 +372,279 @@ public class BranchManagerUI extends JFrame {
         revalidate();
         repaint();
     }
-    private RoundedPanel createProfitChartPanel() {
+    private RoundedPanel createChartWithZoomButton() {
         // Create a panel for the chart
         RoundedPanel panel = new RoundedPanel(3);
-        panel.setLayout(new BorderLayout());
-        panel.setPreferredSize(new Dimension(500, 600));
+        panel.setBackground(Color.white);
+        panel.setLayout(new BorderLayout());  // BorderLayout will manage the position of components
+        panel.setPreferredSize(new Dimension(500, 600));  // Set the size of the panel
 
         // Create the chart
         JFreeChart chart = createProfitChart();
 
-        // Add the chart to the panel
+        // Add the chart to the panel in the center of the BorderLayout
         ChartPanel chartPanel = new ChartPanel(chart);
         panel.add(chartPanel, BorderLayout.CENTER);
 
+        // Create the zoom button
+        RoundedButton zoomButton = new RoundedButton("Zoom In", 20);
+        zoomButton.addActionListener(e -> openZoomedChartFrame(chart));
+
+        // Set a fixed size for the button and center it within the panel
+        zoomButton.setPreferredSize(new Dimension(120, 40));  // You can adjust the size if needed
+
+        // Create a panel for the button and center it horizontally
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 3));  // Center with padding
+        buttonPanel.setOpaque(false);  // Make the button panel transparent
+        buttonPanel.add(zoomButton);   // Add the zoom button to the button panel
+
+        // Add the button panel to the bottom (SOUTH) of the main panel
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
         return panel;
+    }
+
+
+    private void openZoomedChartFrame(JFreeChart chart) {
+        // Create a semi-transparent black frame
+        JFrame zoomFrame = new JFrame();
+        zoomFrame.setUndecorated(true);
+        zoomFrame.setSize(1920, 1080);
+        zoomFrame.setLayout(null); // Use null layout for precise placement
+        zoomFrame.setBackground(new Color(0, 0, 0, 150)); // Semi-transparent black
+        zoomFrame.setLocationRelativeTo(null);
+
+        // Create a rounded panel to hold the chart
+        RoundedPanel chartPanel = new RoundedPanel(18); // Rounded corners with radius 4
+        chartPanel.setSize(1000, 550); // Fixed size for the chart panel
+        chartPanel.setLocation((zoomFrame.getX() + 120),
+                (zoomFrame.getHeight() - chartPanel.getHeight()) / 3 - 120); // Centering
+        chartPanel.setOpaque(true);
+        chartPanel.setBackground(Color.WHITE);
+        chartPanel.setLayout(new BorderLayout());
+
+        // Add the chart to the rounded panel
+        ChartPanel largerChartPanel = new ChartPanel(chart);
+        largerChartPanel.setPreferredSize(new Dimension(800, 400)); // Ensure chart fits panel
+        chartPanel.add(largerChartPanel, BorderLayout.CENTER);
+
+        // Create a button panel with "Print" and "Close" buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.setOpaque(false); // Transparent background
+        buttonPanel.setBounds(
+                ( chartPanel.getX()) +5, // Align with chart horizontally
+                chartPanel.getY() + chartPanel.getHeight() + 10,    // Position below the chart
+                chartPanel.getWidth(),
+                50
+        );
+
+        // Add a print button
+        RoundedButton printButton = new RoundedButton("Print", 20);
+        printButton.addActionListener(printEvent -> {
+            try {
+                // Create a string representation of the chart data
+                String chartData = "Chart Data: \n"; // Replace this with actual chart data extraction logic
+                chartData += "This is a sample representation of the chart's content.";
+
+                // Use MyPrinter to print the chart data
+                MyPrinter printer = new MyPrinter();
+                printer.setData(chartData);
+
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setPrintable(printer);
+
+                if (job.printDialog()) {
+                    job.print();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(zoomFrame, "Error printing chart: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        buttonPanel.add(printButton);
+
+        // Add a close button
+        RoundedButton closeButton = new RoundedButton("Close", 20);
+        closeButton.addActionListener(closeEvent -> zoomFrame.dispose());
+        buttonPanel.add(closeButton);
+
+        // Add components to the frame
+        zoomFrame.add(chartPanel);
+        zoomFrame.add(buttonPanel);
+
+        // Display the frame
+        zoomFrame.setVisible(true);
+    }
+
+
+    // Method to create the main panel with pie chart and zoom button
+   private RoundedPanel createPieChartWithZoomButton() {
+        // Create a panel for the pie chart
+        RoundedPanel panel = new RoundedPanel(23);
+        panel.setBackground(Color.WHITE);
+        panel.setLayout(new BorderLayout());
+        panel.setPreferredSize(new Dimension(500, 600));
+
+        // Create the pie chart (pass branchId to the createPieChart method)
+        JFreeChart pieChart = createPieChart(1);  // Assuming branchId = 1 for testing
+
+        // Add the pie chart to the panel
+        ChartPanel chartPanel = new ChartPanel(pieChart);
+        panel.add(chartPanel, BorderLayout.CENTER);
+
+        // Create a wrapper panel for the button
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 3)); // Center alignment with padding
+        buttonPanel.setOpaque(false); // Ensure the wrapper panel is transparent
+        // Create the zoom button
+       Map<String, Integer> categorySales = productController.getCategorySales(employee.getBranchId());  // Simulated method
+
+       RoundedButton zoomButton = new RoundedButton("Zoom In", 20);
+        zoomButton.addActionListener(e -> openZoomedPieChartFrame(pieChart,categorySales));
+
+        // Optional: Set a fixed size for the button to ensure consistent appearance
+        zoomButton.setPreferredSize(new Dimension(120, 40)); // Adjust size if necessary
+
+        buttonPanel.add(zoomButton);
+
+        // Add the wrapper panel to the main panel
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+
+
+
+    // Method to open a zoomed pie chart in a new frame
+    private void openZoomedPieChartFrame(JFreeChart pieChart, Map<String, Integer> categorySalesData) {
+        // Create a new frame for the zoomed pie chart
+        JFrame zoomFrame = new JFrame("Zoomed Pie Chart");
+        zoomFrame.setUndecorated(true);
+        zoomFrame.setSize(1920, 1080);
+        zoomFrame.setLayout(null);  // Use null layout for precise placement
+        zoomFrame.setBackground(new Color(0, 0, 0, 150));  // Semi-transparent black background
+        zoomFrame.setLocationRelativeTo(null);  // Center on screen
+
+        // Create a rounded panel to hold the pie chart
+        RoundedPanel chartPanel = new RoundedPanel(18);  // Rounded corners with radius 18
+        chartPanel.setSize(1000, 550);  // Set the size of the panel
+        chartPanel.setLocation(
+                (zoomFrame.getX() + 120),
+                (zoomFrame.getHeight() - chartPanel.getHeight()) / 3 - 120  // Position vertically with some padding
+        );
+        chartPanel.setOpaque(true);
+        chartPanel.setBackground(Color.WHITE);  // Set background color to white
+        chartPanel.setLayout(new BorderLayout());
+
+        // Add the pie chart to the panel
+        ChartPanel largerChartPanel = new ChartPanel(pieChart);
+        largerChartPanel.setPreferredSize(new Dimension(800, 400));  // Set preferred size for the chart
+        chartPanel.add(largerChartPanel, BorderLayout.CENTER);
+
+
+
+        // Add the pie chart and sales data panel to the zoom frame
+        zoomFrame.add(chartPanel);
+        // Create a button panel with "Print" and "Close" buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.setOpaque(false); // Transparent background
+        buttonPanel.setBounds(
+                (chartPanel.getX()) + 5, // Align with chart horizontally
+                chartPanel.getY() + chartPanel.getHeight() + 10,    // Position below the chart
+                chartPanel.getWidth(),
+                50
+        );
+
+        // Add a print button
+        RoundedButton printButton = new RoundedButton("Print", 20);
+        printButton.addActionListener(printEvent -> {
+            try {
+                // Create a string representation of the chart data
+                String chartData = "Chart Data: \n"; // Replace this with actual chart data extraction logic
+                chartData += "This is a sample representation of the chart's content.";
+
+                // Use MyPrinter to print the chart data
+                MyPrinter printer = new MyPrinter();
+                printer.setData(chartData);
+
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setPrintable(printer);
+
+                if (job.printDialog()) {
+                    job.print();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(zoomFrame, "Error printing chart: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        buttonPanel.add(printButton);
+
+        // Add a close button
+        RoundedButton closeButton = new RoundedButton("Close", 20);
+        closeButton.addActionListener(closeEvent -> zoomFrame.dispose());
+        buttonPanel.add(closeButton);
+
+        // Add components to the frame
+        zoomFrame.add(buttonPanel);
+
+        // Display the zoom frame
+        zoomFrame.setVisible(true);
+    }
+
+    // Method to create the pie chart with dynamic colors
+    public JFreeChart createPieChart(int branchId) {
+        // Retrieve the category sales data
+        Map<String, Integer> categorySales = productController.getCategorySales(branchId);  // Simulated method
+        System.out.println(categorySales.entrySet());
+
+        // Create a dataset for the pie chart
+        DefaultPieDataset dataset = new DefaultPieDataset();
+
+        // Populate the dataset with data from the category sales map
+        for (Map.Entry<String, Integer> categoryEntry : categorySales.entrySet()) {
+            // Use category name as the label and the total sales count as the value
+            dataset.setValue(categoryEntry.getKey(), categoryEntry.getValue());
+            System.out.println("Category: " + categoryEntry.getKey() + " Total Sales: " + categoryEntry.getValue());
+        }
+
+        // Create a 3D Pie Chart
+        JFreeChart pieChart = ChartFactory.createPieChart3D(
+                "Sales by Product Category",  // Chart title
+                dataset,                     // Dataset
+                true,                        // Include legend
+                true,                        // Tooltips enabled
+                false                        // URLs disabled
+        );
+
+        // Cast the plot to PiePlot3D for customization
+        PiePlot3D plot = (PiePlot3D) pieChart.getPlot();
+
+        // Dynamically assign colors to slices (optional)
+        assignDynamicSliceColors(plot, categorySales);
+
+        // Adjust the section outline stroke (border thickness)
+        plot.setSectionOutlineStroke(new BasicStroke(2.0f));
+
+        // Customize shadow (simulates depth)
+        plot.setShadowXOffset(3);  // Horizontal shadow
+        plot.setShadowYOffset(3);  // Vertical shadow
+        plot.setShadowPaint(Color.GRAY);  // Shadow color
+
+        // Set custom label generator to include both category and percentage
+        plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} ({2})",
+                NumberFormat.getNumberInstance(),
+                NumberFormat.getPercentInstance()));  // {0}: category, {1}: value, {2}: percentage
+
+        return pieChart;
+    }
+
+    // Method to dynamically assign colors to pie chart slices
+    private void assignDynamicSliceColors(PiePlot3D plot, Map<String, Integer> categorySales) {
+        Random random = new Random();
+        for (Map.Entry<String, Integer> categoryEntry : categorySales.entrySet()) {
+            // Generate a random color for each category
+            Color randomColor = new Color(random.nextFloat(), random.nextFloat(), random.nextFloat());
+            plot.setSectionPaint(categoryEntry.getKey(), randomColor);  // Set color for each slice (category)
+        }
     }
 
     private JFreeChart createProfitChart() {
@@ -392,7 +661,6 @@ public class BranchManagerUI extends JFrame {
         for (int i = 0; i < 10; i++) {
             int year = currentYear - i; // Calculate the year
             double profit = transactionController.fetchProfitForYear(year); // Fetch profit for that year
-            System.out.println("Year: " + year + " Profit: " + profit);
 
             // Update maximum profit
             if (profit > maxProfit) {
@@ -533,259 +801,17 @@ public class BranchManagerUI extends JFrame {
         reportsPanel.add(stockLabel);
 
 
-//        RoundedButton remStock = new RoundedButton("Remaining Stocks",25);  // Set button text
-//        remStock.setBounds(menuWidth + 14, // Positioned on the right with some padding
-//                (reportsPanel.getHeight() ) / 2, // Vertically centered
-//                270, 100); // Width and height of the button
-//
-//// Load and set the icon for the button (optional, if you still want to include the icon)
-//        try {
-//            ImageIcon buttonIcon = new ImageIcon(Objects.requireNonNull(
-//                    getClass().getClassLoader().getResource("images/icons/graph.png") // Path to your button icon
-//            ));
-//            // Scale the icon to fit the button size
-//            Image scaledImage = buttonIcon.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-//            remStock.setIcon(new ImageIcon(scaledImage));
-//
-//            remStock.setContentAreaFilled(false); // Remove button background to focus on the icon
-//            remStock.setBorderPainted(false); // Remove button border
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            System.err.println("Error: Unable to load button icon.");
-//        }
+        // Create and add the Profit Chart Panel
+        RoundedPanel profitChartPanel = createChartWithZoomButton();
+        profitChartPanel.setBounds(menuWidth -80,(reportsPanel.getHeight() ) / 2 +12 ,455, 235); // Width and height of the button
+        // Set the size and position as needed
+        reportsPanel.add(profitChartPanel);
 
-//// Set the font and color for the text
-//        remStock.setFont(new Font("Arial", Font.BOLD, 16)); // Customize font size and style
-//        remStock.setForeground(Color.BLACK); // Set text color to black
-//
-//// Align the text and icon
-//        remStock.setHorizontalTextPosition(SwingConstants.RIGHT);  // Align text to the right of the icon
-//        remStock.setVerticalTextPosition(SwingConstants.CENTER); // Vertically center the text with the icon
+        RoundedPanel pieChartPanel = createPieChartWithZoomButton();
+        pieChartPanel.setBounds(menuWidth -80,(reportsPanel.getHeight() )/2 -300 ,455, 235); // Width and height of the button
 
-//// Add an action listener to the button
-//        remStock.addActionListener(e -> {
-//            JFrame frame = new JFrame("Product Stock Table");
-//            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-//            frame.setSize(600, 400);
-//
-//            // Create a table model
-//            DefaultTableModel tableModel = new DefaultTableModel();
-//            tableModel.addColumn("Product ID");
-//            tableModel.addColumn("Total Products");
-//
-//            // Fetch the product data from DAO
-//            List<Object[]> productList = productController.getProductIdAndQuantities();
-//
-//            // Add data to the table model
-//            for (Object[] productData : productList) {
-//                tableModel.addRow(productData);
-//            }
-//
-//            // Create the JTable with the data model
-//            JTable table = new JTable(tableModel);
-//
-//            // Add the table to a scroll pane
-//            JScrollPane scrollPane = new JScrollPane(table);
-//            frame.add(scrollPane, BorderLayout.CENTER);
-//
-//            // Make the frame visible
-//            frame.setVisible(true);
-//        });
-//
-//// Add the button to the reports panel
-////        reportsPanel.add(remStock);
-//// "Profits History" Button
-//        RoundedButton profitsHistoryButton = new RoundedButton("Profits History", 20);
-//        profitsHistoryButton.setBounds(menuWidth + 205, reportsPanel.getHeight() - 120, 140, 40);
-//        profitsHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
-//        profitsHistoryButton.setBackground(Color.LIGHT_GRAY);
-//        profitsHistoryButton.setForeground(Color.BLACK);
-//
-//        profitsHistoryButton.addActionListener(e -> {
-//            // Create dropdown menu for time period selection
-//            String[] options = {"Monthly", "Weekly", "Yearly"};
-//            JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
-//
-//            // Display the dropdown menu for time period selection
-//            int timePeriodSelection = JOptionPane.showOptionDialog(
-//                    null,
-//                    timePeriodComboBox,
-//                    "Select Time Period",
-//                    JOptionPane.DEFAULT_OPTION,
-//                    JOptionPane.PLAIN_MESSAGE,
-//                    null,
-//                    null,
-//                    null
-//            );
-//
-//            if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
-//                String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
-//                String selectedYear = null;
-//
-//                // Ask for year based on period selection
-//                if (selectedPeriod != null) {
-//                    // Year selection
-//                    String[] years = {"2020", "2021", "2022", "2023", "2024"};
-//                    JComboBox<String> yearComboBox = new JComboBox<>(years);
-//                    int yearSelection = JOptionPane.showOptionDialog(
-//                            null,
-//                            yearComboBox,
-//                            "Select Year",
-//                            JOptionPane.DEFAULT_OPTION,
-//                            JOptionPane.PLAIN_MESSAGE,
-//                            null,
-//                            null,
-//                            null
-//                    );
-//                    if (yearSelection != JOptionPane.CLOSED_OPTION) {
-//                        selectedYear = (String) yearComboBox.getSelectedItem();
-//                    }
-//
-//                    int year = Integer.parseInt(selectedYear);
-//
-//                    try {
-//                        // Fetch profit data based on the selected year and period
-//                        Map<Integer, Double> productProfits = transactionController.getAverageProfits(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
-//
-//                        JPanel panel = new JPanel();
-//                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-//
-//                        // Add a label displaying the results
-//                        StringBuilder profitMessage = new StringBuilder("<html><h3>Average Profits for Products:</h3>");
-//                        for (Map.Entry<Integer, Double> entry : productProfits.entrySet()) {
-//                            profitMessage.append(String.format("<p>Product ID: %d, Average Profit: %.2f</p>", entry.getKey(), entry.getValue()));
-//                        }
-//                        profitMessage.append("</html>");
-//
-//                        JLabel profitLabel2 = new JLabel(profitMessage.toString());
-//                        panel.add(profitLabel2);
-//
-//                        // Print button functionality for the profit data
-//                        RoundedButton printButton = new RoundedButton("Print", 20);
-//                        printButton.addActionListener(printEvent -> {
-//                            try {
-//                                MyPrinter printer = new MyPrinter();
-//                                printer.setData(profitMessage.toString()); // Update method for profit data
-//
-//                                PrinterJob job = PrinterJob.getPrinterJob();
-//                                job.setPrintable(printer);
-//
-//                                if (job.printDialog()) {
-//                                    job.print();
-//                                }
-//
-//                            } catch (Exception ex) {
-//                                JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//                            }
-//                        });
-//                        panel.add(printButton);
-//
-//                        // Display the panel with profit data
-//                        JOptionPane.showMessageDialog(null, panel, "Product-wise Average Profits", JOptionPane.INFORMATION_MESSAGE);
-//
-//                    } catch (Exception ex) {
-//                        JOptionPane.showMessageDialog(null, "Error fetching average profits: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//                    }
-//                }
-//            }
-//        });
-
-// "Sales History" Button
-//        RoundedButton salesHistoryButton = new RoundedButton("Sales History", 20);
-//        salesHistoryButton.setBounds(menuWidth + 355, reportsPanel.getHeight() - 120, 140, 40);
-//        salesHistoryButton.setFont(new Font("Arial", Font.BOLD, 14));
-//        salesHistoryButton.setBackground(Color.LIGHT_GRAY);
-//        salesHistoryButton.setForeground(Color.BLACK);
-//
-//        salesHistoryButton.addActionListener(e -> {
-//            // Create dropdown menu for time period selection
-//            String[] options = {"Monthly", "Weekly", "Yearly"};
-//            JComboBox<String> timePeriodComboBox = new JComboBox<>(options);
-//
-//            // Display the dropdown menu for time period selection
-//            int timePeriodSelection = JOptionPane.showOptionDialog(
-//                    null,
-//                    timePeriodComboBox,
-//                    "Select Time Period",
-//                    JOptionPane.DEFAULT_OPTION,
-//                    JOptionPane.PLAIN_MESSAGE,
-//                    null,
-//                    null,
-//                    null
-//            );
-//
-//            if (timePeriodSelection != JOptionPane.CLOSED_OPTION) {
-//                String selectedPeriod = (String) timePeriodComboBox.getSelectedItem();
-//                String selectedYear = null;
-//
-//                // Ask for year based on period selection
-//                if (selectedPeriod != null) {
-//                    // Year selection
-//                    String[] years = {"2020", "2021", "2022", "2023", "2024"};
-//                    JComboBox<String> yearComboBox = new JComboBox<>(years);
-//                    int yearSelection = JOptionPane.showOptionDialog(
-//                            null,
-//                            yearComboBox,
-//                            "Select Year",
-//                            JOptionPane.DEFAULT_OPTION,
-//                            JOptionPane.PLAIN_MESSAGE,
-//                            null,
-//                            null,
-//                            null
-//                    );
-//                    if (yearSelection != JOptionPane.CLOSED_OPTION) {
-//                        selectedYear = (String) yearComboBox.getSelectedItem();
-//                    }
-//
-//                    int year = Integer.parseInt(selectedYear);
-//
-//                    try {
-//                        Map<Integer, Double> productSales = transactionController.getAverageSales(employee.getBranchId(), selectedPeriod.toLowerCase(), year);
-//
-//                        JPanel panel = new JPanel();
-//                        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-//
-//                        // Add a label displaying the results
-//                        StringBuilder salesMessage = new StringBuilder("<html><h3>Average Sales for Products:</h3>");
-//                        for (Map.Entry<Integer, Double> entry : productSales.entrySet()) {
-//                            salesMessage.append(String.format("<p>Product ID: %d, Average Sales: %.2f</p>", entry.getKey(), entry.getValue()));
-//                        }
-//                        salesMessage.append("</html>");
-//
-//                        JLabel salesLabel2 = new JLabel(salesMessage.toString());
-//                        panel.add(salesLabel2);
-//
-//                        RoundedButton printButton = new RoundedButton("Print",20);
-//                        printButton.addActionListener(printEvent -> {
-//                            try {
-//                                MyPrinter printer = new MyPrinter();
-//                                printer.setData(salesMessage.toString());
-//
-//                                PrinterJob job = PrinterJob.getPrinterJob();
-//                                job.setPrintable(printer);
-//
-//                                if (job.printDialog()) {
-//                                    job.print();
-//                                }
-//
-//                            } catch (Exception ex) {
-//                                JOptionPane.showMessageDialog(null, "Error printing the data: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//                            }
-//                        });
-//                        panel.add(printButton);
-//
-//                        JOptionPane.showMessageDialog(null, panel, "Product-wise Average Sales", JOptionPane.INFORMATION_MESSAGE);
-//
-//                    } catch (Exception ex) {
-//                        JOptionPane.showMessageDialog(null, "Error fetching average sales: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-//                    }
-//                }
-//            }
-//        });
-        // Add both buttons to the reports panel
-//        reportsPanel.add(profitsHistoryButton);
-//        reportsPanel.add(salesHistoryButton);
-
+        // Add the chart panel to the JFrame
+        reportsPanel.add(pieChartPanel);
         // Add the reports panel to the background panel
         backgroundPanel.add(reportsPanel);
 

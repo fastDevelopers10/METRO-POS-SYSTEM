@@ -8,14 +8,16 @@ public class SideMenuButton extends JButton {
     private static final Color DEFAULT_COLOR = Color.WHITE;
     private static final Color ACTIVE_COLOR = new Color(200, 229, 220);
     private static final Color HOVER_COLOR = new Color(220, 220, 220); // Color when hovered
+    private static final Color PRESSED_COLOR = new Color(210, 180, 180); // Color when button is pressed
     private static final Font DEFAULT_FONT = new Font("Century Gothic", Font.PLAIN, 14);
     private static final Color TEXT_COLOR = Color.BLACK;
 
-    // Track whether the button is active
     private boolean isActive = false;
+    private boolean isPressed = false;  // Track if the button is pressed
+    private Timer pressTimer;  // Timer to track long press
 
     public SideMenuButton(String text, String iconPath) {
-        super(text); // Set button text
+        super(text);  // Set button text
 
         // Set icon
         try {
@@ -32,23 +34,34 @@ public class SideMenuButton extends JButton {
         setBackground(DEFAULT_COLOR);
         setFocusPainted(false);
         setBorderPainted(false);
+        setPreferredSize(new Dimension(240, 40));
 
-        // Set preferred size
-        setPreferredSize(new Dimension(240, 40)); // Adjust width and height
-
-        // Set cursor to hand on hover
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        // Add mouse listener for hover effect
+        // Add mouse listener for hover effect and press functionality
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                setBackground(HOVER_COLOR); // Change color when hovered
+                if (!isPressed) {
+                    setBackground(HOVER_COLOR);  // Hover color when not pressed
+                }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                setBackground(isActive ? ACTIVE_COLOR : DEFAULT_COLOR); // Reset color when mouse leaves
+                if (!isPressed) {
+                    setBackground(isActive ? ACTIVE_COLOR : DEFAULT_COLOR);  // Reset color when mouse leaves
+                }
+            }
+
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                isPressed = false;  // Button is released
+                setBackground(isActive ? ACTIVE_COLOR : DEFAULT_COLOR);  // Reset the color
+                if (pressTimer != null) {
+                    pressTimer.stop();  // Stop the timer if the press is released early
+                }
             }
         });
     }

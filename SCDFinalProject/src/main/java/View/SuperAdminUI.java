@@ -27,6 +27,7 @@ public class SuperAdminUI extends JFrame {
     private static final Color FONT_COLOR = Color.BLACK;
     private JLabel lblBackground;
     private BranchController branchController;
+    private SuperAdminLoginController ctrlr;
     private DefaultTableModel tableModel,branchtableModel;
     private JTable table,employeeTable;
     private EmployeeController controller;
@@ -38,7 +39,6 @@ public class SuperAdminUI extends JFrame {
 
         this.branchController=new BranchController();
         this.profitPanel = new ProfitPanel();
-
         mainContentPanel = new JPanel(new CardLayout());
         mainContentPanel.setBounds(265, 0, 1090, 710);
         mainContentPanel.setBackground(new Color(0, 0, 0, 0));

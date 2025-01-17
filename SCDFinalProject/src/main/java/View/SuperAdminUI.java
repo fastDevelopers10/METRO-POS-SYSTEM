@@ -4,6 +4,8 @@ import Controller.*;
 import Model.Branch;
 import Model.Employee;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.util.List;
@@ -25,14 +27,17 @@ public class SuperAdminUI extends JFrame {
     private static final Font BUTTON_FONT = new Font("Century Gothic", Font.PLAIN, 16);
     private static final Font BASIC_FONT = new Font("Century Gothic", Font.PLAIN, 14);
     private static final Color FONT_COLOR = Color.BLACK;
+
     private JLabel lblBackground;
     private BranchController branchController;
-    private SuperAdminLoginController ctrlr;
     private DefaultTableModel tableModel,branchtableModel;
     private JTable table,employeeTable;
     private EmployeeController controller;
     private JComboBox<String> statusDropdown,bmstatusDropdown;
     private JPanel profitPanel ;
+    private SideMenuButton[] activeButton=null;
+    private JPanel sideMenuPanel;
+
     public SuperAdminUI() throws SQLException {
         setupFrame();
         setIconImage(loadIcon("images/icons/logo.PNG"));
@@ -85,7 +90,7 @@ public class SuperAdminUI extends JFrame {
     }
 
     private void setupFrame() {
-        setTitle("Super Admin UI");
+        setTitle("Super Admin");
         setSize(1320, 710);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
@@ -112,7 +117,7 @@ public class SuperAdminUI extends JFrame {
     }
 
     private void createSidebarMenu(JLabel lblBackground) {
-        JPanel sideMenuPanel = new JPanel();
+        sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(null);
         sideMenuPanel.setOpaque(false);
 
@@ -136,7 +141,7 @@ public class SuperAdminUI extends JFrame {
         int buttonYPosition = 4; // Starting position for buttons
         int buttonHeight = 50;   // Height for each button
 
-        final SideMenuButton[] activeButton = {null}; // Track the currently active button
+        activeButton = new SideMenuButton[]{null}; // Track the currently active button
 
         for (String[] menuItem : menuItems) {
             String text = menuItem[0];
@@ -180,12 +185,18 @@ public class SuperAdminUI extends JFrame {
                 cardLayout.show(mainContentPanel, "Branches");
                 break;
             case "Change Password":
-                SwingUtilities.invokeLater(() -> {
-                    NewUpdatePassword frame=new NewUpdatePassword(new Employee());
-                    frame.setVisible(true); // Make LoginOptions visible
-                });
 
-                this.dispose();
+                NewUpdatePassword frame=new NewUpdatePassword(new Employee());
+                frame.setVisible(true);
+
+                // Add WindowListener to reset active button when the window is closed
+                frame.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosed(WindowEvent e) {
+                        frame.dispose();
+                        resetActiveButtonToDashboard();
+                    }
+                });
                 break;
             case "Logout":
                 logoutAction();
@@ -195,6 +206,27 @@ public class SuperAdminUI extends JFrame {
                 break;
         }
     }
+
+    private void resetActiveButtonToDashboard() {
+        // Reset the background color of the currently active button if it exists
+        if (activeButton[0] != null) {
+            activeButton[0].setBackground(Color.WHITE); // Default background color for inactive buttons
+        }
+
+        // Find the "Dashboard" button and set it as the active one
+        Component[] components = sideMenuPanel.getComponents();
+        for (Component component : components) {
+            if (component instanceof SideMenuButton) {
+                SideMenuButton button = (SideMenuButton) component;
+                if ("Dashboard".equals(button.getText())) { // Check if the button text matches "Dashboard"
+                    button.setBackground(new Color(200, 229, 220)); // Set the background for active button
+                    activeButton[0] = button; // Update the active button reference
+                    break; // Exit loop once the "Dashboard" button is found and activated
+                }
+            }
+        }
+    }
+
 
     private void logoutAction() {
         int confirm = JOptionPane.showConfirmDialog(
@@ -790,7 +822,6 @@ public class SuperAdminUI extends JFrame {
             controller.populateTableByStatus(tableModel, status);
         }
     }
-
     private void restrictPhoneNumberLength(JTextField phoneField) {
         String text = phoneField.getText();
         if (text.length() > 11) {

@@ -1,11 +1,13 @@
 package View;
 
 import Model.Employee;
+import Controller.SuperAdminLoginController;
+import DAO.EmployeeDAO;
+import DAO.SuperAdminDAO;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
-import DAO.EmployeeDAO;
 
 public class NewUpdatePassword extends JFrame {
 
@@ -18,7 +20,7 @@ public class NewUpdatePassword extends JFrame {
         this.loggedInEmployee = loggedInEmployee;
 
         setTitle("Update Password");
-
+        setIconImage(loadIcon("images/icons/logo.PNG"));
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize(screenSize);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -126,28 +128,57 @@ public class NewUpdatePassword extends JFrame {
             return;
         }
 
-        if (!previousPassword.equals(loggedInEmployee.getPassword())) {
-            JOptionPane.showMessageDialog(this, "Previous password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        // Check if the user is SuperAdmin
+        boolean isSuperAdmin = (loggedInEmployee == null || loggedInEmployee.getUsername() == null || loggedInEmployee.getPosition() == null);
 
-        if (!newPassword.equals(confirmPassword)) {
-            JOptionPane.showMessageDialog(this, "New passwords do not match!", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        if (isSuperAdmin) {
+            String superAdminUsername = SuperAdminLoginController.getUsername(); // Fetch username from SuperAdminLoginController
+            SuperAdminDAO superAdminDAO = new SuperAdminDAO();
 
-        EmployeeDAO employeeDAO = new EmployeeDAO();
-        try {
-            boolean isUpdated = employeeDAO.updatePassword(loggedInEmployee.getUsername(), newPassword);
+            if (!superAdminDAO.validateLogin(superAdminUsername, previousPassword)) {
+                JOptionPane.showMessageDialog(this, "Previous password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (!newPassword.equals(confirmPassword)) {
+                JOptionPane.showMessageDialog(this, "New passwords do not match!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            boolean isUpdated = superAdminDAO.updatePassword(superAdminUsername, newPassword);
             if (isUpdated) {
                 JOptionPane.showMessageDialog(this, "Password updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
+
             } else {
                 JOptionPane.showMessageDialog(this, "Error updating password!", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "An unexpected error occurred!", "Error", JOptionPane.ERROR_MESSAGE);
+
+        } else {
+            // Regular employee password update logic
+            if (!previousPassword.equals(loggedInEmployee.getPassword())) {
+                JOptionPane.showMessageDialog(this, "Previous password is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (!newPassword.equals(confirmPassword)) {
+                JOptionPane.showMessageDialog(this, "New passwords do not match!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            EmployeeDAO employeeDAO = new EmployeeDAO();
+            try {
+                boolean isUpdated = employeeDAO.updatePassword(loggedInEmployee.getUsername(), newPassword);
+                if (isUpdated) {
+                    JOptionPane.showMessageDialog(this, "Password updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Error updating password!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "An unexpected error occurred!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
@@ -158,6 +189,15 @@ public class NewUpdatePassword extends JFrame {
         textField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         textField.setCaretColor(Color.BLACK);
     }
+    private Image loadIcon(String path) {
+        URL iconURL = getClass().getClassLoader().getResource(path);
+        if (iconURL != null) {
+            return new ImageIcon(iconURL).getImage();
+        } else {
+            System.err.println("Error: Unable to load frame icon image.");
+            return null;
+        }
+    }
 
     private JButton createButton(String text) {
         JButton button = new JButton(text);
@@ -167,6 +207,10 @@ public class NewUpdatePassword extends JFrame {
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
         return button;
+    }
+    public boolean setModal(boolean b) {
+        b=true;
+        return b;
     }
 
     public static void main(String[] args) {
@@ -180,8 +224,4 @@ public class NewUpdatePassword extends JFrame {
         });
     }
 
-    public boolean setModal(boolean b) {
-      b=true;
-      return b;
-    }
 }

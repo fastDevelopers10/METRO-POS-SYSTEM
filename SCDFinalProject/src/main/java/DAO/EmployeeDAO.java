@@ -136,9 +136,6 @@ public class EmployeeDAO {
     }
 
 
-
-
-    // Authenticate and check first-time login
     public Employee findEmployeeByUsernameAndPass(String username, String password) {
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_EMPLOYEE_QUERY)) {

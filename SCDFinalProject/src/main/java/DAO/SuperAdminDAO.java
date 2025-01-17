@@ -18,10 +18,17 @@ public class SuperAdminDAO {
             stmt.setString(2, password);
 
             ResultSet rs = stmt.executeQuery();
+            System.out.println(username);
+            System.out.println(password);
+
+
             if (rs.next()) {
                 this.username = rs.getString("username");
+                System.out.println(username);
                 this.password=rs.getString("password");
                 isValid = true;  // Login successful
+                System.out.println(isValid);
+
             }
         } catch (SQLException e) {
             e.printStackTrace();

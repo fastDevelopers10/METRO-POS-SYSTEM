@@ -3,7 +3,7 @@ package Model;
 import java.math.BigDecimal;
 
 public class Product {
-    private int ID;
+    private  int productid;
     private Branch branch; // Now using Branch object instead of branchId
     private String name;
     private String category;
@@ -13,7 +13,8 @@ public class Product {
     private boolean status;
 
     // Constructor
-    public Product(int productId, Branch branch, String name, String category, BigDecimal originalPrice, BigDecimal salesPrice, int quantity, boolean status) {
+    public Product(int productId, Branch branch, String name, String category, BigDecimal originalPrice, BigDecimal salesPrice, int quantity, boolean status)
+    {
         this.branch = branch;
         this.name = name;
         this.category = category;
@@ -21,6 +22,7 @@ public class Product {
         this.salesPrice = salesPrice;
         this.quantity = quantity;
         this.status = status;
+        this.productid=productId;
     }
 
     public Product() {
@@ -28,7 +30,7 @@ public class Product {
     }
 
     public Product(int id, String name, String category, int quantity, double originalPrice, double salesPrice, boolean status) {
-        this.ID=id;
+        this.productid=id;
         this.name=name;
         this.category=category;
         this.quantity=quantity;
@@ -110,10 +112,10 @@ public class Product {
 
 
     public int getId() {
-        return ID;
+        return this.productid;
     }
 
     public void setId(int id) {
-        this.ID=ID;
+        this.productid=id;
     }
 }

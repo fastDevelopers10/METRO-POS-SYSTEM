@@ -1,24 +1,45 @@
 package DAO;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import Model.Branch;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.*;
 import java.util.List;
 
 public class BranchDAO {
 
+    private static final String GET_ALL_BRANCHES_QUERY = "SELECT * FROM branch";
     private static final String GET_ALL_BRANCH_IDS_QUERY = "SELECT branch_id FROM branch";
+    private static final String ADD_BRANCH_QUERY = "INSERT INTO branch (city, name, status, address, phone, no_of_employees) VALUES (?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_BRANCH_QUERY = "UPDATE branch SET city = ?, name = ?, status = ?, address = ?, phone = ?, no_of_employees = ? WHERE branch_id = ?";
 
-    // Modify this method to extract all branch IDs from the database
+    public List<Branch> getAllBranches() {
+        List<Branch> branches = new ArrayList<>();
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_BRANCHES_QUERY);
+             ResultSet rs = preparedStatement.executeQuery()) {
+
+            while (rs.next()) {
+                Branch branch = new Branch(
+                        rs.getInt("branch_id"),
+                        rs.getString("city"),
+                        rs.getString("name"),
+                        rs.getString("status"),
+                        rs.getString("address"),
+                        rs.getString("phone"),
+                        rs.getInt("no_of_employees")
+                );
+                branches.add(branch);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return branches;
+    }
+
     public List<Integer> getAllBranchIds() {
         List<Integer> branchIds = new ArrayList<>();
-        String query = "SELECT branch_id FROM branch"; // Adjust your query to match the table structure
-
         try (Connection connection = DBConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query);
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_BRANCH_IDS_QUERY);
              ResultSet resultSet = preparedStatement.executeQuery()) {
 
             while (resultSet.next()) {
@@ -27,8 +48,55 @@ public class BranchDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return branchIds; // Return the list of branch IDs
+        return branchIds;
     }
 
+    public boolean addBranch(Branch branch) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(ADD_BRANCH_QUERY)) {
+
+            preparedStatement.setString(1, branch.getCity());
+            preparedStatement.setString(2, branch.getName());
+            preparedStatement.setString(3, branch.getStatus());
+            preparedStatement.setString(4, branch.getAddress());
+            preparedStatement.setString(5, branch.getPhone());
+            preparedStatement.setInt(6, branch.getNumberOfEmployees());
+
+            return preparedStatement.executeUpdate() > 0;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateBranch(Branch branch) {
+        try (Connection connection = DBConnection.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_BRANCH_QUERY)) {
+
+            preparedStatement.setString(1, branch.getCity());
+            preparedStatement.setString(2, branch.getName());
+            preparedStatement.setString(3, branch.getStatus());
+            preparedStatement.setString(4, branch.getAddress());
+            preparedStatement.setString(5, branch.getPhone());
+            preparedStatement.setInt(6, branch.getNumberOfEmployees());
+            preparedStatement.setInt(7, branch.getBranchId());
+
+            return preparedStatement.executeUpdate() > 0;
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public List<Branch> fetchBranchesByStatus(String status) {
+        List<Branch> result = new ArrayList<>();
+        for (Branch branch : getAllBranches()) {
+            if (branch.getStatus().equalsIgnoreCase(status)) {
+                result.add(branch);
+            }
+        }
+        return result;
+    }
 }

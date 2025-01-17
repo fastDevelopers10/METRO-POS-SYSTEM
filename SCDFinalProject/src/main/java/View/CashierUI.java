@@ -2,6 +2,7 @@ package View;
 
 import Controller.CashierController;
 import Controller.ProductController;
+import Controller.TransactionController;
 import DAO.ProductDAO;
 import Model.Bill;
 import Model.Employee;
@@ -44,7 +45,7 @@ public class CashierUI extends JFrame {
     private Employee employee;
     CashierController cashierController ;
     List<String> categories;
-
+TransactionController transactionController=new TransactionController();
 
     // Constructor to initialize the UI
     public CashierUI(Employee loggedInEmployee) {
@@ -172,7 +173,7 @@ public class CashierUI extends JFrame {
             // Update Y position for next button
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
-JLabel branchid=new JLabel(""+employee.getEmployeeId());
+    JLabel branchid=new JLabel(""+employee.getEmployeeId());
         branchid.setBounds(118,145,22,22);
 // Add side menu panel to your background panel
         backgroundPanel.add(sideMenuPanel);
@@ -292,6 +293,10 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         this.add(layeredPane);
     }
 
+    public CashierUI() {
+
+    }
+
     private void initializeCategoryButtons()
     {
         for (String category : categories) {
@@ -352,9 +357,7 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
     private void loadProductsByCategory(String category) {
         // Fetch products based on the selected category from the database
-        System.out.println("Loding prods");
         List<Product> products = productDAO.getProductsByCategory(category,employee.getBranchId());
-
         // Clear the current products displayed
         productPanel.removeAll();
         productStockLabels.clear(); // Clear previous stock labels
@@ -559,18 +562,6 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
     }
 
 
-
-    // Example methods for each action:
-    private void startSaleAction() {
-        // Start sale logic here
-        System.out.println("Sale started");
-    }
-
-    private void viewBillsAction() {
-        // Logic to view bills here
-        System.out.println("Bills displayed");
-    }
-
     private boolean updateStockInDatabase() throws SQLException {
         boolean flag=false;
 
@@ -581,6 +572,14 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
     private void generateBillAction() throws SQLException {
         boolean flag = false;
+        // Debug: Print products in the cart
+        System.out.println("Debug: Products in the cart:");
+        for (Product product : cart.getProducts()) { // Assuming `cart.getProducts()` returns a list of products
+            System.out.println("Product Name: " + product.getName() +
+                    ", Product ID: " + product.getId() +
+                    ", Quantity: " + product.getQuantity() +
+                    ", Price: " + product.getSalesPrice());
+        }
 
         // Check if the internet connection is available
         if (!isInternetAvailable()) {
@@ -604,7 +603,12 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
         // Reload products by category to update the UI
         loadProductsByCategory(activeCategoryButton.getText());
-
+        boolean transactionSuccess = transactionController.insertTransactionToDatabase(cart, employee);
+        if (transactionSuccess) {
+            JOptionPane.showMessageDialog(null, "Transactions recorded successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Failed to record transactions.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
         // Reset the cart and bill information
         cart.resetBill();
 

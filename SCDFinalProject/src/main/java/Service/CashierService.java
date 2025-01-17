@@ -42,10 +42,5 @@ public class CashierService {
 
         return updateSuccessful; // Return true if all updates were successful, false otherwise
     }
-    // Method to insert transaction records via TransactionDAO
-    public boolean insertTransaction(int branchCode, int productId,
-                                     int quantitySold, Date transactionDate, BigDecimal profit) throws SQLException {
-        return TransactionDAO.insertTransactions(branchCode, productId,
-                quantitySold,transactionDate, profit);
-    }
+
 }

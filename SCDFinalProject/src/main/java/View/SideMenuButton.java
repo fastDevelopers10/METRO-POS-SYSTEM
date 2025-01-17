@@ -2,17 +2,19 @@ package View;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
-public  class SideMenuButton extends JButton {
+public class SideMenuButton extends JButton {
     private static final Color DEFAULT_COLOR = Color.WHITE;
     private static final Color ACTIVE_COLOR = new Color(200, 229, 220);
-    private static final Font DEFAULT_FONT = new Font("Century Gothic", Font.PLAIN, 14);
     private static final Color TEXT_COLOR = Color.BLACK;
 
     public SideMenuButton(String text, String iconPath) {
-        super(text); // Set button text
+        this(text, iconPath, 14); // Default to no border
+    }
 
-        // Set icon
+    public SideMenuButton(String text, String iconPath, int fontSize) {
+        super(text);
         try {
             ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource(iconPath));
             setIcon(icon);
@@ -20,18 +22,16 @@ public  class SideMenuButton extends JButton {
             System.out.println("Icon not found for " + text + ": " + e.getMessage());
         }
 
-        // Style the button
         setHorizontalAlignment(SwingConstants.LEFT);
-        setFont(DEFAULT_FONT);
+        setFont(new Font("Century Gothic", Font.PLAIN, fontSize)); // Set custom font size
         setForeground(TEXT_COLOR);
         setBackground(DEFAULT_COLOR);
         setFocusPainted(false);
         setBorderPainted(false);
 
-        // Set preferred size
+        setCursor(new Cursor(Cursor.HAND_CURSOR)); // Change cursor to hand when hovering
         setPreferredSize(new Dimension(240, 40)); // Adjust width and height
     }
-
     public void setActive(boolean isActive) {
         setBackground(isActive ? ACTIVE_COLOR : DEFAULT_COLOR);
     }

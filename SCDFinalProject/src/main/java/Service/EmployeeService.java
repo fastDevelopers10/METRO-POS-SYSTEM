@@ -1,7 +1,7 @@
 package Service;
 
-import Model.Employee;
 import DAO.EmployeeDAO;
+import Model.Employee;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;

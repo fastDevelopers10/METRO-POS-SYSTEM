@@ -1,7 +1,6 @@
 package View;
 
 import Controller.LoginController;
-import DAO.EmployeeDAO;
 import Model.Employee;
 
 import javax.imageio.ImageIO;

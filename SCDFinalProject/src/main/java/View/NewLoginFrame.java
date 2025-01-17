@@ -54,18 +54,34 @@ public class NewLoginFrame extends JFrame {
         JPanel mainPanel = new JPanel(null);
         add(mainPanel);
 
+        // Left Panel with padding and border only on the right wall
         JPanel leftPanel = new JPanel(null);
         leftPanel.setBounds(0, 0, getWidth() / 2, getHeight());
         leftPanel.setBackground(Color.WHITE);
-        int borderWidth = 15; // You can change this to your desired width
-        leftPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, borderWidth));
+
+        // Set padding (EmptyBorder) and right side border
+        int padding = 20; // You can change this to your desired padding value
+        int borderWidth = 15; // Border width for the right side
+        leftPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(-10, -10, -10, 0), // Padding on all sides except the right
+                BorderFactory.createLineBorder(new Color(5, 42, 117), borderWidth) // Line border on the right side
+        ));
+
         mainPanel.add(leftPanel);
 
-        JLabel heading = new JLabel("WELCOME TO METRO", SwingConstants.CENTER);
-        heading.setFont(new Font("Century Gothic", Font.BOLD, 30));
+        JLabel heading = new JLabel("WELCOME TO METRO!", SwingConstants.CENTER);
+        heading.setFont(new Font("Century Gothic", Font.BOLD, 34));
         heading.setForeground(Color.decode("#052A76"));
         heading.setBounds(110, 100, 400, 70);
         leftPanel.add(heading);
+
+// Add another label for shopping
+        JLabel shoppingLabel = new JLabel("Shop your favorite items!", SwingConstants.CENTER);
+        shoppingLabel.setFont(new Font("Century Gothic", Font.PLAIN, 20)); // Adjust the font size as needed
+        shoppingLabel.setForeground(Color.decode("#052A76")); // You can use the same color or change it
+        shoppingLabel.setBounds(110, 180, 400, 40); // Adjust the position and size based on your layout
+        leftPanel.add(shoppingLabel);
+
 
         // Embed JavaFX Video Player
         JFXPanel jfxPanel = new JFXPanel();
@@ -100,26 +116,29 @@ public class NewLoginFrame extends JFrame {
 
         // Right panel: Black background with login elements
         JPanel rightPanel = new JPanel(null);
-        rightPanel.setBackground(Color.BLACK);
+        rightPanel.setBackground(Color.white);
+        //255, 245, 238
+        //255, 255, 240
+        //248, 248, 255 ghost white
+        //250, 240, 230
 
         int BW = 15; // You can change this to your desired width
-        rightPanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, BW));
 
         rightPanel.setBounds(getWidth() / 2, 0, getWidth() / 2, getHeight());
         mainPanel.add(rightPanel);
 
 
         // Heading
-        JLabel lblHeading = new JLabel("GET STARTED", SwingConstants.CENTER);
-        lblHeading.setFont(new Font("Century Gothic", Font.BOLD, 30));
-        lblHeading.setForeground(Color.WHITE);
+        JLabel lblHeading = new JLabel("LETS GET STARTED", SwingConstants.CENTER);
+        lblHeading.setFont(new Font("Century Gothic", Font.BOLD, 34));
+        lblHeading.setForeground(Color.decode("#052A76"));
         lblHeading.setBounds(150, 70, 300, 50);
         rightPanel.add(lblHeading);
 
         // Role label and dropdown
         JLabel lblRole = new JLabel("User Type:");
         lblRole.setFont(new Font("Century Gothic", Font.BOLD, 18));
-        lblRole.setForeground(Color.WHITE);
+        lblRole.setForeground(Color.BLACK);
         lblRole.setBounds(100, 150, 100, 30);  // Positioned above the dropdown
         rightPanel.add(lblRole);
 
@@ -131,7 +150,7 @@ public class NewLoginFrame extends JFrame {
         // Username label and field
         JLabel lblUsername = new JLabel("Enter Username:");
         lblUsername.setFont(new Font("Century Gothic", Font.BOLD, 18));
-        lblUsername.setForeground(Color.WHITE);
+        lblUsername.setForeground(Color.BLACK);
         lblUsername.setBounds(100, 240, 150, 30);  // Positioned above the username field
         rightPanel.add(lblUsername);
 
@@ -143,7 +162,7 @@ public class NewLoginFrame extends JFrame {
         // Password label and field
         JLabel lblPassword = new JLabel("Enter Password:");
         lblPassword.setFont(new Font("Century Gothic", Font.BOLD, 18));
-        lblPassword.setForeground(Color.WHITE);
+        lblPassword.setForeground(Color.BLACK);
         lblPassword.setBounds(100, 340, 150, 30);  // Positioned above the password field
         rightPanel.add(lblPassword);
 
@@ -180,7 +199,7 @@ public class NewLoginFrame extends JFrame {
                     SuperAdminDAO superAdminDAO = new SuperAdminDAO();
                     if (superAdminDAO.validateLogin(username, password)) {
                         JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                        new ProfitView(); // Open Profit View for Super Admin
+                        new SuperAdminUI(); // Open Profit View for Super Admin
                         this.dispose();
                     } else {
                         JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -219,8 +238,10 @@ public class NewLoginFrame extends JFrame {
     private JButton createButton(String text) {
         JButton button = new RoundedButton(text, 8);
         button.setFont(new Font("Century Gothic", Font.BOLD, 20));
-        button.setForeground(Color.WHITE);
-        button.setBackground(Color.BLACK);
+        button.setForeground(Color.black);
+
+         button.setBackground(Color.WHITE);
+
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
         return button;

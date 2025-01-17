@@ -1,6 +1,5 @@
 package View;
 
-import DAO.EmployeeDAO;
 import Model.Employee;
 
 import javax.imageio.ImageIO;
@@ -10,6 +9,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Objects;
+import DAO.EmployeeDAO;
 
 public class UpdatePasswordUI extends JDialog {
     private BufferedImage backgroundImage;

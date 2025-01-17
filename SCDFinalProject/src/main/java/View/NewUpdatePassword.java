@@ -1,11 +1,11 @@
 package View;
 
 import Model.Employee;
-import DAO.EmployeeDAO;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
+import DAO.EmployeeDAO;
 
 public class NewUpdatePassword extends JFrame {
 

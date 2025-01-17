@@ -385,7 +385,7 @@ public class BranchManagerUI extends JFrame {
         panel.add(chartPanel, BorderLayout.CENTER);
 
         // Create the zoom button
-        RoundedButton zoomButton = new RoundedButton("Zoom In", 20);
+        RoundedButton zoomButton = new RoundedButton("Preview", 20);
         zoomButton.addActionListener(e -> openZoomedChartFrame(chart));
 
         // Set a fixed size for the button and center it within the panel
@@ -495,7 +495,7 @@ public class BranchManagerUI extends JFrame {
         // Create the zoom button
        Map<String, Integer> categorySales = productController.getCategorySales(employee.getBranchId());  // Simulated method
 
-       RoundedButton zoomButton = new RoundedButton("Zoom In", 20);
+       RoundedButton zoomButton = new RoundedButton("Preview", 20);
         zoomButton.addActionListener(e -> openZoomedPieChartFrame(pieChart,categorySales));
 
         // Optional: Set a fixed size for the button to ensure consistent appearance

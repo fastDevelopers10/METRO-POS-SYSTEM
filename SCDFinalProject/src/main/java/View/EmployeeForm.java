@@ -1,6 +1,5 @@
 package View;
 
-import DAO.EmployeeDAO;
 import Model.Employee;
 
 import javax.swing.*;
@@ -9,6 +8,7 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
+import DAO.EmployeeDAO;
 
 public class EmployeeForm extends JFrame {
     private JTextField nameField, emailField, addressField, phoneField, salaryField, usernameField;
@@ -137,7 +137,7 @@ public class EmployeeForm extends JFrame {
             Date joiningDate = new Date(System.currentTimeMillis());
 
             Employee employee = new Employee(name, email, position, branchId, address, phone, salary, joiningDate, "Active");
-            EmployeeDAO empDAO = new EmployeeDAO();
+             EmployeeDAO empDAO = new EmployeeDAO();
             boolean isInserted = empDAO.insertEmployee(employee);
 
             if (isInserted) {

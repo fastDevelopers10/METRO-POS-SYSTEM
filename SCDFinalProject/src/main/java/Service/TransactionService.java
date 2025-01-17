@@ -4,9 +4,9 @@ import DAO.TransactionDAO;
 import Model.Bill;
 import Model.Employee;
 
+import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class TransactionService {
         return report;
     }
     public int getNetProfitForCurrentYearBM(int branchId) throws SQLException {
-    return this.transactionDAO.getNetProfitForCurrentYearBM(branchId);
+        return this.transactionDAO.getNetProfitForCurrentYearBM(branchId);
     }
     public double getTotalSalesForCurrentYearBM(int branchId) throws SQLException {
         return transactionDAO.getTotalSalesForCurrentYearBM(branchId);
@@ -55,22 +55,82 @@ public class TransactionService {
     public boolean insertTransactionToDatabase(Bill bill, Employee employee) {
         return transactionDAO.insertTransactionToDatabase(bill,employee);
     }
-    public double fetchProfitForYear(int year) {
 
-
-            double profit = transactionDAO.fetchProfitForYear(year);
-
-        return profit;
-    }
 
     public List<Map.Entry<Integer, Integer>> getProductSalesForBranch(int branchId, String periodType, String year) throws SQLException {
         return transactionDAO.getProductSalesForBranch(branchId,periodType, year);
     }
     public  Map<Integer, Double> getAverageSales(int branchId, String periodType, int year) throws Exception {
-    return transactionDAO.getAverageSales(branchId,periodType,year);
+        return transactionDAO.getAverageSales(branchId,periodType,year);
     }
 
     public Map<Integer, Double> getAverageProfits(int branchId, String timePeriod, int year) throws Exception {
         return transactionDAO.getAverageProfits(branchId,timePeriod,year);
+    }
+    public List<Integer> fetchActiveBranchIds() {
+        return transactionDAO.getBranchIds();
+    }
+
+    public Map<Integer, Double> fetchProfit(String title) {
+        switch (title) {
+            case "Today":
+                return transactionDAO.getTodaysProfit();
+            case "Weekly":
+                return transactionDAO.getWeeklyProfit();
+            case "Monthly":
+                return transactionDAO.getMonthlyProfit();
+            case "Yearly":
+                return transactionDAO.getYearlyProfit();
+            default:
+                throw new IllegalArgumentException("Invalid profit type: " + title);
+        }
+    }
+
+    public Map<Integer, Double> fetchProfitForDateRange(Date startDate, Date endDate) {
+        return transactionDAO.getProfitForDateRange(startDate, endDate);
+    }
+
+    public double fetchOverallProfit() {
+        return transactionDAO.fetchOverallProfit();
+    }
+
+    public BigDecimal getTotalSales() {
+        try {
+            return transactionDAO.getTotalSales();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch total sales data.");
+        }
+    }
+
+    public Map<Integer, BigDecimal> fetchSales(String title) {
+        switch (title) {
+            case "Today":
+                return transactionDAO.getTodaysSales();
+            case "Weekly":
+                return transactionDAO.getWeeklySales();
+            case "Monthly":
+                return transactionDAO.getMonthlySales();
+            case "Yearly":
+                return transactionDAO.getYearlySales();
+            default:
+                throw new IllegalArgumentException("Invalid Sales type: " + title);
+        }
+    }
+
+    public Map<Integer, BigDecimal> fetchSalesForDateRange(Date startDate, Date endDate) {
+        return transactionDAO.getSalesForDateRange(startDate, endDate);
+    }
+
+    public BigDecimal fetchOverallSales() {
+
+        return transactionDAO.fetchOverallSales();
+    }
+    public double fetchProfitForYear(int year) {
+
+
+        double profit = transactionDAO.fetchProfitForYear(year);
+
+        return profit;
     }
 }

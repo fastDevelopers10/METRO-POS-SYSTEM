@@ -3,7 +3,6 @@ package View;
 import Controller.EmployeeController;
 import Controller.ProductController;
 import Controller.TransactionController;
-import DAO.ProductDAO;
 import Model.Employee;
 import Model.MyPrinter;
 
@@ -11,16 +10,11 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.print.PageFormat;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.NumberFormat;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.List;
 
@@ -171,8 +165,12 @@ public class BranchManagerUI extends JFrame {
                     System.out.println("Viewing Employees...");
                     if(reportsPanel!=null)
                     {backgroundPanel.remove(reportsPanel); }// Remove employee panel
-                    showEmployeePanel();
-                    break;
+                        try {
+                            showEmployeePanel();
+                        } catch (Exception ex) {
+                            throw new RuntimeException(ex);
+                        }
+                        break;
                     case "Stocks Left":
                         System.out.println("Checking rem stock...");
                         viewStocksLeft();
@@ -258,7 +256,7 @@ public class BranchManagerUI extends JFrame {
         frame.setVisible(true);
     }
     // Method to show the employee panel on the right side
-    public void showEmployeePanel() {
+    public void showEmployeePanel() throws Exception {
         // Remove any existing employee panel
         if (employeePanel != null) {
             remove(employeePanel);
@@ -447,7 +445,7 @@ public class BranchManagerUI extends JFrame {
                 chartData += "This is a sample representation of the chart's content.";
 
                 // Use MyPrinter to print the chart data
-                MyPrinter printer = new MyPrinter();
+                MyPrinter.MyPrinterWithSalesData printer = new MyPrinter.MyPrinterWithSalesData();
                 printer.setData(chartData);
 
                 PrinterJob job = PrinterJob.getPrinterJob();
@@ -563,7 +561,7 @@ public class BranchManagerUI extends JFrame {
                 chartData += "This is a sample representation of the chart's content.";
 
                 // Use MyPrinter to print the chart data
-                MyPrinter printer = new MyPrinter();
+                MyPrinter.MyPrinterWithSalesData printer = new MyPrinter.MyPrinterWithSalesData();
                 printer.setData(chartData);
 
                 PrinterJob job = PrinterJob.getPrinterJob();
@@ -622,7 +620,7 @@ public class BranchManagerUI extends JFrame {
         assignDynamicSliceColors(plot, categorySales);
 
         // Adjust the section outline stroke (border thickness)
-        plot.setSectionOutlineStroke(new BasicStroke(2.0f));
+        //plot.setSectionOutlineStroke(new BasicStroke(2.0f));
 
         // Customize shadow (simulates depth)
         plot.setShadowXOffset(3);  // Horizontal shadow
@@ -890,7 +888,7 @@ public class BranchManagerUI extends JFrame {
                     RoundedButton printButton = new RoundedButton("Print", 20);
                     printButton.addActionListener(printEvent -> {
                         try {
-                            MyPrinter printer = new MyPrinter();
+                            MyPrinter.MyPrinterWithSalesData printer = new MyPrinter.MyPrinterWithSalesData();
                             printer.setData(salesMessage.toString());
 
                             PrinterJob job = PrinterJob.getPrinterJob();
@@ -986,7 +984,7 @@ public class BranchManagerUI extends JFrame {
                     RoundedButton printButton = new RoundedButton("Print", 20);
                     printButton.addActionListener(printEvent -> {
                         try {
-                            MyPrinter printer = new MyPrinter();
+                            MyPrinter.MyPrinterWithSalesData printer = new MyPrinter.MyPrinterWithSalesData();
                             printer.setData(profitMessage.toString()); // Update method for profit data
 
                             PrinterJob job = PrinterJob.getPrinterJob();

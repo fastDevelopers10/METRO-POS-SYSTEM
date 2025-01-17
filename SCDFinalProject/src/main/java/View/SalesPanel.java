@@ -10,24 +10,25 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
-public class ProfitPanel extends JPanel {
+public class SalesPanel extends JPanel {
     private JComboBox<String> timeRangeDropdown;
     private JTextField startDateField, endDateField;
     private JPanel customRangePanel; // Panel to group custom range components
     private DefaultTableModel tableModel;
-    private TransactionController profitController;
+    private TransactionController salesController;
     private JLabel timeRangeLabel; // Label to display time range
 
-    public ProfitPanel() {
-        profitController = new TransactionController(); // Controller instance
+    public SalesPanel() {
+        salesController = new TransactionController(); // Controller instance
 
         // Set panel size, layout, and background color
-        setSize(new Dimension(650, 450));
+        setPreferredSize(new Dimension(600, 510));
         setLayout(new BorderLayout());
         setBackground(new Color(0xf9f9f9));
 
@@ -35,15 +36,14 @@ public class ProfitPanel extends JPanel {
         setBackground(new Color(0xf9f9f9));
         initializeComponents(topPanel);
 
-        // Table for displaying profit data
-        tableModel = new DefaultTableModel(new String[]{"Branch ID", "Total Profit"}, 0);
+        // Table for displaying sales data
+        tableModel = new DefaultTableModel(new String[]{"Branch ID", "Total Sales"}, 0);
         JTable table = new JTable(tableModel);
-        table.setBackground(Color.WHITE);
-
-
+        table.setBackground(new Color(0xf9f9f9));
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBounds(473,120,500,400);
-        scrollPane.setBackground(Color.WHITE);
+        scrollPane.setBackground(new Color(0xf9f9f9));
+        scrollPane.setBounds(373, 120, 600, 510);
+
         // Set table font to Century Gothic
         table.setFont(new Font("Century Gothic", Font.PLAIN, 16));
 
@@ -61,7 +61,7 @@ public class ProfitPanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
-        JButton printButton = new JButton("Print Profit Report");
+        JButton printButton = new JButton("Print Sales Report");
         printButton.setBackground(new Color(200, 229, 220));
         printButton.setFont(new Font("Century Gothic", Font.BOLD, 16));
         printButton.setForeground(Color.BLACK);
@@ -85,8 +85,8 @@ public class ProfitPanel extends JPanel {
                     }
                 }
 
-                // Title for the printed document (e.g., "Profit Report")
-                String title = "Profit Report"; // You can change this as per your needs
+                // Title for the printed document (e.g., "Sales Report")
+                String title = "Sales Report"; // You can change this as per your needs
 
                 // Create the inner printer class instance
                 MyPrinter.MyPrinterWithTableData printerWithData = new MyPrinter.MyPrinterWithTableData();
@@ -106,20 +106,15 @@ public class ProfitPanel extends JPanel {
             }
         });
 
-
-
-
         JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBackground(new Color(0xf9f9f9));
         bottomPanel.add(printButton);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
     private void initializeComponents(JPanel panel) {
-
         String[] timeRanges = {"Today", "Weekly", "Monthly", "Yearly", "Custom Range"};
         timeRangeDropdown = new JComboBox<>(timeRanges);
-
         timeRangeDropdown.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -128,7 +123,6 @@ public class ProfitPanel extends JPanel {
                 return component;
             }
         });
-
         timeRangeDropdown.addActionListener(e -> toggleDateFields());
 
         customRangePanel = new JPanel();
@@ -146,16 +140,18 @@ public class ProfitPanel extends JPanel {
         endDateField = new JTextField(10);
         customRangePanel.add(endDateField);
 
-        JButton fetchProfitButton = new JButton("Fetch Profit");
-        fetchProfitButton.setBackground(new Color(200, 229, 220));
-        fetchProfitButton.setFont(new Font("Century Gothic", Font.BOLD, 16));
-        fetchProfitButton.setForeground(Color.BLACK);
+        JButton fetchSalesButton = new JButton("Fetch Sales");
+        fetchSalesButton.setBackground(new Color(200, 229, 220));
+        fetchSalesButton.setFont(new Font("Century Gothic", Font.PLAIN, 16));
+        fetchSalesButton.setForeground(Color.BLACK);
 
-        fetchProfitButton.addActionListener(e -> displayProfit());
-        timeRangeLabel = new JLabel("Profit Data for: ");
+        fetchSalesButton.addActionListener(e -> displaySales());
+
+        timeRangeLabel = new JLabel("Sales Data for: ");
         timeRangeLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
         timeRangeLabel.setForeground(Color.decode("#eeeeee"));
 
+        // Add components to the panel
         JLabel heading=new JLabel("Select Time Range:");
         heading.setFont(new Font("Century Gothic", Font.BOLD, 16));
         panel.add(heading);
@@ -163,11 +159,10 @@ public class ProfitPanel extends JPanel {
         panel.setForeground(Color.BLACK);
         panel.add(timeRangeDropdown);
         panel.add(customRangePanel);
-        panel.add(fetchProfitButton);
+        panel.add(fetchSalesButton);
         panel.add(timeRangeLabel);
 
         toggleDateFields();
-
     }
 
     private void toggleDateFields() {
@@ -178,12 +173,12 @@ public class ProfitPanel extends JPanel {
         customRangePanel.getParent().repaint();
     }
 
-    private void displayProfit() {
+    private void displaySales() {
         tableModel.setRowCount(0); // Clear previous data
         String selectedTimeRange = (String) timeRangeDropdown.getSelectedItem();
 
         try {
-            Map<Integer, Double> profit;
+            Map<Integer, BigDecimal> sales;
             if ("Custom Range".equals(selectedTimeRange)) {
                 String startDateStr = startDateField.getText();
                 String endDateStr = endDateField.getText();
@@ -201,22 +196,22 @@ public class ProfitPanel extends JPanel {
                     return;
                 }
 
-                profit = profitController.fetchProfitForDateRange(
+                sales = salesController.fetchSalesForDateRange(
                         new java.sql.Date(startDate.getTime()),
                         new java.sql.Date(endDate.getTime())
                 );
             } else {
-                profit = profitController.fetchProfit(selectedTimeRange);
+                sales = salesController.fetchSales(selectedTimeRange);
             }
 
             // Update the time range label
-            timeRangeLabel.setText("Profit Data for: " + selectedTimeRange);
+            timeRangeLabel.setText("Sales Data for: " + selectedTimeRange);
 
-            if (profit.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No profit data found for " + selectedTimeRange, "Info", JOptionPane.INFORMATION_MESSAGE);
+            if (sales.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No sales data found for " + selectedTimeRange, "Info", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                profit.forEach((branchId, totalProfit) ->
-                        tableModel.addRow(new Object[]{branchId, totalProfit})
+                sales.forEach((branchId, totalSales) ->
+                        tableModel.addRow(new Object[]{branchId, totalSales})
                 );
             }
         } catch (Exception e) {
@@ -232,4 +227,5 @@ public class ProfitPanel extends JPanel {
             return null;
         }
     }
+
 }

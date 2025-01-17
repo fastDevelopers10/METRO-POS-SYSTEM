@@ -2,6 +2,7 @@ package View;
 
 import Model.Employee;
 import Controller.ProductController;
+//import javafx.embed.swing.JFXPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -145,20 +146,23 @@ public class DataOperatorUI extends JFrame {
                 case 1: // Change Password button
                     button.addActionListener(e -> {
                         handleButtonClick(button);
-                        UpdatePasswordUI ap= new UpdatePasswordUI(employee);
-                        ap.setVisible(true);
                         System.out.println("Change Password clicked");
-                        ap.addWindowListener(new WindowAdapter() {
+
+                        NewUpdatePassword up = new NewUpdatePassword(employee);
+                        up.setVisible(true);
+
+                        // Add WindowListener to reset active button when the window is closed
+                        up.addWindowListener(new WindowAdapter() {
                             @Override
                             public void windowClosed(WindowEvent e) {
-                                // Reset active button to Dashboard when the window is closed
-                                ap.dispose();
+                                up.dispose();
                                 resetActiveButtonToDashboard();
                             }
                         });
-
                     });
                     break;
+
+
                 case 2: // Add Product button
                     button.addActionListener(e -> {
                         handleButtonClick(button);
@@ -214,7 +218,7 @@ public class DataOperatorUI extends JFrame {
                             this.dispose();  // Dispose the current window
 
                             SwingUtilities.invokeLater(() -> {
-                                LoginOptions frame = new LoginOptions();
+                                NewLoginFrame frame = new NewLoginFrame();
                                 frame.setVisible(true); // Make LoginOptions visible
                             });
                         } else {
@@ -325,8 +329,8 @@ public class DataOperatorUI extends JFrame {
         categoryPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding inside the panel
         categoryPanel.setLayout(new BorderLayout());
 
-        JLabel categorylabel = new JLabel("products X Vendors", JLabel.LEFT);
-        categorylabel.setFont(new Font("Century Gothic", Font.PLAIN, 18));
+        JLabel categorylabel = new JLabel("Categories", JLabel.LEFT);
+        categorylabel.setFont(new Font("Century Gothic", Font.PLAIN, 20));
         categorylabel.setForeground(Color.decode("#000000")); // Set text color for label
         categorylabel.setHorizontalAlignment(JLabel.LEFT);
         categorylabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
@@ -342,9 +346,57 @@ public class DataOperatorUI extends JFrame {
         categoryPanel.add(categorybtn, BorderLayout.EAST);
 
         categorybtn.addActionListener(e -> {
-            ProductsFromVendors ui = new ProductsFromVendors();
-            ui.displayHierarchy(branchnumber);
+            List<String> categories = controller.getCategories(branchnumber);
 
+            JDialog categoriesDialog = new JDialog();
+            categoriesDialog.setTitle("Categories");
+            categoriesDialog.setSize(400, 500); // Increased size for better scroll panel display
+            categoriesDialog.setLocationRelativeTo(null); // Center dialog on screen
+
+            try {
+                // Use the class loader to load the image resource
+                ImageIcon icon = new ImageIcon(
+                        Objects.requireNonNull(getClass().getClassLoader().getResource("images/icons/logo.PNG"))
+                );
+                categoriesDialog.setIconImage(icon.getImage());
+            } catch (NullPointerException exe) {
+                exe.printStackTrace();
+                System.err.println("Error: Unable to load frame icon image.");
+            }
+
+            JPanel categoriesPanel = new JPanel();
+            categoriesPanel.setLayout(new BoxLayout(categoriesPanel, BoxLayout.Y_AXIS)); // Use Y-axis layout for vertical display
+            categoriesPanel.setBackground(Color.decode("#CCD4E5"));
+
+            // Centered heading label
+            JLabel headingLabel = new JLabel("Categories", JLabel.CENTER);
+            headingLabel.setFont(new Font("Century Gothic", Font.BOLD, 20));
+            headingLabel.setBounds(10, 20, categoriesDialog.getWidth() - 20, 40); // Position centered
+            categoriesPanel.add(headingLabel);
+
+            if (categories != null && !categories.isEmpty()) {
+                int yPosition = 70; // Starting position for categories after the heading
+                for (String category : categories) {
+                    JLabel categoryLabel = new JLabel(category);
+                    categoryLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
+                    categoryLabel.setBounds(10, yPosition, categoriesDialog.getWidth() - 20, 30); // 10 pixels away from x of dialog
+                    categoriesPanel.add(categoryLabel);
+                    yPosition += 40; // Space between categories
+                }
+            } else {
+                JLabel noCategoryLabel = new JLabel("No categories available.");
+                noCategoryLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
+                noCategoryLabel.setBounds(10, 70, categoriesDialog.getWidth() - 20, 30); // 10 pixels away from x of dialog
+                categoriesPanel.add(noCategoryLabel);
+            }
+
+            JScrollPane scrollPane = new JScrollPane(categoriesPanel); // Wrap the panel in a JScrollPane
+            scrollPane.setPreferredSize(new Dimension(380, 500)); // Set preferred size for the scroll pane
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Ensure the scrollbar is always displayed
+            categoriesDialog.add(scrollPane); // Add the scroll pane to the dialog
+
+            categoriesDialog.setModal(true);
+            categoriesDialog.setVisible(true);
         });
 
 

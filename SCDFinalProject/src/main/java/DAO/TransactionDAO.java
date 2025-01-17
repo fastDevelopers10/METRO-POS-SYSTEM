@@ -9,6 +9,8 @@ import Model.Transaction;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 import static DAO.DBConnection.getConnection;
@@ -22,7 +24,7 @@ public class TransactionDAO {
         this.connection = connection;
     }
 
-     public double getTotalSalesForCurrentYearBM(int branchId) throws SQLException {
+    public double getTotalSalesForCurrentYearBM(int branchId) throws SQLException {
         String query = "SELECT SUM(t.quantity_sold) AS total_sales " +
                 "FROM transaction t " +
                 "WHERE t.branch_id = ? " +
@@ -105,7 +107,7 @@ public class TransactionDAO {
 
         Map<Integer, Double> productSalesMap = new HashMap<>();
         try (Connection connection = DBConnection.getConnection();
-        PreparedStatement statement = connection.prepareStatement(query)) {
+             PreparedStatement statement = connection.prepareStatement(query)) {
             // Set parameters: branch_id and year
             statement.setInt(1, branchId);
             statement.setInt(2, year);
@@ -195,49 +197,49 @@ public class TransactionDAO {
 
 
     // Method to generate reports based on time period
-        public List<Map<String, Object>> generateReport(String period) throws SQLException {
-            // Base SQL query to get product-wise sales and profit
-            String query = "";
-            String dateCondition = "";
+    public List<Map<String, Object>> generateReport(String period) throws SQLException {
+        // Base SQL query to get product-wise sales and profit
+        String query = "";
+        String dateCondition = "";
 
-            // Determine the date range based on period
-            switch (period.toLowerCase()) {
-                case "weekly":
-                    dateCondition = "WHERE transaction_date >= CURDATE() - INTERVAL 1 WEEK";
-                    break;
-                case "monthly":
-                    dateCondition = "WHERE transaction_date >= CURDATE() - INTERVAL 1 MONTH";
-                    break;
-                case "yearly":
-                    dateCondition = "WHERE transaction_date >= CURDATE() - INTERVAL 1 YEAR";
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid period. Please specify 'weekly', 'monthly', or 'yearly'.");
-            }
-
-            // Query to fetch product sales and profit
-            query = "SELECT product_id, SUM(quantity_sold) AS total_sold, SUM(profit) AS total_profit " +
-                    "FROM transaction " + dateCondition + " " +
-                    "GROUP BY product_id";
-
-            // Prepare statement and execute
-            try (PreparedStatement stmt = connection.prepareStatement(query);
-                 ResultSet rs = stmt.executeQuery()) {
-
-                List<Map<String, Object>> reports = new ArrayList<>();
-
-                // Iterate over result set and collect data
-                while (rs.next()) {
-                    Map<String, Object> report = new HashMap<>();
-                    report.put("product_id", rs.getInt("product_id"));
-                    report.put("total_sold", rs.getInt("total_sold"));
-                    report.put("total_profit", rs.getBigDecimal("total_profit"));
-                    reports.add(report);
-                }
-
-                return reports;
-            }
+        // Determine the date range based on period
+        switch (period.toLowerCase()) {
+            case "weekly":
+                dateCondition = "WHERE transaction_date >= CURDATE() - INTERVAL 1 WEEK";
+                break;
+            case "monthly":
+                dateCondition = "WHERE transaction_date >= CURDATE() - INTERVAL 1 MONTH";
+                break;
+            case "yearly":
+                dateCondition = "WHERE transaction_date >= CURDATE() - INTERVAL 1 YEAR";
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid period. Please specify 'weekly', 'monthly', or 'yearly'.");
         }
+
+        // Query to fetch product sales and profit
+        query = "SELECT product_id, SUM(quantity_sold) AS total_sold, SUM(profit) AS total_profit " +
+                "FROM transaction " + dateCondition + " " +
+                "GROUP BY product_id";
+
+        // Prepare statement and execute
+        try (PreparedStatement stmt = connection.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+
+            List<Map<String, Object>> reports = new ArrayList<>();
+
+            // Iterate over result set and collect data
+            while (rs.next()) {
+                Map<String, Object> report = new HashMap<>();
+                report.put("product_id", rs.getInt("product_id"));
+                report.put("total_sold", rs.getInt("total_sold"));
+                report.put("total_profit", rs.getBigDecimal("total_profit"));
+                reports.add(report);
+            }
+
+            return reports;
+        }
+    }
 
 
     public boolean insertTransactionToDatabase(Bill bill, Employee employee) {
@@ -338,6 +340,19 @@ public class TransactionDAO {
         }
     }
 
+
+    // Helper method to map ResultSet to a Transaction object
+    private Transaction mapRowToTransaction(ResultSet rs) throws SQLException {
+        int transactionId = rs.getInt("transaction_id");
+        int branchId = rs.getInt("branch_id");
+        int productId = rs.getInt("product_id");
+        int quantitySold = rs.getInt("quantity_sold");
+        Date transactionDate = rs.getDate("transaction_date");
+        BigDecimal profit = rs.getBigDecimal("profit");
+        boolean status = rs.getBoolean("status");
+
+        return new Transaction(transactionId, branchId, productId, quantitySold, transactionDate, profit, status);
+    }
     public static List<Integer> getBranchIds() {
         List<Integer> branchIds = new ArrayList<>();
         String query = "SELECT branch_id FROM branch WHERE status = 'active'";
@@ -355,36 +370,19 @@ public class TransactionDAO {
         return branchIds;
     }
 
-
-    // Helper method to map ResultSet to a Transaction object
-    private Transaction mapRowToTransaction(ResultSet rs) throws SQLException {
-        int transactionId = rs.getInt("transaction_id");
-        int branchId = rs.getInt("branch_id");
-        int productId = rs.getInt("product_id");
-        int quantitySold = rs.getInt("quantity_sold");
-        Date transactionDate = rs.getDate("transaction_date");
-        BigDecimal profit = rs.getBigDecimal("profit");
-        boolean status = rs.getBoolean("status");
-
-        return new Transaction(transactionId, branchId, productId, quantitySold, transactionDate, profit, status);
-    }
-
     public static Map<Integer, Double> getTodaysProfit() {
         String query = "SELECT branch_id, SUM(profit) AS total_profit " +
                 "FROM transaction " +
                 "WHERE transaction_date = CURDATE() AND status = TRUE " +
                 "GROUP BY branch_id";
-        System.out.println("[DEBUG] Fetching today's profit with query: " + query);
         return fetchProfitData(query);
     }
 
-    // Fetch weekly profit
     public static Map<Integer, Double> getWeeklyProfit() {
         String query = "SELECT branch_id, SUM(profit) AS total_profit " +
                 "FROM transaction " +
                 "WHERE transaction_date BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE() AND status = TRUE " +
                 "GROUP BY branch_id";
-        System.out.println("[DEBUG] Fetching weekly profit with query: " + query);
         return fetchProfitData(query);
     }
 
@@ -394,7 +392,6 @@ public class TransactionDAO {
                 "FROM transaction " +
                 "WHERE MONTH(transaction_date) = MONTH(CURDATE()) AND YEAR(transaction_date) = YEAR(CURDATE()) AND status = TRUE " +
                 "GROUP BY branch_id";
-        System.out.println("[DEBUG] Fetching monthly profit with query: " + query);
         return fetchProfitData(query);
     }
 
@@ -404,7 +401,6 @@ public class TransactionDAO {
                 "FROM transaction " +
                 "WHERE YEAR(transaction_date) = YEAR(CURDATE()) AND status = TRUE " +
                 "GROUP BY branch_id";
-        System.out.println("[DEBUG] Fetching yearly profit with query: " + query);
         return fetchProfitData(query);
     }
 
@@ -414,7 +410,6 @@ public class TransactionDAO {
                 "FROM transaction " +
                 "WHERE transaction_date BETWEEN ? AND ? AND status = TRUE " +
                 "GROUP BY branch_id";
-        System.out.println("[DEBUG] Fetching profit for date range from " + startDate + " to " + endDate + " with query: " + query);
 
         Map<Integer, Double> result = new HashMap<>();
         try (Connection connection = getConnection();
@@ -427,16 +422,13 @@ public class TransactionDAO {
             while (rs.next()) {
                 int branchId = rs.getInt("branch_id");
                 double totalProfit = rs.getDouble("total_profit");
-                System.out.printf("[DEBUG] Branch ID: %d | Total Profit: %.2f%n", branchId, totalProfit);
                 result.put(branchId, totalProfit);
             }
         } catch (SQLException e) {
-            System.err.println("[ERROR] Error fetching profit for date range: " + e.getMessage());
             e.printStackTrace();
         }
         return result;
     }
-    // Fetch profit for a specific year based on the given parameter (e.g., 0 for current year, 1 for last year)
     public double fetchProfitForYear(int years) {
         double profit = 0.0;
 
@@ -466,10 +458,7 @@ public class TransactionDAO {
         return profit;
     }
 
-
-    // Common method to fetch profit data
     private static Map<Integer, Double> fetchProfitData(String query) {
-        System.out.println("[DEBUG] Executing fetchProfitData with query: " + query);
 
         Map<Integer, Double> result = new HashMap<>();
         try (Connection connection = getConnection();
@@ -479,44 +468,142 @@ public class TransactionDAO {
             while (rs.next()) {
                 int branchId = rs.getInt("branch_id");
                 double totalProfit = rs.getDouble("total_profit");
-                System.out.printf("[DEBUG] Branch ID: %d | Total Profit: %.2f%n", branchId, totalProfit);
                 result.put(branchId, totalProfit);
             }
-            System.out.println("[DEBUG] fetchProfitData execution complete. Result: " + result);
         } catch (SQLException e) {
-            System.err.println("[ERROR] Error executing fetchProfitData: " + e.getMessage());
             e.printStackTrace();
         }
         return result;
     }
-    public static Map<Integer, Double> FetchProfitForDateRange(Date startDate, Date endDate) {
-        String query = "SELECT branch_id, SUM(profit) AS total_profit " +
-                "FROM transaction " +
-                "WHERE transaction_date BETWEEN ? AND ? AND status = TRUE " +
-                "GROUP BY branch_id";
-        System.out.println("[DEBUG] Fetching profit for date range from " + startDate + " to " + endDate + " with query: " + query);
 
-        Map<Integer, Double> result = new HashMap<>();
+    public static double fetchOverallProfit() {
+        // SQL query to calculate the total profit
+        String query = "SELECT SUM(profit) AS total_profit FROM transaction WHERE status = TRUE";
+
+        double totalProfit = 0.0;
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery(query)) {
+
+            if (rs.next()) {
+                totalProfit = rs.getDouble("total_profit");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return totalProfit;
+    }
+
+    public static BigDecimal fetchOverallSales() {
+        String query = "SELECT SUM(t.quantity_sold * p.sales_price) AS total_sales " +
+                "FROM transaction t " +
+                "JOIN product p ON t.product_id = p.product_id";
+        BigDecimal totalSales = BigDecimal.valueOf(0.0);
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery(query)) {
+
+            if (rs.next()) {
+                totalSales = rs.getBigDecimal("total_sales");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return totalSales;
+    }
+
+    private static Map<Integer, BigDecimal> fetchSalesData(String query) {
+        Map<Integer, BigDecimal> result = new HashMap<>();
+        try (Connection connection = getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery(query)) {
+
+            while (rs.next()) {
+                int branchId = rs.getInt("branch_id");
+                BigDecimal totalSales = rs.getBigDecimal("total_sales");
+                result.put(branchId, totalSales);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static Map<Integer, BigDecimal> getTodaysSales() {
+        String query = "SELECT t.branch_id, SUM(t.quantity_sold * p.sales_price) AS total_sales " +
+                "FROM transaction t " +
+                "JOIN product p ON t.product_id = p.product_id " +
+                "WHERE t.transaction_date = CURDATE() AND t.status = TRUE " +
+                "GROUP BY t.branch_id";
+        return fetchSalesData(query);
+    }
+
+    public static Map<Integer, BigDecimal> getWeeklySales() {
+        String query = "SELECT t.branch_id, SUM(t.quantity_sold * p.sales_price) AS total_sales " +
+                "FROM transaction t " +
+                "JOIN product p ON t.product_id = p.product_id " +
+                "WHERE t.transaction_date BETWEEN CURDATE() - INTERVAL 7 DAY AND CURDATE() AND t.status = TRUE " +
+                "GROUP BY t.branch_id";
+        return fetchSalesData(query);
+    }
+
+    public static Map<Integer, BigDecimal> getMonthlySales() {
+        String query = "SELECT t.branch_id, SUM(t.quantity_sold * p.sales_price) AS total_sales " +
+                "FROM transaction t " +
+                "JOIN product p ON t.product_id = p.product_id " +
+                "WHERE MONTH(t.transaction_date) = MONTH(CURDATE()) AND YEAR(t.transaction_date) = YEAR(CURDATE()) AND t.status = TRUE " +
+                "GROUP BY t.branch_id";
+        return fetchSalesData(query);
+    }
+
+    public static Map<Integer, BigDecimal> getYearlySales() {
+        String query = "SELECT t.branch_id, SUM(t.quantity_sold * p.sales_price) AS total_sales " +
+                "FROM transaction t " +
+                "JOIN product p ON t.product_id = p.product_id " +
+                "WHERE YEAR(t.transaction_date) = YEAR(CURDATE()) AND t.status = TRUE " +
+                "GROUP BY t.branch_id";
+        return fetchSalesData(query);
+    }
+
+
+    public BigDecimal getTotalSales() throws SQLException {
+        String query = "SELECT SUM(t.quantity_sold * p.sales_price) AS total_sales " +
+                "FROM transaction t " +
+                "JOIN product p ON t.product_id = p.product_id";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getBigDecimal("total_sales");
+            }
+        }
+        return BigDecimal.ZERO; // Return 0 if no sales data exists
+    }
+
+    // Fetch sales for a specified date range
+    public static Map<Integer, BigDecimal> getSalesForDateRange(Date startDate, Date endDate) {
+        String query = "SELECT t.branch_id, SUM(t.quantity_sold * p.sales_price) AS total_sales " +
+                "FROM transaction t " +
+                "JOIN product p ON t.product_id = p.product_id " +
+                "WHERE t.transaction_date BETWEEN ? AND ? AND t.status = TRUE " +
+                "GROUP BY t.branch_id";
+
+        Map<Integer, BigDecimal> result = new HashMap<>();
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            // Set the start and end date parameters dynamically at runtime
             preparedStatement.setDate(1, startDate);
             preparedStatement.setDate(2, endDate);
-
             ResultSet rs = preparedStatement.executeQuery();
 
             while (rs.next()) {
                 int branchId = rs.getInt("branch_id");
-                double totalProfit = rs.getDouble("total_profit");
-                System.out.printf("[DEBUG] Branch ID: %d | Total Profit: %.2f%n", branchId, totalProfit);
-                result.put(branchId, totalProfit);
+                BigDecimal totalSales = rs.getBigDecimal("total_sales");
+                result.put(branchId, totalSales);
             }
         } catch (SQLException e) {
-            System.err.println("[ERROR] Error fetching profit for date range: " + e.getMessage());
             e.printStackTrace();
         }
         return result;
     }
-
 }

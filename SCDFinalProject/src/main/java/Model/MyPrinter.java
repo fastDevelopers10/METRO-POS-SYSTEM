@@ -5,28 +5,70 @@ import java.awt.print.*;
 
 public class MyPrinter implements Printable {
 
-    private String data;  // Sales data to be printed
-
-    // Setter method for sales data
-    public void setData(String data) {
-        this.data = data;
-    }
-
-    // This is where you define the content to be printed.
     @Override
     public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
-        // Handle pagination (only one page for simplicity)
-        if (pageIndex >= 1) {
-            return Printable.NO_SUCH_PAGE; // No pages beyond the first one
+        return Printable.PAGE_EXISTS;
+    }
+
+    public static class MyPrinterWithTableData implements Printable {
+        private String[] columnHeaders;
+        private String[][] tableData;
+        private String title;
+
+        public void setTableData(String[] columnHeaders, String[][] tableData, String title) {
+            this.columnHeaders = columnHeaders;
+            this.tableData = tableData;
+            this.title = title;
         }
 
-        // Set up graphics for printing (adjust for page format)
-        Graphics2D g2d = (Graphics2D) graphics;
-        g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+        @Override
+        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+            if (pageIndex >= 1) {
+                return Printable.NO_SUCH_PAGE; // Only one page
+            }
 
-        // Print the sales data
-        g2d.drawString(data, 100, 100);  // Customize how data is printed
+            Graphics2D g2d = (Graphics2D) graphics;
+            g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+            g2d.setFont(new Font("Century Gothic", Font.PLAIN, 12));
 
-        return Printable.PAGE_EXISTS; // Indicate that the page exists
+            g2d.setFont(new Font("Century Gothic", Font.BOLD, 14));
+            g2d.drawString(title, 100, 100);
+
+            int x = 100;
+            for (String header : columnHeaders) {
+                g2d.drawString(header, x, 130); // Adjust position based on column
+                x += 100; // Adjust column width
+            }
+            int y = 150;
+            for (String[] row : tableData) {
+                x = 100; // Reset x position for each row
+                for (String cell : row) {
+                    g2d.drawString(cell, x, y);
+                    x += 100; // Adjust column width
+                }
+                y += 20; // Adjust row height
+            }
+            return Printable.PAGE_EXISTS;
+        }
+    }
+
+    public static class MyPrinterWithSalesData implements Printable {
+        private String data;
+
+        public void setData(String data) {
+            this.data = data;
+        }
+
+        @Override
+        public int print(Graphics graphics, PageFormat pageFormat, int pageIndex) throws PrinterException {
+            if (pageIndex >= 1) {
+                return Printable.NO_SUCH_PAGE; // No pages beyond the first one
+            }
+            Graphics2D g2d = (Graphics2D) graphics;
+            g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+
+            g2d.drawString(data, 100, 100);
+            return Printable.PAGE_EXISTS; // Indicate that the page exists
+        }
     }
 }

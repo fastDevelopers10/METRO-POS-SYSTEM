@@ -1,9 +1,9 @@
 package DAO;
 
 import Model.Employee;
+import View.NewUpdatePassword;
 import View.UpdatePasswordUI;
 
-import javax.swing.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,16 +11,18 @@ import java.util.Date;
 import java.util.List;
 
 public class EmployeeDAO {
-    private static final String UPDATE_BRANCH_MANAGER_QUERY = "UPDATE employee SET name = ?, email = ?, branch_id = ?, address = ?, phone_number = ?, salary = ?, status = ? WHERE employee_id = ?";
+    private static final String INSERT_EMPLOYEE_QUERY =
+            "INSERT INTO employee (name, position, email, branch_id, address, phone_number, salary, joining_date, username, password, status, first_time_joined) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)";
 
     private static final String FIND_EMPLOYEE_QUERY =
             "SELECT * FROM employee WHERE username = ? AND password = ?";
 
     private static final String UPDATE_PASSWORD_QUERY =
             "UPDATE employee SET password = ? WHERE username = ?";
-
     private static final String UPDATE_FIRST_TIME_JOINED_QUERY =
             "UPDATE employee SET first_time_joined = FALSE WHERE username = ?";
+
 
     // Method to fetch employees by branch ID
     public List<Employee> getEmployeesByBranch(int branchId) throws Exception {
@@ -134,6 +136,10 @@ public class EmployeeDAO {
         return isSuccess;
     }
 
+
+
+
+    // Authenticate and check first-time login
     public Employee findEmployeeByUsernameAndPass(String username, String password) {
         try (Connection connection = DBConnection.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(FIND_EMPLOYEE_QUERY)) {
@@ -153,7 +159,7 @@ public class EmployeeDAO {
                         System.out.println("Welcome! This is your first login. Please set up your profile.");
 
                         // Show the profile setup UI (password update page)
-                        UpdatePasswordUI updatePasswordUI = new UpdatePasswordUI(employee);
+                        NewUpdatePassword updatePasswordUI = new NewUpdatePassword(employee);
                         updatePasswordUI.setModal(true);  // Make the UI modal
 
 
@@ -212,7 +218,9 @@ public class EmployeeDAO {
                 stmt.executeUpdate();
             }
 
+            // Commit the transaction if both updates were successful
             connection.commit();
+
             return rowsAffected > 0;
         } catch (SQLException e) {
             // Rollback in case of error
@@ -291,6 +299,29 @@ public class EmployeeDAO {
         return employees;
     }
 
+    public static boolean updateBranchManager(Employee employee) {
+        String query = "UPDATE employee SET name = ?, email = ?, branch_id = ?, address = ?, phone_number = ?, salary = ?, status = ? WHERE employee_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, employee.getName());
+            stmt.setString(2, employee.getEmail());
+            stmt.setInt(3, employee.getBranchId());
+            stmt.setString(4, employee.getAddress());
+            stmt.setString(5, employee.getPhone());
+            stmt.setBigDecimal(6, employee.getSalary());
+            stmt.setString(7, employee.getStatus());
+            stmt.setInt(8, employee.getEmployeeId());
+
+            int rowsUpdated = stmt.executeUpdate();
+            return rowsUpdated > 0; // Return true if update was successful, false otherwise.
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // In case of error, return false
+        }
+    }
+
     public List<Employee> getBranchManagersByStatus(String status) throws SQLException {
         String query = "SELECT * FROM Employee WHERE position='branch manager' AND status=?";
         List<Employee> employees = new ArrayList<>();
@@ -317,37 +348,28 @@ public class EmployeeDAO {
 
         return employees;
     }
-
-
-    public boolean updateBranchManager(Employee employee) throws SQLException {
-        String checkBranchManagerQuery = "SELECT COUNT(*) FROM employee WHERE branch_id = ? AND employee_id != ? AND status!='inactive' ";
-        String updateBranchManagerQuery = "UPDATE employee SET name = ?, email = ?, branch_id = ?, address = ?, phone_number = ?, salary = ?, status = ? WHERE employee_id = ?";
+    // Method to fetch an employee by their ID
+    public Employee getEmployeeById(int employeeId) throws SQLException {
+        String query = "SELECT * FROM employee WHERE employee_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement checkStmt = conn.prepareStatement(checkBranchManagerQuery);
-             PreparedStatement updateStmt = conn.prepareStatement(updateBranchManagerQuery)) {
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            checkStmt.setInt(1, employee.getBranchId());
-            checkStmt.setInt(2, employee.getEmployeeId()); // Exclude the current employee from the check
+            stmt.setInt(1, employeeId);
 
-            try (ResultSet rs = checkStmt.executeQuery()) {
-                if (rs.next() && rs.getInt(1) > 0) {
-
-                    JOptionPane.showMessageDialog(null, "Branch Manager for this branch already exists.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return false;
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    // Map the ResultSet to an Employee object
+                    return mapResultSetToEmployee(rs);
                 }
             }
-
-            updateStmt.setString(1, employee.getName());
-            updateStmt.setString(2, employee.getEmail());
-            updateStmt.setInt(3, employee.getBranchId());
-            updateStmt.setString(4, employee.getAddress());
-            updateStmt.setString(5, employee.getPhone());
-            updateStmt.setBigDecimal(6, employee.getSalary());
-            updateStmt.setString(7, employee.getStatus());
-            updateStmt.setInt(8, employee.getEmployeeId());
-
-            return updateStmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new SQLException("Error fetching employee by ID: " + e.getMessage(), e);
         }
+
+        return null; // Return null if no employee is found
     }
+
+
+
 }

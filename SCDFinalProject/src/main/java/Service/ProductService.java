@@ -3,6 +3,7 @@ package Service;
 import DAO.ProductDAO;
 import Model.Product;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -93,10 +94,14 @@ public class ProductService {
     public List<Object[]> getProductIdAndQuantities() {
         return productDAO.getProductIdAndQuantities();
     }
+    public int getProductRowCount() throws SQLException {
+        return productDAO.getProductRowCount();
+    }
 
+    public int getTotalProductsSum() throws SQLException {
+        return productDAO.getTotalProductsSum();
+    }
     public Map<String, Integer> getCategorySales(int branchId) {
         return productDAO.getCategorySales(branchId);
     }
 }
-
-

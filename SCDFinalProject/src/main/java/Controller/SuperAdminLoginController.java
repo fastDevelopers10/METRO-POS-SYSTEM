@@ -6,6 +6,9 @@ import View.SuperAdminLogin;
 import View.SuperAdminUI;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.SQLException;
 
 public class SuperAdminLoginController {
 
@@ -16,21 +19,32 @@ public class SuperAdminLoginController {
         this.loginView = new SuperAdminLogin();
         this.admin = new SuperAdminDAO();
 
-        // Add action listeners for login and exit buttons
         loginView.addLoginListener(e ->
         {
-            handleLogin();
+            try {
+                handleLogin();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
 
         });
-        loginView.addExitListener(e -> new LoginOptions() );
+        loginView.addExitListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                LoginOptions fr = new LoginOptions();
+                fr.setVisible(true);
+            }
+        });
+
     }
 
     public static String getUsername() {
         return admin.getUsername();
     }
+    public static String getPassword(){return admin.getPassword();}
 
 
-    private void handleLogin() {
+    private void handleLogin() throws SQLException {
         String username = loginView.getUsername();
         String password = loginView.getPassword();
 
@@ -41,17 +55,11 @@ public class SuperAdminLoginController {
         }
 
         if (admin.validateLogin(username, password)) {
-
             new SuperAdminUI();
+
             loginView.dispose();
         } else {
-            JOptionPane.showMessageDialog(loginView, "Invalid username or password!",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(loginView, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }
-
-
-
-

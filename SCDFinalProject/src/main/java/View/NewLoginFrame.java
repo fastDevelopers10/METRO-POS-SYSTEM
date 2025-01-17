@@ -35,10 +35,7 @@ public class NewLoginFrame extends JFrame {
 
     public NewLoginFrame() {
         setTitle("Login");
-
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setSize(screenSize);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setSize(1320, 710);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

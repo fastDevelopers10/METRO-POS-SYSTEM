@@ -14,6 +14,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -57,11 +58,9 @@ TransactionController transactionController=new TransactionController();
         //      productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
         setTitle("Cashier Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // Get screen size and set JFrame to this
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setSize(screenSize);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
+        setSize(1320, 710);
         setResizable(false);
+        setIconImage(loadIcon("images/icons/logo.PNG"));
 
         try {
             // Use class loader to load the resource
@@ -295,6 +294,15 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
 
     public CashierUI() {
 
+    }
+    private Image loadIcon(String path) {
+        URL iconURL = getClass().getClassLoader().getResource(path);
+        if (iconURL != null) {
+            return new ImageIcon(iconURL).getImage();
+        } else {
+            System.err.println("Error: Unable to load frame icon image.");
+            return null;
+        }
     }
 
     private void initializeCategoryButtons()

@@ -13,6 +13,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.print.PrinterJob;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.util.*;
@@ -57,11 +58,9 @@ public class BranchManagerUI extends JFrame {
 
         setTitle("Branch Manager Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // Get screen size and set JFrame to this
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setSize(screenSize);
-        setExtendedState(JFrame.MAXIMIZED_BOTH); // Maximizes the window if undecorated
+        setSize(1320, 710);
         setResizable(false);
+        setIconImage(loadIcon("images/icons/logo.PNG"));
 
         try {
             // Load the background image
@@ -80,6 +79,15 @@ public class BranchManagerUI extends JFrame {
             throw new RuntimeException(e);
         }
 
+    }
+    private Image loadIcon(String path) {
+        URL iconURL = getClass().getClassLoader().getResource(path);
+        if (iconURL != null) {
+            return new ImageIcon(iconURL).getImage();
+        } else {
+            System.err.println("Error: Unable to load frame icon image.");
+            return null;
+        }
     }
 
     // Method to set up UI components
@@ -979,8 +987,6 @@ public class BranchManagerUI extends JFrame {
                     scrollPane.setPreferredSize(new Dimension(400, 200));
 
                     panel.add(scrollPane);
-
-                    // Print button functionality for the profit data
                     RoundedButton printButton = new RoundedButton("Print", 20);
                     printButton.addActionListener(printEvent -> {
                         try {
@@ -999,8 +1005,6 @@ public class BranchManagerUI extends JFrame {
                         }
                     });
                     panel.add(printButton);
-
-                    // Display the panel with profit data
                     JOptionPane.showMessageDialog(null, panel, "Product-wise Average Profits", JOptionPane.INFORMATION_MESSAGE);
 
                 } catch (Exception ex) {
@@ -1010,13 +1014,7 @@ public class BranchManagerUI extends JFrame {
         }
     }
 
-
-
-
-
-    // Method for handling logout action
     private void logoutAction() {
-        // Close current frame and show the login screen again
         SwingUtilities.invokeLater(() -> {
             NewLoginFrame frame = new NewLoginFrame();
             frame.setVisible(true); // Make LoginOptions visible
@@ -1024,13 +1022,8 @@ public class BranchManagerUI extends JFrame {
         dispose();
 
     }
-
-    // Main method to launch the application
     public static void main(String[] args) {
-        // Simulating the logged-in employee with branchId
 
-
-        // Launch Branch Manager UI
         SwingUtilities.invokeLater(() -> {
             new BranchManagerUI(employee).setVisible(true);
         });

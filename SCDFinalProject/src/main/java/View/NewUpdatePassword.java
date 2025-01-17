@@ -21,9 +21,7 @@ public class NewUpdatePassword extends JFrame {
 
         setTitle("Update Password");
         setIconImage(loadIcon("images/icons/logo.PNG"));
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setSize(screenSize);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setSize(1320, 710);
         setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

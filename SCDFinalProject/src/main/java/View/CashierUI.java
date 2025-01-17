@@ -661,11 +661,11 @@ horizontalScrollPanel.setBackground(new Color(247, 247, 247, 255));
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
-            // Dispose of the current frame
+            SwingUtilities.invokeLater(() -> {
+                NewLoginFrame frame = new NewLoginFrame();
+                frame.setVisible(true); // Make LoginOptions visible
+            });
             this.dispose();
-
-            // Open the login options
-            new LoginOptions().setVisible(true);
         }
     }
 

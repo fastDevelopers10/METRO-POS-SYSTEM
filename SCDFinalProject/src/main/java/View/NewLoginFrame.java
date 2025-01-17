@@ -29,6 +29,9 @@ public class NewLoginFrame extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private Employee loggedInEmployee;
+    private JButton btnLogin;
+    private SuperAdminLoginController saloginController;
+
 
     public NewLoginFrame() {
         setTitle("Login");
@@ -159,7 +162,6 @@ public class NewLoginFrame extends JFrame {
         txtUsername.setBounds(100, 270, 400, 40);  // Below the username label
         rightPanel.add(txtUsername);
 
-        // Password label and field
         JLabel lblPassword = new JLabel("Enter Password:");
         lblPassword.setFont(new Font("Century Gothic", Font.BOLD, 18));
         lblPassword.setForeground(Color.BLACK);
@@ -171,22 +173,20 @@ public class NewLoginFrame extends JFrame {
         txtPassword.setBounds(100, 370, 400, 40);  // Below the password label
         rightPanel.add(txtPassword);
 
-        // Login button
-        JButton btnLogin = createButton("Login");
+        btnLogin = createButton("Login");
         btnLogin.setBounds(100, 470, 180, 50);
         rightPanel.add(btnLogin);
 
-        // Exit button
         JButton btnExit = createButton("Exit");
         btnExit.setBounds(320, 470, 180, 50);
         rightPanel.add(btnExit);
 
-        // Login button action
         LoginController loginController = new LoginController();
         btnLogin.addActionListener(e -> {
             String username = txtUsername.getText();
             String password = new String(txtPassword.getPassword());
             role = (String) roleDropdown.getSelectedItem();
+            saloginController = new SuperAdminLoginController();
 
             if ("Super Admin".equalsIgnoreCase(role)) {
                 if (username.isEmpty() || password.isEmpty()) {
@@ -194,20 +194,26 @@ public class NewLoginFrame extends JFrame {
                     return;
                 }
 
-                try {
-                    // Validate Super Admin login using SuperAdminLoginController
-                    SuperAdminDAO superAdminDAO = new SuperAdminDAO();
-                    if (superAdminDAO.validateLogin(username, password)) {
-                        JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                        new SuperAdminUI(); // Open Profit View for Super Admin
-                        this.dispose();
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
+                    try {
+                        boolean login = saloginController.handleLogin(username, password);
+                        if(login) {
+                            new SuperAdminUI();
+                            dispose();
+                        }
+                        else
+                        {
+                            JOptionPane.showMessageDialog(this, "Username or password is incorrect. " ,
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Error opening Super Admin: " + ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
-                } catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(this, "Error validating Super Admin: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            } else {
+            }
+
+                else {
                 loggedInEmployee = loginController.validateLogin(username, password);
                 boolean isValid = loggedInEmployee != null && loggedInEmployee.getPassword().equals(password);
 
@@ -221,11 +227,9 @@ public class NewLoginFrame extends JFrame {
             }
         });
 
-        // Exit button action
         btnExit.addActionListener(e -> System.exit(0));
     }
 
-    // Style JTextField or JPasswordField
     private void styleTextField(JTextField textField) {
         textField.setFont(new Font("Century Gothic", Font.PLAIN, 18));
         textField.setForeground(Color.BLACK);
@@ -234,7 +238,6 @@ public class NewLoginFrame extends JFrame {
         textField.setCaretColor(Color.BLACK);
     }
 
-    // Create styled buttons
     private JButton createButton(String text) {
         JButton button = new RoundedButton(text, 8);
         button.setFont(new Font("Century Gothic", Font.BOLD, 20));

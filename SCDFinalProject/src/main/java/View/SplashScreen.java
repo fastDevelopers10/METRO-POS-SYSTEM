@@ -67,7 +67,6 @@ public class SplashScreen extends JPanel {
         g2d.fillRoundRect(55, 330, progress * barWidth / 100, barHeight, arc, arc);
     }
 
-    // Method to set heading text size and color dynamically
     public static void setHeadingAttributes(int fontSize, Color color) {
         headingFontSize = fontSize;
         headingColor = color;
@@ -75,15 +74,12 @@ public class SplashScreen extends JPanel {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // Initialize the JFrame for the SplashScreen
             frame = new JFrame();
             frame.setUndecorated(true); // No window borders
             frame.setShape(new RoundRectangle2D.Double(0, 0, 600, 400, 36, 36)); // Rounded corners
             frame.setSize(600, 400);
             frame.setLocationRelativeTo(null); // Center the window
 
-
-            // Create LayeredPane to control layering of components
             JLayeredPane layeredPane = new JLayeredPane();
             frame.setContentPane(layeredPane);
 

@@ -2,7 +2,6 @@ package DAO;
 
 import Model.Employee;
 import View.NewUpdatePassword;
-import View.UpdatePasswordUI;
 
 import java.math.BigDecimal;
 import java.sql.*;

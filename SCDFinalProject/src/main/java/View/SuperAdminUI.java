@@ -27,6 +27,7 @@ public class SuperAdminUI extends JFrame {
     private static final Color FONT_COLOR = Color.BLACK;
     private JLabel lblBackground;
     private BranchController branchController;
+    private SuperAdminLoginController ctrlr;
     private DefaultTableModel tableModel,branchtableModel;
     private JTable table,employeeTable;
     private EmployeeController controller;
@@ -38,7 +39,6 @@ public class SuperAdminUI extends JFrame {
 
         this.branchController=new BranchController();
         this.profitPanel = new ProfitPanel();
-
         mainContentPanel = new JPanel(new CardLayout());
         mainContentPanel.setBounds(265, 0, 1090, 710);
         mainContentPanel.setBackground(new Color(0, 0, 0, 0));
@@ -180,7 +180,11 @@ public class SuperAdminUI extends JFrame {
                 cardLayout.show(mainContentPanel, "Branches");
                 break;
             case "Change Password":
-                new UpdatePasswordUI(new Employee());
+                SwingUtilities.invokeLater(() -> {
+                    NewUpdatePassword frame=new NewUpdatePassword(new Employee());
+                    frame.setVisible(true); // Make LoginOptions visible
+                });
+
                 this.dispose();
                 break;
             case "Logout":
@@ -202,8 +206,12 @@ public class SuperAdminUI extends JFrame {
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
+            SwingUtilities.invokeLater(() -> {
+                NewLoginFrame frame = new NewLoginFrame();
+                frame.setVisible(true); // Make LoginOptions visible
+            });
             this.dispose();
-            new LoginOptions().setVisible(true);
+
         }
     }
 

@@ -1017,8 +1017,12 @@ public class BranchManagerUI extends JFrame {
     // Method for handling logout action
     private void logoutAction() {
         // Close current frame and show the login screen again
+        SwingUtilities.invokeLater(() -> {
+            NewLoginFrame frame = new NewLoginFrame();
+            frame.setVisible(true); // Make LoginOptions visible
+        });
         dispose();
-        new LoginOptions().setVisible(true);
+
     }
 
     // Main method to launch the application

@@ -55,7 +55,7 @@ public class DataOperatorUI extends JFrame {
         try {
             // Use class loader to load the resource
             backgroundImage = ImageIO.read(Objects.requireNonNull(
-                    getClass().getClassLoader().getResourceAsStream("images/DOP.png")));
+                    getClass().getClassLoader().getResourceAsStream("images/DOPNew.png")));
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error: Unable to load background image.");
@@ -76,43 +76,55 @@ public class DataOperatorUI extends JFrame {
         backgroundPanel.setLayout(null);
         backgroundPanel.setBounds(0, 0, getWidth(), getHeight());
         JLabel nameLabel = new JLabel("Name: " + name);
-        nameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
+        nameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 18));
         nameLabel.setForeground(Color.BLACK);
-        nameLabel.setBounds(100, 105, 300, 30);
+        nameLabel.setBounds(100, 135, 300, 30);
 
         JLabel positionLabel = new JLabel("Position: " + role);
-        positionLabel.setFont(new Font("Century Gothic", Font.PLAIN, 10));
+        positionLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
         positionLabel.setForeground(Color.BLACK);
-        positionLabel.setBounds(100, 125, 300, 30);
+        positionLabel.setBounds(100, 155, 300, 30);
 
 
-        JLabel branchLabel = new JLabel(" # "+branchnumber);
-        branchLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+        JLabel branchLabel = new JLabel(String.valueOf(branchnumber));
+        branchLabel.setFont(new Font("Century Gothic", Font.PLAIN, 16));
         branchLabel.setForeground(Color.BLACK);
-        branchLabel.setBounds(445, 67, 300, 30);
+        branchLabel.setBounds(535, 105, 300, 30);
 
         TotalProducts = new JLabel(String.valueOf(controller.getProductCountByBranch(branchnumber)));
-        TotalProducts.setFont(new Font("Century Gothic", Font.PLAIN, 24));
+        TotalProducts.setFont(new Font("Century Gothic", Font.PLAIN, 30));
         TotalProducts.setForeground(Color.BLACK);
-        TotalProducts.setBounds(320, 170, 300, 30);
+        TotalProducts.setBounds(370, 240, 300, 30);
 
         TotalVendors = new JLabel(String.valueOf(controller.getVendorCountByBranch()));
-        TotalVendors.setFont(new Font("Century Gothic", Font.PLAIN, 24));
+        TotalVendors.setFont(new Font("Century Gothic", Font.PLAIN, 30));
         TotalVendors.setForeground(Color.BLACK);
-        TotalVendors.setBounds(560, 170, 300, 30);
+        TotalVendors.setBounds(760, 240, 300, 30);
+
+        JLabel TotalProductslb = new JLabel("Total Products:");
+        TotalProductslb.setFont(new Font("Century Gothic", Font.BOLD, 20));
+        TotalProductslb.setForeground(Color.BLACK);
+        TotalProductslb.setBounds(370, 180, 300, 30);
+
+        JLabel TotalVendorslb = new JLabel("Total Vendors:");
+        TotalVendorslb.setFont(new Font("Century Gothic", Font.BOLD, 20));
+        TotalVendorslb.setForeground(Color.BLACK);
+        TotalVendorslb.setBounds(760, 180, 300, 30);
 
         backgroundPanel.add(nameLabel);
         backgroundPanel.add(positionLabel);
         backgroundPanel.add(branchLabel);
         backgroundPanel.add(TotalProducts);
         backgroundPanel.add(TotalVendors);
+        backgroundPanel.add(TotalProductslb);
+        backgroundPanel.add(TotalVendorslb);
 
 
         sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(new GridBagLayout());
         sideMenuPanel.setBackground(Color.WHITE);
-        int menuYPosition = 250;
-        int menuWidth = 240;
+        int menuYPosition = 270;
+        int menuWidth = 280;
         sideMenuPanel.setBounds(10, menuYPosition, menuWidth, getHeight() - menuYPosition);
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -266,10 +278,9 @@ public class DataOperatorUI extends JFrame {
         JPanel transparentPanel = new JPanel();
         transparentPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 40, 30));  // or any other layout
         transparentPanel.setBackground(new Color(0, 0, 0, 0)); // Set background to transparent
-        transparentPanel.setBounds(300, 220, 950, 140); // Set size and position for the panel
+        transparentPanel.setBounds(310, 300, 950, 140); // Set size and position for the panel
         // Set a border around the panel (LineBorder)
 
-        // Existing Rounded Panels (Customers, NadraDB, Billing)
         RoundedPanel VendorPanel = new RoundedPanel(8);
         VendorPanel.setBounds(0, 70, 300, 70); // Set bounds for the entire panel
         VendorPanel.setBackground(Color.decode("#C8E5DC")); // Set background color for the panel

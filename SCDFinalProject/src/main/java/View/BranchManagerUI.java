@@ -46,7 +46,7 @@ public class BranchManagerUI extends JFrame {
     private JPanel employeePanel;  // Panel for adding employee buttons
     JPanel reportsPanel;
     private static int menuYPosition = 220; // Y position for the menu
-    private static int menuWidth = 157;
+    private static int menuWidth = 178;
     private static JPanel backgroundPanel;
     private EmployeeController employeeController;
     private ProductController productController=new ProductController();
@@ -113,7 +113,7 @@ public class BranchManagerUI extends JFrame {
         sideMenuPanel.setLayout(null); // Use null layout for manual positioning
         sideMenuPanel.setBackground(Color.WHITE);
 
-        sideMenuPanel.setBounds(14, menuYPosition, menuWidth, getHeight() - menuYPosition);
+        sideMenuPanel.setBounds(0, menuYPosition, menuWidth, getHeight() - menuYPosition);
         sideMenuPanel.setOpaque(false);
 
         // Button text and optional icon paths
@@ -221,7 +221,7 @@ public class BranchManagerUI extends JFrame {
 
         // Display Branch ID
         JLabel branchIdLabel = new JLabel("" + employee.getBranchId());
-        branchIdLabel.setBounds(118, 144, 200, 22); // Adjust bounds as needed
+        branchIdLabel.setBounds(118, 139, 200, 22); // Adjust bounds as needed
         branchIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
         branchIdLabel.setForeground(Color.BLACK);
 
@@ -330,14 +330,13 @@ public class BranchManagerUI extends JFrame {
         // Add the label to the employee panel
         employeePanel.add(employeeLabel);
 
-        // Create and add the "Add Cashier" button
-        RoundedButton addCashierButton = new RoundedButton("Add Employee", 20);
-        addCashierButton.setBounds(employeePanel.getWidth()/3, 570, 280, 50);
-        addCashierButton.setBackground(new Color(0, 102, 204));
-        addCashierButton.setForeground(Color.WHITE);
-        addCashierButton.setFont(new Font("Arial", Font.BOLD, 16));
+        // Create and add the "Add EMp" button
+        RoundedButton addEmployee = new RoundedButton("Add Employee", 20);
+        addEmployee.setBounds(employeePanel.getWidth()/3, 570, 280, 50);
+        addEmployee.setForeground(Color.black);
+        addEmployee.setFont(new Font("Arial", Font.BOLD, 16));
 
-        addCashierButton.addActionListener(e -> {
+        addEmployee.addActionListener(e -> {
             // Add Cashier Logic
             String [] positions={"Cashier","Data Operator"};
             try {
@@ -349,7 +348,7 @@ public class BranchManagerUI extends JFrame {
         });
 
         // Add Cashier button to the employee panel
-        employeePanel.add(addCashierButton);
+        employeePanel.add(addEmployee);
 
 
 
@@ -698,7 +697,7 @@ public class BranchManagerUI extends JFrame {
         XYPlot plot = (XYPlot) chart.getPlot();
         plot.setDomainPannable(true);  // Allow horizontal panning
         plot.setRangePannable(true);   // Allow vertical panning
-        plot.setBackgroundPaint(new Color(200, 229, 220));
+        plot.setBackgroundPaint(new Color(85,92,117));
 
         // Dynamically set the Y-axis range based on the maximum profit
         double upperBound = Math.ceil(maxProfit * 1.1); // Add 10% buffer to the maximum value
@@ -809,7 +808,7 @@ public class BranchManagerUI extends JFrame {
 
         // Create and add the Profit Chart Panel
         RoundedPanel profitChartPanel = createChartWithZoomButton();
-        profitChartPanel.setBounds(menuWidth -80,(reportsPanel.getHeight() ) / 2 +12 ,455, 235); // Width and height of the button
+        profitChartPanel.setBounds(menuWidth -96,(reportsPanel.getHeight() ) / 2 +10 ,455, 235); // Width and height of the button
         // Set the size and position as needed
         reportsPanel.add(profitChartPanel);
 

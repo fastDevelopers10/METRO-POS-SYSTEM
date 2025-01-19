@@ -1,17 +1,28 @@
 package View;
 
 import Controller.*;
+import DAO.TransactionDAO;
 import Model.Branch;
 import Model.Employee;
+import Model.MyPrinter;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
+import org.jfree.chart.plot.PiePlot3D;
+import org.jfree.data.general.DefaultPieDataset;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.print.PrinterJob;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.List;
 import java.sql.SQLException;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Map;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.*;
@@ -48,6 +59,8 @@ public class SuperAdminUI extends JFrame {
         mainContentPanel.setBounds(265, 0, 1090, 710);
         mainContentPanel.setBackground(new Color(0, 0, 0, 0));
         mainContentPanel.setOpaque(false);
+
+
         add(createBackgroundLabel(mainContentPanel));
 
         mainContentPanel.add(createDashboardPanel(), "Dashboard");
@@ -226,6 +239,160 @@ public class SuperAdminUI extends JFrame {
             }
         }
     }
+    // Method to create the main panel with pie chart and zoom button
+    private JPanel createPieChartWithZoomButton() {
+        // Create a panel for the pie chart
+        RoundedPanel panel = new RoundedPanel(23);
+        panel.setBackground(Color.WHITE);
+        panel.setLayout(new BorderLayout());
+        panel.setPreferredSize(new Dimension(200, 200));
+
+        // Retrieve total profit for each branch and prepare dataset
+        Map<Integer, Double> branchProfits = TransactionDAO.getBranchProfits();  // Get total profit for all branches
+
+        // Create the pie chart (pass the branch profit data)
+        JFreeChart pieChart = createPieChart(branchProfits);  // Pass the profit data
+
+        // Add the pie chart to the panel
+        ChartPanel chartPanel = new ChartPanel(pieChart);
+        panel.add(chartPanel, BorderLayout.CENTER);
+
+        // Create a wrapper panel for the button
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 3)); // Center alignment with padding
+        buttonPanel.setOpaque(false); // Ensure the wrapper panel is transparent
+
+        // Create the zoom button
+        RoundedButton zoomButton = new RoundedButton("Preview", 20);
+        zoomButton.addActionListener(e -> openZoomedPieChartFrame(pieChart, branchProfits));
+
+        // Optional: Set a fixed size for the button to ensure consistent appearance
+        zoomButton.setPreferredSize(new Dimension(120, 40)); // Adjust size if necessary
+
+        buttonPanel.add(zoomButton);
+
+        // Add the wrapper panel to the main panel
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return panel;
+    }
+
+    // Method to open a zoomed pie chart in a new frame
+    private void openZoomedPieChartFrame(JFreeChart pieChart, Map<Integer, Double> branchProfits) {
+        // Create a new frame for the zoomed pie chart
+        JFrame zoomFrame = new JFrame("Zoomed Pie Chart - Branch Profits");
+        zoomFrame.setUndecorated(true);  // Optional: Remove window decorations for a cleaner look
+        zoomFrame.setSize(1920, 1080);   // Set the size of the window (you can adjust it as needed)
+        zoomFrame.setLayout(null);       // Use null layout for precise placement
+        zoomFrame.setBackground(new Color(0, 0, 0, 150));  // Semi-transparent black background for the zoom frame
+        zoomFrame.setLocationRelativeTo(null);  // Center the zoom frame on the screen
+
+        // Create a rounded panel to hold the pie chart
+        RoundedPanel chartPanel = new RoundedPanel(18);  // Rounded corners with radius 18
+        chartPanel.setSize(800, 600);  // Set the size of the panel (adjust as needed)
+        chartPanel.setLocation(
+                (zoomFrame.getWidth() - chartPanel.getWidth()) / 2,   // Center horizontally
+                (zoomFrame.getHeight() - chartPanel.getHeight()) / 3    // Position vertically with some padding
+        );
+        chartPanel.setOpaque(true);
+        chartPanel.setBackground(Color.WHITE);  // Set the background color to white
+        chartPanel.setLayout(new BorderLayout());
+
+        // Add the pie chart to the panel
+        ChartPanel largerChartPanel = new ChartPanel(pieChart);
+        largerChartPanel.setPreferredSize(new Dimension(800, 600));  // Set preferred size for the chart
+        chartPanel.add(largerChartPanel, BorderLayout.CENTER);
+
+        // Add the pie chart and sales data panel to the zoom frame
+        zoomFrame.add(chartPanel);
+
+        // Create a button panel with "Print" and "Close" buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.setOpaque(false); // Transparent background
+        buttonPanel.setBounds(
+                (chartPanel.getX()) + 5, // Align with chart horizontally
+                chartPanel.getY() + chartPanel.getHeight() + 10,    // Position below the chart
+                chartPanel.getWidth(),
+                50
+        );
+
+        // Add a print button
+        RoundedButton printButton = new RoundedButton("Print", 20);
+        printButton.addActionListener(printEvent -> {
+            try {
+                // Create a string representation of the chart data
+                String chartData = "Chart Data: \n"; // Replace this with actual chart data extraction logic
+                chartData += "Total Profit by Branch:\n";
+
+                // Append the total profits for each branch to the chart data
+                for (Map.Entry<Integer, Double> entry : branchProfits.entrySet()) {
+                    chartData += "Branch " + entry.getKey() + ": " + entry.getValue() + " units\n";
+                }
+
+                // Use MyPrinter to print the chart data
+                MyPrinter.MyPrinterWithSalesData printer = new MyPrinter.MyPrinterWithSalesData();
+                printer.setData(chartData);
+
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setPrintable(printer);
+
+                if (job.printDialog()) {
+                    job.print();
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(zoomFrame, "Error printing chart: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        buttonPanel.add(printButton);
+
+        // Add a close button
+        RoundedButton closeButton = new RoundedButton("Close", 20);
+        closeButton.addActionListener(closeEvent -> zoomFrame.dispose());
+        buttonPanel.add(closeButton);
+
+        // Add components to the frame
+        zoomFrame.add(buttonPanel);
+
+        // Display the zoom frame
+        zoomFrame.setVisible(true);
+    }
+
+
+    // Method to create the pie chart with total profit for all branches
+    public JFreeChart createPieChart(Map<Integer, Double> branchProfits) {
+        // Create a dataset for the pie chart
+        DefaultPieDataset dataset = new DefaultPieDataset();
+
+        // Populate the dataset with total profit for each branch
+        for (Map.Entry<Integer, Double> entry : branchProfits.entrySet()) {
+            // Use branchId as the label and total profit as the value
+            dataset.setValue("Branch " + entry.getKey(), entry.getValue());
+        }
+
+        // Create a 3D Pie Chart
+        JFreeChart pieChart = ChartFactory.createPieChart3D(
+                "Total Profit by Branch",  // Chart title
+                dataset,                   // Dataset
+                true,                      // Include legend
+                true,                      // Tooltips enabled
+                false                      // URLs disabled
+        );
+
+        // Customize the plot
+        PiePlot3D plot = (PiePlot3D) pieChart.getPlot();
+
+        // Customize shadow (simulates depth)
+        plot.setShadowXOffset(3);  // Horizontal shadow
+        plot.setShadowYOffset(3);  // Vertical shadow
+        plot.setShadowPaint(Color.GRAY);  // Shadow color
+
+        // Set custom label generator to include both branch and profit
+        plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} ({2})",
+                NumberFormat.getNumberInstance(),
+                NumberFormat.getPercentInstance()));  // {0}: branch, {1}: profit, {2}: percentage
+
+        return pieChart;
+    }
+
 
 
     private void logoutAction() {
@@ -250,12 +417,21 @@ public class SuperAdminUI extends JFrame {
     private JPanel createDashboardPanel() throws SQLException {
         JPanel panelDashboard = new JPanel(null);
         panelDashboard.setBounds(230, 0, 1090, 710);
+
+        //chart panel
+        //pie chart panel
+        JPanel pieChartPanel = createPieChartWithZoomButton();
+        pieChartPanel.setBounds(550, 132, 390, 320); // Width and height of the button
+        panelDashboard.add(pieChartPanel);
+
         JLabel lblDashboard=new JLabel();
         lblDashboard.setBounds(0, 0, 1090, 710);
         lblDashboard.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/sa.png")));
         addTitle(lblDashboard);
         panelDashboard.add(lblDashboard);
         addDashboardData(lblDashboard);
+
+
 
         return panelDashboard;
     }
@@ -790,6 +966,7 @@ public class SuperAdminUI extends JFrame {
             }
         }
     }
+
 
     private void bmrefreshTable(List<Employee> branchManagers, String selectedItem) {
         tableModel.setRowCount(0); // Clear existing rows

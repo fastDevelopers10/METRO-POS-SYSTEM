@@ -22,7 +22,7 @@ public class SuperAdminUI extends JFrame {
     private CardLayout cardLayout;
 
     private static final Font TITLE_FONT = new Font("Century Gothic", Font.BOLD, 24);
-    private static final Font LABEL_FONT = new Font("Century Gothic", Font.BOLD, 16);
+    private static final Font LABEL_FONT = new Font("Century Gothic", Font.BOLD, 21);
     private static final Font DATA_FONT = new Font("Century Gothic", Font.PLAIN, 26);
     private static final Font BUTTON_FONT = new Font("Century Gothic", Font.PLAIN, 16);
     private static final Font BASIC_FONT = new Font("Century Gothic", Font.PLAIN, 14);
@@ -252,7 +252,7 @@ public class SuperAdminUI extends JFrame {
         panelDashboard.setBounds(230, 0, 1090, 710);
         JLabel lblDashboard=new JLabel();
         lblDashboard.setBounds(0, 0, 1090, 710);
-        lblDashboard.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/sa.png")));
+        lblDashboard.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/saDashboard.png")));
         addTitle(lblDashboard);
         panelDashboard.add(lblDashboard);
         addDashboardData(lblDashboard);
@@ -306,17 +306,17 @@ public class SuperAdminUI extends JFrame {
         ProductController controller = new ProductController();
 
 
-        addLabel(panel, "Total Products", 55, 140, 200, 20, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getProductRowCount()), 55, 190, 200, 24, DATA_FONT);
+        addLabel(panel, "Total Products", 70, 180, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getProductRowCount()), 70, 240, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Remaining Products", 55, 300, 200, 20, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 55, 340, 200, 24, DATA_FONT);
+        addLabel(panel, "Remaining Products", 370, 180, 250, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 370, 240, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Profit", 300, 300, 200, 20, LABEL_FONT);
-        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 300, 340, 200, 24, DATA_FONT);
+        addLabel(panel, "Profit", 670, 180, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 670, 240, 200, 24, DATA_FONT);
 
-        JLabel lblSalesVal = addLabel(panel, "Loading...", 300, 190, 200, 24, DATA_FONT);
-        addLabel(panel, "Sales", 300, 140, 200, 20, LABEL_FONT);
+        JLabel lblSalesVal = addLabel(panel, "Loading...", 670, 490, 200, 24, DATA_FONT);
+        addLabel(panel, "Sales", 670, 430, 200, 40, LABEL_FONT);
         loadSalesValue(lblSalesVal);
 
         addDashboardButtons(panel);
@@ -324,10 +324,12 @@ public class SuperAdminUI extends JFrame {
 
     private void addDashboardButtons(JLabel panel) {
         JButton btnProfitReport = createButton("Profit Report", 5, 80, 200, 30);
+        btnProfitReport.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnProfitReport.addActionListener(e -> cardLayout.show(mainContentPanel, "Profit Report"));
         panel.add(btnProfitReport);
 
         JButton btnSalesReport = createButton("Sales Report", 155, 80, 200, 30);
+        btnSalesReport.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSalesReport.addActionListener(e-> cardLayout.show(mainContentPanel, "Sales Report"));
         panel.add(btnSalesReport);
     }
@@ -382,10 +384,12 @@ public class SuperAdminUI extends JFrame {
         button.setBorderPainted(false);
         button.setForeground(FONT_COLOR);
         button.setFont(BUTTON_FONT);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
     private void addBranchManagerData(JPanel panel) throws SQLException {
         String[] statusOptions = {"All Branch Managers", "Active", "Inactive"};
         bmstatusDropdown = new JComboBox<>(statusOptions);
+        bmstatusDropdown.setCursor(new Cursor(Cursor.HAND_CURSOR));
         bmstatusDropdown.setBackground(Color.decode("#e6e6e7"));
         bmstatusDropdown.setForeground(Color.BLACK);
         bmstatusDropdown.setFont(new Font("Century Gothic", Font.BOLD, 16));
@@ -397,11 +401,13 @@ public class SuperAdminUI extends JFrame {
         // Button Panel with Add and Update buttons
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton addButton = new JButton("Add Branch Manager");
+        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         addButton.setBackground(Color.WHITE);
         addButton.setForeground(Color.BLACK);
         addButton.setFont(new Font("Century Gothic", Font.PLAIN, 18));
 
         JButton updateButton = new JButton("Update Branch Manager");
+        updateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         updateButton.setBackground(Color.WHITE);
         updateButton.setForeground(Color.BLACK);
         updateButton.setFont(new Font("Century Gothic", Font.PLAIN, 18));
@@ -573,6 +579,7 @@ public class SuperAdminUI extends JFrame {
 
         String[] statusOptions = {"All Branches", "Active", "Closed"};
         statusDropdown = new JComboBox<>(statusOptions);
+        statusDropdown.setCursor(new Cursor(Cursor.HAND_CURSOR));
         statusDropdown.setBackground(Color.decode("#e6e6e7"));
         statusDropdown.setForeground(Color.BLACK);
         statusDropdown.setFont(new Font("Century Gothic", Font.BOLD, 16));
@@ -605,11 +612,13 @@ public class SuperAdminUI extends JFrame {
         JButton addButton = new JButton("Add Branch");
         addButton.setBackground(Color.WHITE);
         addButton.setForeground(Color.BLACK);
+        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         addButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
 
         JButton updateButton = new JButton("Update Branch");
         updateButton.setBackground(Color.WHITE);
         updateButton.setForeground(Color.BLACK);
+        updateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         updateButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
 
         buttonPanel.add(addButton);

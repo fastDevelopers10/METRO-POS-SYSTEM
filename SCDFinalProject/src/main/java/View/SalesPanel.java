@@ -62,6 +62,7 @@ public class SalesPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
         JButton printButton = new JButton("Print Sales Report");
+        printButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         printButton.setBackground(new Color(200, 229, 220));
         printButton.setFont(new Font("Century Gothic", Font.BOLD, 16));
         printButton.setForeground(Color.BLACK);
@@ -115,6 +116,7 @@ public class SalesPanel extends JPanel {
     private void initializeComponents(JPanel panel) {
         String[] timeRanges = {"Today", "Weekly", "Monthly", "Yearly", "Custom Range"};
         timeRangeDropdown = new JComboBox<>(timeRanges);
+        timeRangeDropdown.setCursor(new Cursor(Cursor.HAND_CURSOR));
         timeRangeDropdown.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -141,6 +143,7 @@ public class SalesPanel extends JPanel {
         customRangePanel.add(endDateField);
 
         JButton fetchSalesButton = new JButton("Fetch Sales");
+        fetchSalesButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         fetchSalesButton.setBackground(new Color(200, 229, 220));
         fetchSalesButton.setFont(new Font("Century Gothic", Font.PLAIN, 16));
         fetchSalesButton.setForeground(Color.BLACK);

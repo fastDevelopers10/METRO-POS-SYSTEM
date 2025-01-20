@@ -62,17 +62,16 @@ public class ProfitPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
         JButton printButton = new JButton("Print Profit Report");
+        printButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         printButton.setBackground(new Color(200, 229, 220));
         printButton.setFont(new Font("Century Gothic", Font.BOLD, 16));
         printButton.setForeground(Color.BLACK);
         printButton.addActionListener(e -> {
             try {
-                // Extract table data
                 DefaultTableModel model = (DefaultTableModel) table.getModel();
                 int rowCount = model.getRowCount();
                 int colCount = model.getColumnCount();
 
-                // Prepare data for printing
                 String[] columnHeaders = new String[colCount];
                 for (int col = 0; col < colCount; col++) {
                     columnHeaders[col] = model.getColumnName(col);  // Get column names for headers
@@ -84,21 +83,15 @@ public class ProfitPanel extends JPanel {
                         tableData[row][col] = model.getValueAt(row, col).toString(); // Fill table data
                     }
                 }
-
-                // Title for the printed document (e.g., "Profit Report")
-                String title = "Profit Report"; // You can change this as per your needs
-
-                // Create the inner printer class instance
+                String title = "Profit Report";
                 MyPrinter.MyPrinterWithTableData printerWithData = new MyPrinter.MyPrinterWithTableData();
                 printerWithData.setTableData(columnHeaders, tableData, title); // Set the table data and title
 
-                // Create a PrinterJob object
                 PrinterJob job = PrinterJob.getPrinterJob();
                 job.setPrintable(printerWithData); // Set the printable object (MyPrinterWithTableData)
 
-                // Show the print dialog and print if confirmed
                 if (job.printDialog()) {
-                    job.print(); // Start the print process if the user confirms
+                    job.print();
                 }
             } catch (PrinterException ex) {
                 // Handle any printing errors
@@ -119,7 +112,7 @@ public class ProfitPanel extends JPanel {
 
         String[] timeRanges = {"Today", "Weekly", "Monthly", "Yearly", "Custom Range"};
         timeRangeDropdown = new JComboBox<>(timeRanges);
-
+        timeRangeDropdown.setCursor(new Cursor(Cursor.HAND_CURSOR));
         timeRangeDropdown.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -147,6 +140,7 @@ public class ProfitPanel extends JPanel {
         customRangePanel.add(endDateField);
 
         JButton fetchProfitButton = new JButton("Fetch Profit");
+        fetchProfitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         fetchProfitButton.setBackground(new Color(200, 229, 220));
         fetchProfitButton.setFont(new Font("Century Gothic", Font.BOLD, 16));
         fetchProfitButton.setForeground(Color.BLACK);

@@ -2,25 +2,19 @@ package View;
 
 import Controller.LoginController;
 import Controller.SuperAdminLoginController;
-import DAO.SuperAdminDAO;
 import Model.Employee;
+
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.InputStream;
 import java.net.URL;
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.net.URL;
-import java.sql.SQLException;
 import java.util.Objects;
 
 public class NewLoginFrame extends JFrame {

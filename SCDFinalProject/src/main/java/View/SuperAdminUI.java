@@ -37,7 +37,7 @@ public class SuperAdminUI extends JFrame {
     private static final Font DATA_FONT = new Font("Century Gothic", Font.PLAIN, 26);
     private static final Font BUTTON_FONT = new Font("Century Gothic", Font.PLAIN, 16);
     private static final Font BASIC_FONT = new Font("Century Gothic", Font.PLAIN, 14);
-    private static final Color FONT_COLOR = Color.BLACK;
+    private static final Color FONT_COLOR = Color.white;
 
     private JLabel lblBackground;
     private BranchController branchController;
@@ -56,7 +56,7 @@ public class SuperAdminUI extends JFrame {
         this.branchController=new BranchController();
         this.profitPanel = new ProfitPanel();
         mainContentPanel = new JPanel(new CardLayout());
-        mainContentPanel.setBounds(265, 0, 1090, 710);
+        mainContentPanel.setBounds(265, 0, 1050, 720);
         mainContentPanel.setBackground(new Color(0, 0, 0, 0));
         mainContentPanel.setOpaque(false);
 
@@ -104,16 +104,53 @@ public class SuperAdminUI extends JFrame {
 
     private void setupFrame() {
         setTitle("Super Admin");
-        setSize(1320, 710);
+        setSize(1320, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
         setResizable(false);
     }
 
+    private JPanel createDashboardPanel() throws SQLException {
+        // Create a JLayeredPane to handle layers for the background and pie chart
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setBounds(0, 0, 1050, 720);
+
+        // Create a JPanel for the dashboard
+        JPanel panelDashboard = new JPanel();
+        panelDashboard.setLayout(null);  // Use null layout for custom positioning
+        panelDashboard.setBounds(0, 0, 1050, 720);
+
+        // Create and load the background image
+        ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("images/SUData.png"));
+        Image img = icon.getImage().getScaledInstance(1050, 720, Image.SCALE_SMOOTH);  // Scale to fit the panel size
+
+        // Create a JLabel for the background image
+        JLabel lblDashboard = new JLabel(new ImageIcon(img));
+
+        // Add the background image label to the layered pane (this will be the bottom layer)
+        layeredPane.add(lblDashboard, Integer.valueOf(0));
+        lblDashboard.setBounds(-12, 0, 1050, 720);
+
+        // Create and add the pie chart panel
+        JPanel pieChartPanel = createPieChartWithZoomButton();
+        pieChartPanel.setBounds(61, 398, 424, 225);  // Set the bounds of the pie chart
+
+        // Add the pie chart panel to the layered pane (this will be on top of the background)
+        layeredPane.add(pieChartPanel, Integer.valueOf(1));
+
+        // Add the layered pane to the main dashboard panel
+
+
+        addTitle(lblDashboard);
+        addDashboardData(lblDashboard);
+        panelDashboard.add(layeredPane);
+        return panelDashboard;
+    }
+
     private JLabel createBackgroundLabel(JPanel contentPanel) {
         lblBackground = new JLabel();
-        lblBackground.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/side menu.png")));
-        lblBackground.setBounds(0, 0, 1320, 710);
+        lblBackground.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/SideMenu.png")));
+        lblBackground.setBounds(0, 0, 1320, 720);
         createSidebarMenu(lblBackground);
         lblBackground.add(contentPanel);
         return lblBackground;
@@ -128,20 +165,19 @@ public class SuperAdminUI extends JFrame {
             return null;
         }
     }
-
     private void createSidebarMenu(JLabel lblBackground) {
         sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(null);
         sideMenuPanel.setOpaque(false);
 
-        addLabelToSidebar(lblBackground, "Position: Super Admin", 97, 142, 250, 30, BASIC_FONT);
+        addLabelToSidebar(lblBackground, "Super Admin", 97, 142, 250, 30, BASIC_FONT);
         String username = SuperAdminLoginController.getUsername();
         addLabelToSidebar(lblBackground, username, 115, 118, 220, 40, LABEL_FONT);
         addLabelToSidebar(lblBackground, "Menu", 115, 215, 100, 20, new Font("DM Sans", Font.PLAIN, 14));
 
         int menuYPosition = 250;
-        int menuWidth = 230;
-        sideMenuPanel.setBounds(14, menuYPosition, menuWidth, getHeight() - menuYPosition);
+        int menuWidth = 260;
+        sideMenuPanel.setBounds(0, menuYPosition, menuWidth, getHeight() - menuYPosition);
 
         String[][] menuItems = {
                 {"Dashboard", "images/icons/dash_icon.png"},
@@ -161,27 +197,21 @@ public class SuperAdminUI extends JFrame {
             String iconPath = menuItem[1];
 
             SideMenuButton button = new SideMenuButton(text, iconPath);
-            button.setBounds(0, buttonYPosition, menuWidth, buttonHeight);
+            button.setBounds(0, buttonYPosition, menuWidth + 20, buttonHeight);
+            button.setForeground(Color.white);
 
-            button.setBackground(Color.WHITE);
-            button.setForeground(Color.BLACK);
-
+            // Add ActionListener to the button
             button.addActionListener(e -> {
-                if (activeButton[0] != null) {
-                    activeButton[0].setBackground(Color.WHITE); // Default background
-                }
-                button.setBackground(new Color(200, 229, 220));
-                activeButton[0] = button; // Update active button
-
+                // Handle menu item action
                 try {
-                    handleMenuAction(text);
+                    handleMenuAction(button.getText());
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
             });
 
             sideMenuPanel.add(button);
-            buttonYPosition += buttonHeight ; // Add space between buttons
+            buttonYPosition += buttonHeight; // Add space between buttons
         }
         lblBackground.add(sideMenuPanel);
     }
@@ -198,8 +228,7 @@ public class SuperAdminUI extends JFrame {
                 cardLayout.show(mainContentPanel, "Branches");
                 break;
             case "Change Password":
-
-                NewUpdatePassword frame=new NewUpdatePassword(new Employee());
+                NewUpdatePassword frame = new NewUpdatePassword(new Employee());
                 frame.setVisible(true);
 
                 // Add WindowListener to reset active button when the window is closed
@@ -414,27 +443,7 @@ public class SuperAdminUI extends JFrame {
         }
     }
 
-    private JPanel createDashboardPanel() throws SQLException {
-        JPanel panelDashboard = new JPanel(null);
-        panelDashboard.setBounds(230, 0, 1090, 710);
 
-        //chart panel
-        //pie chart panel
-        JPanel pieChartPanel = createPieChartWithZoomButton();
-        pieChartPanel.setBounds(55, 350, 555, 275); // Width and height of the button
-        panelDashboard.add(pieChartPanel);
-
-        JLabel lblDashboard=new JLabel();
-        lblDashboard.setBounds(0, 0, 1090, 710);
-        lblDashboard.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/Super Admin Dashboard.png")));
-        addTitle(lblDashboard);
-        panelDashboard.add(lblDashboard);
-        addDashboardData(lblDashboard);
-
-
-
-        return panelDashboard;
-    }
 
     private JPanel createBranchPanel() throws SQLException {
         JPanel panelBranch = new JPanel(null);
@@ -465,7 +474,7 @@ public class SuperAdminUI extends JFrame {
 
         JLabel lblTitle = new JLabel(text);
         lblTitle.setFont(TITLE_FONT);
-        lblTitle.setForeground(FONT_COLOR);
+        lblTitle.setForeground(Color.BLACK);
         lblTitle.setBounds(60, 18, 300, 60);
         panel.add(lblTitle);
     }
@@ -473,7 +482,7 @@ public class SuperAdminUI extends JFrame {
     private void addTitle(JLabel panel) {
         JLabel lblTitle = new JLabel("Dashboard");
         lblTitle.setFont(TITLE_FONT);
-        lblTitle.setForeground(FONT_COLOR);
+        lblTitle.setForeground(Color.BLACK);
         lblTitle.setBounds(50, 18, 300, 60);
         panel.add(lblTitle);
     }
@@ -482,29 +491,29 @@ public class SuperAdminUI extends JFrame {
         ProductController controller = new ProductController();
 
 
-        addLabel(panel, "Total Products", 70, 165, 200, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getProductRowCount()), 70, 240, 200, 24, DATA_FONT);
+        addLabel(panel, "Total Products", 80, 210, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getProductRowCount()), 80, 260, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Remaining Products", 370, 165, 250, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 370, 240, 200, 24, DATA_FONT);
+        addLabel(panel, "Stocks", 410, 210, 250, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 410, 260, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Profit", 670, 165, 200, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 670, 240, 200, 24, DATA_FONT);
+        addLabel(panel, "Net Profit", 740, 210, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 740, 260, 200, 24, DATA_FONT);
 
-        JLabel lblSalesVal = addLabel(panel, "Loading...", 670, 448, 200, 24, DATA_FONT);
-        addLabel(panel, "Sales", 670, 373, 200, 40, LABEL_FONT);
+        JLabel lblSalesVal = addLabel(panel, "Loading...", 740, 490, 200, 24, DATA_FONT);
+        addLabel(panel, "Sales", 740, 440, 200, 40, LABEL_FONT);
         loadSalesValue(lblSalesVal);
 
         addDashboardButtons(panel);
     }
 
     private void addDashboardButtons(JLabel panel) {
-        JButton btnProfitReport = createButton("Profit Report", 5, 80, 200, 30);
+        JButton btnProfitReport = createButton("Profit Report", 6, 79, 200, 30);
         btnProfitReport.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnProfitReport.addActionListener(e -> cardLayout.show(mainContentPanel, "Profit Report"));
         panel.add(btnProfitReport);
 
-        JButton btnSalesReport = createButton("Sales Report", 155, 80, 200, 30);
+        JButton btnSalesReport = createButton("Sales Report", 154, 79, 200, 30);
         btnSalesReport.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSalesReport.addActionListener(e-> cardLayout.show(mainContentPanel, "Sales Report"));
         panel.add(btnSalesReport);
@@ -534,7 +543,7 @@ public class SuperAdminUI extends JFrame {
         JLabel label = new JLabel(text);
         label.setBounds(x, y, width, height);
         label.setFont(font);
-        label.setForeground(FONT_COLOR);
+        label.setForeground(Color.BLACK);
         panel.add(label);
         return label;
     }
@@ -549,16 +558,24 @@ public class SuperAdminUI extends JFrame {
     private void addLabelToSidebar(JLabel lblBackground, String text, int x, int y, int width, int height, Font font) {
         JLabel label = new JLabel(text);
         label.setBounds(x, y, width, height);
-        label.setFont(font);
+
+        // Make the label text italic
+        Font italicFont = font.deriveFont(Font.ITALIC);
+        label.setFont(italicFont);
+
         label.setForeground(FONT_COLOR);
+        if(text.equalsIgnoreCase("Super Admin")) {
+            // Additional logic for "Super Admin" label, if needed
+        }
         lblBackground.add(label);
     }
+
 
     private void styleButton(JButton button) {
         button.setFocusPainted(false);
         button.setContentAreaFilled(false);
         button.setBorderPainted(false);
-        button.setForeground(FONT_COLOR);
+        button.setForeground(Color.black);
         button.setFont(BUTTON_FONT);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }

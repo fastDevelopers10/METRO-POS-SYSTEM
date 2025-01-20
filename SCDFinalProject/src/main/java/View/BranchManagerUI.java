@@ -113,7 +113,7 @@ public class BranchManagerUI extends JFrame {
         sideMenuPanel.setLayout(null); // Use null layout for manual positioning
         sideMenuPanel.setBackground(Color.WHITE);
 
-        sideMenuPanel.setBounds(0, menuYPosition, menuWidth, getHeight() - menuYPosition);
+        sideMenuPanel.setBounds(0, menuYPosition+30, menuWidth, getHeight() - menuYPosition);
         sideMenuPanel.setOpaque(false);
 
         // Button text and optional icon paths
@@ -215,19 +215,26 @@ public class BranchManagerUI extends JFrame {
         }
 
         JLabel employeeName = new JLabel("" + employee.getUsername());
-        employeeName.setBounds(82, 86, 200, 22); // Adjust bounds as needed
+        employeeName.setBounds(82, 94, 200, 22); // Adjust bounds as needed
         employeeName.setFont(new Font("Arial", Font.BOLD, 16));
-        employeeName.setForeground(Color.BLACK);
+        employeeName.setForeground(Color.white);
+
+        JLabel posLabel = new JLabel("" + employee.getPosition());
+        posLabel.setBounds(72, 120, 180, 14); // Adjust bounds as needed
+        posLabel.setFont(new Font("Arial", Font.ITALIC, 11));
+        posLabel.setForeground(Color.white);
 
         // Display Branch ID
         JLabel branchIdLabel = new JLabel("" + employee.getBranchId());
-        branchIdLabel.setBounds(118, 139, 200, 22); // Adjust bounds as needed
+        branchIdLabel.setBounds(118, 175, 200, 22); // Adjust bounds as needed
         branchIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        branchIdLabel.setForeground(Color.BLACK);
+        branchIdLabel.setForeground(Color.white);
 
         // Add components to the background panel
         backgroundPanel.add(sideMenuPanel);
         backgroundPanel.add(branchIdLabel);
+        backgroundPanel.add(posLabel);
+
         backgroundPanel.add(employeeName);
 
 

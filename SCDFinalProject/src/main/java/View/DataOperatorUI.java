@@ -80,8 +80,8 @@ public class DataOperatorUI extends JFrame {
         nameLabel.setForeground(Color.WHITE);
         nameLabel.setBounds(100, 135, 300, 30);
 
-        JLabel positionLabel = new JLabel("Position: " + role);
-        positionLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
+        JLabel positionLabel = new JLabel(role);
+        positionLabel.setFont(new Font("Century Gothic", Font.ITALIC, 11));
         positionLabel.setForeground(Color.WHITE);
         positionLabel.setBounds(100, 155, 300, 30);
 
@@ -124,8 +124,8 @@ public class DataOperatorUI extends JFrame {
         sideMenuPanel.setLayout(new GridBagLayout());
         sideMenuPanel.setBackground(Color.decode("#2D344D"));
         int menuYPosition = 270;
-        int menuWidth = 280;
-        sideMenuPanel.setBounds(10, menuYPosition, menuWidth, getHeight() - menuYPosition);
+        int menuWidth = 302;
+        sideMenuPanel.setBounds(0, menuYPosition, menuWidth, getHeight() - menuYPosition);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -145,8 +145,8 @@ public class DataOperatorUI extends JFrame {
 
         for (int i = 0; i < buttonTexts.length; i++) {
             SideMenuButton button = new SideMenuButton(buttonTexts[i], iconPaths[i]);
-
             // Add action listener specific to each button
+            button.setPreferredSize(new Dimension(265, 50)); // Adjust width and height as needed
             switch (i) {
                 case 0: // Dashboard button
                     button.addActionListener(e -> {

@@ -281,7 +281,7 @@ public class SuperAdminUI extends JFrame {
         // Create a new frame for the zoomed pie chart
         JFrame zoomFrame = new JFrame("Zoomed Pie Chart - Branch Profits");
         zoomFrame.setUndecorated(true);  // Optional: Remove window decorations for a cleaner look
-        zoomFrame.setSize(1920, 1080);   // Set the size of the window (you can adjust it as needed)
+        zoomFrame.setSize(1320, 700);   // Set the size of the window (you can adjust it as needed)
         zoomFrame.setLayout(null);       // Use null layout for precise placement
         zoomFrame.setBackground(new Color(0, 0, 0, 150));  // Semi-transparent black background for the zoom frame
         zoomFrame.setLocationRelativeTo(null);  // Center the zoom frame on the screen
@@ -421,12 +421,12 @@ public class SuperAdminUI extends JFrame {
         //chart panel
         //pie chart panel
         JPanel pieChartPanel = createPieChartWithZoomButton();
-        pieChartPanel.setBounds(550, 132, 390, 320); // Width and height of the button
+        pieChartPanel.setBounds(55, 350, 555, 275); // Width and height of the button
         panelDashboard.add(pieChartPanel);
 
         JLabel lblDashboard=new JLabel();
         lblDashboard.setBounds(0, 0, 1090, 710);
-        lblDashboard.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/saDashboard.png")));
+        lblDashboard.setIcon(new ImageIcon(getClass().getClassLoader().getResource("images/Super Admin Dashboard.png")));
         addTitle(lblDashboard);
         panelDashboard.add(lblDashboard);
         addDashboardData(lblDashboard);
@@ -482,17 +482,17 @@ public class SuperAdminUI extends JFrame {
         ProductController controller = new ProductController();
 
 
-        addLabel(panel, "Total Products", 70, 180, 200, 40, LABEL_FONT);
+        addLabel(panel, "Total Products", 70, 165, 200, 40, LABEL_FONT);
         addLabel(panel, String.valueOf(controller.getProductRowCount()), 70, 240, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Remaining Products", 370, 180, 250, 40, LABEL_FONT);
+        addLabel(panel, "Remaining Products", 370, 165, 250, 40, LABEL_FONT);
         addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 370, 240, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Profit", 670, 180, 200, 40, LABEL_FONT);
+        addLabel(panel, "Profit", 670, 165, 200, 40, LABEL_FONT);
         addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 670, 240, 200, 24, DATA_FONT);
 
-        JLabel lblSalesVal = addLabel(panel, "Loading...", 670, 490, 200, 24, DATA_FONT);
-        addLabel(panel, "Sales", 670, 430, 200, 40, LABEL_FONT);
+        JLabel lblSalesVal = addLabel(panel, "Loading...", 670, 448, 200, 24, DATA_FONT);
+        addLabel(panel, "Sales", 670, 373, 200, 40, LABEL_FONT);
         loadSalesValue(lblSalesVal);
 
         addDashboardButtons(panel);

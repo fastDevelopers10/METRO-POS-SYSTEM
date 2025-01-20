@@ -34,7 +34,6 @@ public class BranchDAO {
                         rs.getString("phone"),
                         rs.getInt("no_of_employees")
                 );
-                System.out.println(branch);
                 branches.add(branch);
             }
 

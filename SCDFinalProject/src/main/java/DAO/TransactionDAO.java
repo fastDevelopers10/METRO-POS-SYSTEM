@@ -606,4 +606,31 @@ public class TransactionDAO {
         }
         return result;
     }
+    public static Map<Integer, Double> getBranchProfits() {
+        // SQL query to get total profit per branch
+        String query = "SELECT branch_id, SUM(profit) AS total_profit FROM transaction GROUP BY branch_id";
+
+        Map<Integer, Double> branchProfits = new HashMap<>();
+
+        // Establishing connection to the database
+        try (Connection conn = DBConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            // Iterating through the result set
+            while (rs.next()) {
+                int branchId = rs.getInt("branch_id");
+                double totalProfit = rs.getDouble("total_profit");
+
+                // Adding branch profit to the map
+                branchProfits.put(branchId, totalProfit);
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return branchProfits;
+    }
 }

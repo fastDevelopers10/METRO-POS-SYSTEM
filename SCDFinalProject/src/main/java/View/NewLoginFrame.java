@@ -66,6 +66,7 @@ public class NewLoginFrame extends JFrame {
         JLabel heading = new JLabel("WELCOME TO METRO!", SwingConstants.CENTER);
         heading.setFont(new Font("Century Gothic", Font.BOLD, 34));
         heading.setForeground(Color.decode("#052A76"));
+
         heading.setBounds(110, 100, 400, 70);
         leftPanel.add(heading);
 
@@ -110,7 +111,7 @@ public class NewLoginFrame extends JFrame {
 
         // Right panel: Black background with login elements
         JPanel rightPanel = new JPanel(null);
-        rightPanel.setBackground(Color.white);
+        rightPanel.setBackground(new Color(45, 52, 77));
         //255, 245, 238
         //255, 255, 240
         //248, 248, 255 ghost white
@@ -125,14 +126,15 @@ public class NewLoginFrame extends JFrame {
         // Heading
         JLabel lblHeading = new JLabel("LETS GET STARTED", SwingConstants.CENTER);
         lblHeading.setFont(new Font("Century Gothic", Font.BOLD, 34));
-        lblHeading.setForeground(Color.decode("#052A76"));
+        lblHeading.setForeground(Color.WHITE);
+        lblHeading.setBounds(110, 100, 400, 70);
         lblHeading.setBounds(150, 70, 300, 50);
         rightPanel.add(lblHeading);
 
         // Role label and dropdown
-        JLabel lblRole = new JLabel("User Type:");
+        JLabel lblRole = new JLabel("User Type");
         lblRole.setFont(new Font("Century Gothic", Font.BOLD, 18));
-        lblRole.setForeground(Color.BLACK);
+        lblRole.setForeground(Color.white);
         lblRole.setBounds(100, 150, 100, 30);  // Positioned above the dropdown
         rightPanel.add(lblRole);
 
@@ -142,9 +144,9 @@ public class NewLoginFrame extends JFrame {
         rightPanel.add(roleDropdown);
 
         // Username label and field
-        JLabel lblUsername = new JLabel("Enter Username:");
+        JLabel lblUsername = new JLabel("Username");
         lblUsername.setFont(new Font("Century Gothic", Font.BOLD, 18));
-        lblUsername.setForeground(Color.BLACK);
+        lblUsername.setForeground(Color.WHITE);
         lblUsername.setBounds(100, 240, 150, 30);  // Positioned above the username field
         rightPanel.add(lblUsername);
 
@@ -153,9 +155,9 @@ public class NewLoginFrame extends JFrame {
         txtUsername.setBounds(100, 270, 400, 40);  // Below the username label
         rightPanel.add(txtUsername);
 
-        JLabel lblPassword = new JLabel("Enter Password:");
+        JLabel lblPassword = new JLabel("Password");
         lblPassword.setFont(new Font("Century Gothic", Font.BOLD, 18));
-        lblPassword.setForeground(Color.BLACK);
+        lblPassword.setForeground(Color.WHITE);
         lblPassword.setBounds(100, 340, 150, 30);  // Positioned above the password field
         rightPanel.add(lblPassword);
 
@@ -232,9 +234,9 @@ public class NewLoginFrame extends JFrame {
     private JButton createButton(String text) {
         JButton button = new RoundedButton(text, 8);
         button.setFont(new Font("Century Gothic", Font.BOLD, 20));
-        button.setForeground(Color.black);
+        button.setForeground(Color.white);
 
-         button.setBackground(Color.WHITE);
+         button.setBackground(new Color(45, 52, 77));
 
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));

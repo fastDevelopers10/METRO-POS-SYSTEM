@@ -12,12 +12,18 @@ public class BranchDAO {
     private static final String ADD_BRANCH_QUERY = "INSERT INTO branch (city, name, status, address, phone, no_of_employees) VALUES (?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_BRANCH_QUERY = "UPDATE branch SET city = ?, name = ?, status = ?, address = ?, phone = ?, no_of_employees = ? WHERE branch_id = ?";
 
-    public List<Branch> getAllBranches() {
+     public List<Branch> getAllBranches() {
         List<Branch> branches = new ArrayList<>();
-        try (Connection connection = DBConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_BRANCHES_QUERY);
-             ResultSet rs = preparedStatement.executeQuery()) {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet rs = null;
 
+        try {
+            connection = DBConnection.getConnection();
+            preparedStatement = connection.prepareStatement(GET_ALL_BRANCHES_QUERY);
+            rs = preparedStatement.executeQuery();
+
+            // Accessing the ResultSet inside the try block
             while (rs.next()) {
                 Branch branch = new Branch(
                         rs.getInt("branch_id"),
@@ -28,13 +34,39 @@ public class BranchDAO {
                         rs.getString("phone"),
                         rs.getInt("no_of_employees")
                 );
+                System.out.println(branch);
                 branches.add(branch);
             }
+
         } catch (SQLException ex) {
+            System.err.println("SQL Error while retrieving branches: " + ex.getMessage());
             ex.printStackTrace();
+        } catch (Exception ex) {
+            System.err.println("Unexpected error: " + ex.getMessage());
+            ex.printStackTrace();
+        } finally {
+            // Ensuring resources are properly closed
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (preparedStatement != null) {
+                    preparedStatement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ex) {
+                System.err.println("Error while closing resources: " + ex.getMessage());
+                ex.printStackTrace();
+            }
         }
+
         return branches;
     }
+
+
+
 
     public List<Integer> getAllBranchIds() {
         List<Integer> branchIds = new ArrayList<>();

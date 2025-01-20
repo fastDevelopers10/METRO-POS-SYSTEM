@@ -13,7 +13,7 @@ public class SideMenuButton extends JButton {
     private static final Color PRESSED_TEXT_COLOR = Color.BLACK; // Text color when pressed
 
     public SideMenuButton(String text, String iconPath) {
-        this(text, iconPath, 20); // Default to no border
+        this(text, iconPath, 16); // Default to no border
     }
 
     public SideMenuButton(String text, String iconPath, int fontSize) {

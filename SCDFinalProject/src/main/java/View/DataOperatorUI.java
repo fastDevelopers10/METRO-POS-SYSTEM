@@ -75,14 +75,14 @@ public class DataOperatorUI extends JFrame {
         };
         backgroundPanel.setLayout(null);
         backgroundPanel.setBounds(0, 0, getWidth(), getHeight());
-        JLabel nameLabel = new JLabel("Name: " + name);
+        JLabel nameLabel = new JLabel("Name: "  + name);
         nameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 18));
-        nameLabel.setForeground(Color.BLACK);
+        nameLabel.setForeground(Color.WHITE);
         nameLabel.setBounds(100, 135, 300, 30);
 
         JLabel positionLabel = new JLabel("Position: " + role);
         positionLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
-        positionLabel.setForeground(Color.BLACK);
+        positionLabel.setForeground(Color.WHITE);
         positionLabel.setBounds(100, 155, 300, 30);
 
 
@@ -122,7 +122,7 @@ public class DataOperatorUI extends JFrame {
 
         sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(new GridBagLayout());
-        sideMenuPanel.setBackground(Color.WHITE);
+        sideMenuPanel.setBackground(Color.decode("#2D344D"));
         int menuYPosition = 270;
         int menuWidth = 280;
         sideMenuPanel.setBounds(10, menuYPosition, menuWidth, getHeight() - menuYPosition);

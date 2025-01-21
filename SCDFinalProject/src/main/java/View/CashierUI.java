@@ -312,7 +312,7 @@ backgroundPanel.add(userName);
 
         totalBillLabel = new JLabel("Total: Rs.0");
         totalBillLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
-        totalBillLabel.setForeground(new Color(0, 128, 0));  // Green for total
+        totalBillLabel.setForeground(Color.BLACK);  // Green for total
         totalBillLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
 // Add labels to the labelsPanel

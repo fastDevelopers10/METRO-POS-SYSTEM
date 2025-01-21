@@ -21,39 +21,51 @@ public class RoundedPanel extends JPanel {
         super.paintComponent(g2);
     }
 }
-
-
 class RoundedButton extends JButton {
     private final int cornerRadius;
     private Color hoverColor;
     private Color pressedColor; // Color for the pressed state
-    private boolean isLoggedOut = false; // Flag to track logout/close state
+
+    // Define the default color
+    private static final Color DEFAULT_COLOR = new Color(35, 42, 67);
+    private static final Color DEFAULT_TEXT_COLOR = Color.WHITE; // Default text color (white)
+    private static final Color HOVER_TEXT_COLOR = Color.WHITE; // Text color on hover (white)
+    private static final Color PRESSED_TEXT_COLOR = Color.WHITE; // Text color on press (white)
 
     public RoundedButton(String text, int radius) {
         super(text);
         this.cornerRadius = radius;
 
         // Set colors based on button text
-        if (text.equalsIgnoreCase("Login") || text.equalsIgnoreCase("Exit")) {
-            this.hoverColor = new Color(65, 72, 97); // Hover color for Login/Exit
-            this.pressedColor = new Color(85, 92, 117); // Pressed color for Login/Exit
-            setForeground(Color.WHITE); // Login and Exit should always have white text
-        } else {
-            this.hoverColor = new Color(65, 72, 97); // Default hover color
-            this.pressedColor = new Color(85, 92, 117); // Default pressed color
-            setForeground(Color.BLACK); // Default text color (black) for other buttons
-        }
+        this.hoverColor = new Color(65, 72, 97); // Hover color for buttons
+        this.pressedColor = new Color(85, 92, 117); // Pressed color for buttons
+        setForeground(DEFAULT_TEXT_COLOR); // Default text color is white
 
+        setBackground(DEFAULT_COLOR); // Set the default background color
         setOpaque(false);
         setFocusPainted(false);
         setContentAreaFilled(false);
         setCursor(new Cursor(Cursor.HAND_CURSOR)); // Pointer cursor on hover
         setPreferredSize(new Dimension(120, 40)); // Adjust button size as needed
-    }
 
-    // Set custom hover color
-    public void setHoverColor(Color color) {
-        this.hoverColor = color;
+        // Add MouseListener to handle mouse enter and leave events
+        addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                // Only change text color on hover if the button text is not "-"
+                if (!getText().equals("-")) {
+                    setForeground(HOVER_TEXT_COLOR); // Change text color on hover for non-minus buttons
+                }
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                // Only revert text color to default if it's not a minus button
+                if (!getText().equals("-")) {
+                    setForeground(DEFAULT_TEXT_COLOR); // Revert to default color for non-minus buttons
+                }
+            }
+        });
     }
 
     @Override
@@ -64,22 +76,20 @@ class RoundedButton extends JButton {
         // Clip the graphics area to ensure the paint doesn't stretch outside the rounded shape
         g2.setClip(new java.awt.geom.RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius));
 
-        // Set color based on the button state
+        // Set color based on the button state (pressed, rollover, or default)
         if (getModel().isPressed()) {
-            g2.setColor(pressedColor); // Set the pressed color
-            if (!getText().equalsIgnoreCase("Login") && !getText().equalsIgnoreCase("Exit")) {
-                setForeground(Color.WHITE); // Text color white when pressed for other buttons
+            g2.setColor(pressedColor); // Set pressed color
+            if (!getText().equals("-")) {
+                setForeground(PRESSED_TEXT_COLOR); // Text color on press (only for non-minus buttons)
             }
         } else if (getModel().isRollover()) {
-            g2.setColor(hoverColor); // Use the hover color when the mouse hovers over the button
-            if (!getText().equalsIgnoreCase("Login") && !getText().equalsIgnoreCase("Exit")) {
-                setForeground(Color.WHITE); // Text color white when hovered for other buttons
+            g2.setColor(hoverColor); // Use hover color
+            if (!getText().equals("-")) {
+                setForeground(HOVER_TEXT_COLOR); // Text color on hover (only for non-minus buttons)
             }
         } else {
-            g2.setColor(getBackground()); // Normal background color
-            if (!getText().equalsIgnoreCase("Login") && !getText().equalsIgnoreCase("Exit")) {
-                setForeground(Color.BLACK); // Text color black when neither pressed nor hovered for other buttons
-            }
+            g2.setColor(DEFAULT_COLOR); // Default background color
+            setForeground(DEFAULT_TEXT_COLOR); // Default text color
         }
 
         // Fill the rounded rectangle

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Bill {
-    private Map<Product, Integer> cart = new HashMap<>(); // Cart will hold products and quantities
+    public Map<Product, Integer> cart = new HashMap<>(); // Cart will hold products and quantities
     public BigDecimal totalBill = BigDecimal.ZERO;
     public BigDecimal subtotal = BigDecimal.ZERO;
     public BigDecimal tax = BigDecimal.ZERO;

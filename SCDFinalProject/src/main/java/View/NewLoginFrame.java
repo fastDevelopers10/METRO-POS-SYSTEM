@@ -211,7 +211,6 @@ public class NewLoginFrame extends JFrame {
                 boolean isValid = loggedInEmployee != null && loggedInEmployee.getPassword().equals(password);
 
                 if (isValid) {
-                    JOptionPane.showMessageDialog(this, "Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     openDashboard(role); // Open appropriate dashboard based on role
                     this.dispose();
                 } else {

@@ -113,13 +113,13 @@ public class BranchManagerUI extends JFrame {
         sideMenuPanel.setLayout(null); // Use null layout for manual positioning
         sideMenuPanel.setBackground(Color.WHITE);
 
-        sideMenuPanel.setBounds(0, menuYPosition+30, menuWidth, getHeight() - menuYPosition);
+        sideMenuPanel.setBounds(0, menuYPosition+40, menuWidth, getHeight() - menuYPosition);
         sideMenuPanel.setOpaque(false);
 
         // Button text and optional icon paths
         String[][] menuItems = {
                 {"Dashboard", "images/icons/dash_icon.png"},
-                {"Employees", "icons/Product.png"},
+                {"Employees", "images/icons/employees.png"},
                 {"Stocks Left","images/icons/Product.png"},
                 {"Profit History", "images/icons/Product.png"},
                 {"Sales History", "images/icons/Product.png"},
@@ -215,19 +215,19 @@ public class BranchManagerUI extends JFrame {
         }
 
         JLabel employeeName = new JLabel("" + employee.getUsername());
-        employeeName.setBounds(82, 94, 200, 22); // Adjust bounds as needed
-        employeeName.setFont(new Font("Arial", Font.BOLD, 16));
+        employeeName.setBounds(82, 97, 200, 22); // Adjust bounds as needed
+        employeeName.setFont(new Font("Arial", Font.BOLD, 20));
         employeeName.setForeground(Color.white);
 
         JLabel posLabel = new JLabel("" + employee.getPosition());
-        posLabel.setBounds(72, 120, 180, 14); // Adjust bounds as needed
-        posLabel.setFont(new Font("Arial", Font.ITALIC, 11));
+        posLabel.setBounds(72, 125, 180, 14); // Adjust bounds as needed
+        posLabel.setFont(new Font("Arial", Font.ITALIC, 16));
         posLabel.setForeground(Color.white);
 
         // Display Branch ID
         JLabel branchIdLabel = new JLabel("" + employee.getBranchId());
-        branchIdLabel.setBounds(118, 175, 200, 22); // Adjust bounds as needed
-        branchIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        branchIdLabel.setBounds(118, 178, 200, 22); // Adjust bounds as needed
+        branchIdLabel.setFont(new Font("Arial", Font.BOLD, 16));
         branchIdLabel.setForeground(Color.white);
 
         // Add components to the background panel
@@ -387,7 +387,7 @@ public class BranchManagerUI extends JFrame {
     private RoundedPanel createChartWithZoomButton() {
         // Create a panel for the chart
         RoundedPanel panel = new RoundedPanel(3);
-        panel.setBackground(Color.white);
+        panel.setBackground(new Color(55, 62, 97));
         panel.setLayout(new BorderLayout());  // BorderLayout will manage the position of components
         panel.setPreferredSize(new Dimension(500, 600));  // Set the size of the panel
 
@@ -605,7 +605,7 @@ public class BranchManagerUI extends JFrame {
     // Method to create the pie chart with dynamic colors
     public JFreeChart createPieChart(int branchId) {
         // Retrieve the category sales data
-        Map<String, Integer> categorySales = productController.getCategorySales(branchId);  // Simulated method
+        Map<String, Integer> categorySales = productController.getCategorySales(branchId); // Simulated method
         System.out.println(categorySales.entrySet());
 
         // Create a dataset for the pie chart
@@ -627,24 +627,48 @@ public class BranchManagerUI extends JFrame {
                 false                        // URLs disabled
         );
 
+        // Set the chart background to RGB (55, 62, 97)
+        pieChart.setBackgroundPaint(new Color(55, 62, 97));
+
+        // Set the title color to white
+        if (pieChart.getTitle() != null) {
+            pieChart.getTitle().setPaint(Color.WHITE);
+        }
+
+        // Customize the legend to have a white font and transparent background
+        if (pieChart.getLegend() != null) {
+            pieChart.getLegend().setBackgroundPaint(new Color(55, 62, 97)); // Match chart background
+            pieChart.getLegend().setItemPaint(Color.WHITE); // White text for legend
+        }
+
         // Cast the plot to PiePlot3D for customization
         PiePlot3D plot = (PiePlot3D) pieChart.getPlot();
 
+        // Set the plot background to match the theme
+        plot.setBackgroundPaint(new Color(55, 62, 97)); // Plot background
+        plot.setOutlineVisible(false);                 // Remove outline for a cleaner look
+
         // Dynamically assign colors to slices (optional)
         assignDynamicSliceColors(plot, categorySales);
-
-        // Adjust the section outline stroke (border thickness)
-        //plot.setSectionOutlineStroke(new BasicStroke(2.0f));
 
         // Customize shadow (simulates depth)
         plot.setShadowXOffset(3);  // Horizontal shadow
         plot.setShadowYOffset(3);  // Vertical shadow
         plot.setShadowPaint(Color.GRAY);  // Shadow color
 
-        // Set custom label generator to include both category and percentage
-        plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} ({2})",
+        // Set white labels for pie sections
+        plot.setLabelFont(new Font("Arial", Font.BOLD, 12));
+        plot.setLabelPaint(Color.WHITE); // Set section labels to white
+        plot.setLabelBackgroundPaint(null); // Transparent label background
+        plot.setLabelOutlinePaint(null); // Remove label outline for cleaner look
+        plot.setLabelShadowPaint(null);  // Remove label shadow
+
+        // Set custom label generator to include category, value, and percentage
+        plot.setLabelGenerator(new StandardPieSectionLabelGenerator(
+                "{0}: {1} ({2})", // {0}: category, {1}: value, {2}: percentage
                 NumberFormat.getNumberInstance(),
-                NumberFormat.getPercentInstance()));  // {0}: category, {1}: value, {2}: percentage
+                NumberFormat.getPercentInstance()
+        ));
 
         return pieChart;
     }
@@ -659,64 +683,66 @@ public class BranchManagerUI extends JFrame {
         }
     }
 
-    private JFreeChart createProfitChart() {
-        // Get the current year
-        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
-        // Create a TimeSeries object to hold profits over time
-        TimeSeries profitSeries = new TimeSeries("Profit");
+        private JFreeChart createProfitChart() {
+            // Get the current year
+            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
-        // Variable to track the maximum profit
-        double maxProfit = 0;
+            // Create a TimeSeries object to hold profits over time
+            TimeSeries profitSeries = new TimeSeries("Profit");
 
-        // Fetch profit data for each year from current year to 9 years ago
-        for (int i = 0; i < 10; i++) {
-            int year = currentYear - i; // Calculate the year
-            double profit = transactionController.fetchProfitForYear(year); // Fetch profit for that year
-
-            // Update maximum profit
-            if (profit > maxProfit) {
-                maxProfit = profit;
+            // Fetch profit data for each year from current year to 9 years ago
+            for (int i = 0; i < 10; i++) {
+                int year = currentYear - i; // Calculate the year
+                double profit = transactionController.fetchProfitForYear(year); // Fetch profit for that year
+                profitSeries.addOrUpdate(new org.jfree.data.time.Year(year), profit);
             }
 
-            // Add the data to the TimeSeries
-            profitSeries.addOrUpdate(new org.jfree.data.time.Year(year), profit);
+            // Create a dataset for the chart
+            TimeSeriesCollection dataset = new TimeSeriesCollection(profitSeries);
+
+            // Create the chart using the dataset
+            JFreeChart chart = ChartFactory.createTimeSeriesChart(
+                    "PROFIT OVER THE YEARS",                 // No Title
+                    "Year",               // X-axis Label
+                    "PROFIT (RS.)",       // Y-axis Label
+                    dataset,              // Dataset
+                    false,                // No legend
+                    false,                // No tooltips
+                    false                 // No URLs
+            );
+
+            // Customize chart appearance to make it completely white
+            chart.setBackgroundPaint(new Color(55, 62, 97)); // White background for the chart
+
+            XYPlot plot = (XYPlot) chart.getPlot(); // Get the plot object
+            plot.setBackgroundPaint(Color.white);  // White background for the plot area
+            plot.setDomainGridlinePaint(Color.white); // Remove horizontal grid lines
+            plot.setRangeGridlinePaint(Color.white);  // Remove vertical grid lines
+
+            if (chart.getTitle() != null) {
+                chart.getTitle().setPaint(Color.white); // Set the title color to white
+            }
+            // Set the axis colors to white (or remove them for a cleaner look)
+            plot.getDomainAxis().setAxisLinePaint(Color.white);
+            plot.getDomainAxis().setTickMarkPaint(Color.white);
+            plot.getDomainAxis().setTickLabelPaint(Color.white); // Optional, black labels
+            plot.getRangeAxis().setAxisLinePaint(Color.white);
+            plot.getRangeAxis().setTickMarkPaint(Color.white);
+            plot.getRangeAxis().setTickLabelPaint(Color.white); // Optional, black labels
+            plot.getDomainAxis().setLabelPaint(Color.white); // Set X-axis label ("Year") to white
+            plot.getRangeAxis().setLabelPaint(Color.white); // Y-axis label ("Profit (Rs.)") to white
+            // Set the line color for the data series
+            plot.getRenderer().setSeriesPaint(0, Color.red); // Black for the data line
+
+            // Remove any unnecessary outlines
+            plot.setOutlinePaint(null);
+            chart.setBorderVisible(false);
+
+            // Return the customized chart
+            return chart;
         }
 
-        // Create a dataset for the chart
-        TimeSeriesCollection dataset = new TimeSeriesCollection(profitSeries);
-
-        // Create the chart using the dataset
-        JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Profit Over Time",   // Title
-                "Year",               // X-axis Label
-                "Profit (Rs.)",         // Y-axis Label
-                dataset,              // Dataset
-                false,                // Include legend
-                true,                 // Tooltips
-                false                 // URLs
-        );
-
-        // Customize chart appearance
-        chart.setBackgroundPaint(Color.white);
-
-        // Get the plot object for further customization (like setting line color)
-        XYPlot plot = (XYPlot) chart.getPlot();
-        plot.setDomainPannable(true);  // Allow horizontal panning
-        plot.setRangePannable(true);   // Allow vertical panning
-        plot.setBackgroundPaint(new Color(85,92,117));
-
-        // Dynamically set the Y-axis range based on the maximum profit
-        double upperBound = Math.ceil(maxProfit * 1.1); // Add 10% buffer to the maximum value
-        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setRange(0, upperBound); // Set the range from 0 to the calculated upper bound
-
-        // Customize the line style (if needed)
-        plot.getRenderer().setSeriesPaint(0, Color.BLUE); // Set line color to blue
-
-        // Return the chart
-        return chart;
-    }
 
 
     private void showReportsPanel() throws SQLException {
@@ -731,7 +757,7 @@ public class BranchManagerUI extends JFrame {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 if (reportsImage != null) {
-                    g.drawImage(reportsImage, 0, 0, getWidth(), getHeight(), this);
+                    g.drawImage(reportsImage, -57, 0, getWidth(), getHeight()-57, this);
                 } else {
                     g.setColor(Color.LIGHT_GRAY); // Fallback color if image is not found
                     g.fillRect(0, 0, getWidth(), getHeight());
@@ -739,7 +765,7 @@ public class BranchManagerUI extends JFrame {
             }
         };
         reportsPanel.setLayout(null); // You can adjust the layout as needed
-        reportsPanel.setBounds(menuWidth + 26, 0, getWidth() - menuWidth, getHeight()); // Set bounds of the panel
+        reportsPanel.setBounds(menuWidth , 0, getWidth() - menuWidth, getHeight()); // Set bounds of the panel
 
         // Load the image for the reports panel
         try {
@@ -749,7 +775,11 @@ public class BranchManagerUI extends JFrame {
             e.printStackTrace();
             System.err.println("Error: Unable to load reports background image.");
         }
-
+        JLabel title= new JLabel("DASHBOARD");
+        title.setBounds(28,17,200,60);
+        title.setFont(new Font("Arial", Font.BOLD, 26));
+        title.setForeground(Color.black); // Set text color
+        reportsPanel.add(title);
         // Get the total sales for the current year for the branch (example branchId: 1)
         double netProfit = 0;
         try {
@@ -773,10 +803,10 @@ public class BranchManagerUI extends JFrame {
         salesLabel.setFont(new Font("Arial", Font.BOLD, 20));
         salesLabel.setForeground(new Color(67, 166, 67, 255)); // Set text color
 
-        salesLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +170,
-                (reportsPanel.getHeight() ) / 3 +110 ,
-                salesLabel.getPreferredSize().width+20,
-                salesLabel.getPreferredSize().height);
+        salesLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +250,
+                (reportsPanel.getHeight() ) / 3 +100 ,
+                salesLabel.getPreferredSize().width+10,
+                salesLabel.getPreferredSize().height+10);
 
         // Add the label to the reports panel
         reportsPanel.add(salesLabel);
@@ -784,11 +814,11 @@ public class BranchManagerUI extends JFrame {
         // Create a label to display the total sales
         String profitText = "Rs. " + netProfit;
         JLabel profitLabel = new JLabel(profitText);
-        profitLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        profitLabel.setFont(new Font("Arial", Font.BOLD, 20));
         profitLabel.setForeground(new Color(253, 193, 0, 255)); // Set text color
 
-        profitLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +172,
-                (reportsPanel.getHeight() ) / 2 +182,
+        profitLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +250,
+                (reportsPanel.getHeight() ) / 2 +166,
                 profitLabel.getPreferredSize().width +10,
                 profitLabel.getPreferredSize().height+10);
 
@@ -801,13 +831,13 @@ public class BranchManagerUI extends JFrame {
         // Create a label to display the total sales
         String stockText = totalStock +" items";
         JLabel stockLabel = new JLabel(stockText);
-        stockLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        stockLabel.setFont(new Font("Arial", Font.BOLD, 20));
         stockLabel.setForeground(new Color(241, 21, 61, 226)); // Set text color
 
-        stockLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +170,
-                (reportsPanel.getHeight()/2 -230 ),
-                stockLabel.getPreferredSize().width+20,
-                stockLabel.getPreferredSize().height);
+        stockLabel.setBounds((reportsPanel.getWidth() - salesLabel.getPreferredSize().width) / 2 +250,
+                (reportsPanel.getHeight()/2 -197 ),
+                stockLabel.getPreferredSize().width+10,
+                stockLabel.getPreferredSize().height+10);
 
         // Add the label to the reports panel
         reportsPanel.add(stockLabel);
@@ -815,13 +845,13 @@ public class BranchManagerUI extends JFrame {
 
         // Create and add the Profit Chart Panel
         RoundedPanel profitChartPanel = createChartWithZoomButton();
-        profitChartPanel.setBounds(menuWidth -96,(reportsPanel.getHeight() ) / 2 +10 ,455, 235); // Width and height of the button
+        profitChartPanel.setBounds(menuWidth -110,(reportsPanel.getHeight() ) / 2 +18 ,485, 235); // Width and height of the button
         // Set the size and position as needed
         reportsPanel.add(profitChartPanel);
 
         RoundedPanel pieChartPanel = createPieChartWithZoomButton();
-        pieChartPanel.setBounds(menuWidth -80,(reportsPanel.getHeight() )/2 -300 ,455, 235); // Width and height of the button
-
+        pieChartPanel.setBounds(menuWidth -95,(reportsPanel.getHeight() )/2 -265 ,485, 235); // Width and height of the button
+        pieChartPanel.setBackground(new Color(55, 62, 97));
         // Add the chart panel to the JFrame
         reportsPanel.add(pieChartPanel);
         // Add the reports panel to the background panel

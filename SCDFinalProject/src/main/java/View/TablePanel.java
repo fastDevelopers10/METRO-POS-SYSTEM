@@ -69,7 +69,7 @@ public class TablePanel extends JPanel {
         gbc.weighty = 0.08;
         this.add(this.title, gbc);
         this.searchField = new JTextField();
-        this.searchField.setBackground(new Color(143, 217, 251));
+        this.searchField.setBackground(new Color(35, 42, 67));
         this.searchField.setCaretColor(Color.WHITE);
         this.searchField.setForeground(Color.WHITE);
         this.searchField.setFont(new Font("Arial", 0, 15));

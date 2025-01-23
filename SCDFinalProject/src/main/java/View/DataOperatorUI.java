@@ -124,7 +124,7 @@ public class DataOperatorUI extends JFrame {
         sideMenuPanel.setLayout(new GridBagLayout());
         sideMenuPanel.setBackground(Color.decode("#2D344D"));
         int menuYPosition = 270;
-        int menuWidth = 302;
+        int menuWidth = 293;
         sideMenuPanel.setBounds(0, menuYPosition, menuWidth, getHeight() - menuYPosition);
 
         GridBagConstraints gbc = new GridBagConstraints();

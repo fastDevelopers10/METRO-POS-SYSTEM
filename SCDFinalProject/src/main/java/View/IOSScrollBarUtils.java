@@ -28,7 +28,7 @@ public class IOSScrollBarUtils {
         //do thin
         @Override
         public Dimension getPreferredSize(JComponent c) {
-            return new Dimension(14, 14); // Thinner scrollbar, adjust this as necessary
+            return new Dimension(14, 12); // Thinner scrollbar, adjust this as necessary
         }
 
         @Override
@@ -54,7 +54,7 @@ public class IOSScrollBarUtils {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            g2d.setColor(new Color(100, 100, 100, 150)); // Semi-transparent gray
+            g2d.setColor(new Color(35, 42, 67)); // Semi-transparent gray
             g2d.fillRoundRect(thumbBounds.x, thumbBounds.y, thumbBounds.width, thumbBounds.height, 400, 400); // Thinner thumb
         }
 

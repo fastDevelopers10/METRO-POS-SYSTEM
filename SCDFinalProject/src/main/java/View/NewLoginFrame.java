@@ -111,7 +111,7 @@ public class NewLoginFrame extends JFrame {
 
         // Right panel: Black background with login elements
         JPanel rightPanel = new JPanel(null);
-        rightPanel.setBackground(new Color(45, 52, 77));
+        rightPanel.setBackground(new Color(35, 42, 67));
         //255, 245, 238
         //255, 255, 240
         //248, 248, 255 ghost white
@@ -235,7 +235,7 @@ public class NewLoginFrame extends JFrame {
         button.setFont(new Font("Century Gothic", Font.BOLD, 20));
         button.setForeground(Color.white);
 
-         button.setBackground(new Color(45, 52, 77));
+         button.setBackground(new Color(35, 42, 67));
 
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));

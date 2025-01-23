@@ -18,6 +18,7 @@ import java.awt.print.PrinterJob;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.sql.SQLException;
 import javax.swing.*;
@@ -133,8 +134,8 @@ public class SuperAdminUI extends JFrame {
 
         // Create and add the pie chart panel
         JPanel pieChartPanel = createPieChartWithZoomButton();
-        pieChartPanel.setBounds(61, 398, 424, 225);  // Set the bounds of the pie chart
-
+        pieChartPanel.setBounds(147, 401, 445, 243);  // Set the bounds of the pie chart
+        pieChartPanel.setBackground(new Color(35, 42, 67));
         // Add the pie chart panel to the layered pane (this will be on top of the background)
         layeredPane.add(pieChartPanel, Integer.valueOf(1));
 
@@ -170,9 +171,9 @@ public class SuperAdminUI extends JFrame {
         sideMenuPanel.setLayout(null);
         sideMenuPanel.setOpaque(false);
 
-        addLabelToSidebar(lblBackground, "Super Admin", 97, 142, 250, 30, BASIC_FONT);
+        addLabelToSidebar(lblBackground, "Super Admin", 110, 149, 250, 30, BASIC_FONT);
         String username = SuperAdminLoginController.getUsername();
-        addLabelToSidebar(lblBackground, username, 115, 118, 220, 40, LABEL_FONT);
+        addLabelToSidebar(lblBackground, username, 112, 116, 222, 42, LABEL_FONT);
         addLabelToSidebar(lblBackground, "Menu", 115, 215, 100, 20, new Font("DM Sans", Font.PLAIN, 14));
 
         int menuYPosition = 250;
@@ -386,14 +387,12 @@ public class SuperAdminUI extends JFrame {
     }
 
 
-    // Method to create the pie chart with total profit for all branches
     public JFreeChart createPieChart(Map<Integer, Double> branchProfits) {
         // Create a dataset for the pie chart
         DefaultPieDataset dataset = new DefaultPieDataset();
 
         // Populate the dataset with total profit for each branch
         for (Map.Entry<Integer, Double> entry : branchProfits.entrySet()) {
-            // Use branchId as the label and total profit as the value
             dataset.setValue("Branch " + entry.getKey(), entry.getValue());
         }
 
@@ -406,21 +405,69 @@ public class SuperAdminUI extends JFrame {
                 false                      // URLs disabled
         );
 
-        // Customize the plot
+        // Set the chart background to RGB (55, 62, 97)
+        pieChart.setBackgroundPaint(new Color(55, 62, 97));
+
+        // Set the title color to white
+        if (pieChart.getTitle() != null) {
+            pieChart.getTitle().setPaint(Color.WHITE);
+        }
+
+        // Customize the legend to have a white font and transparent background
+        if (pieChart.getLegend() != null) {
+            pieChart.getLegend().setBackgroundPaint(new Color(55, 62, 97)); // Match chart background
+            pieChart.getLegend().setItemPaint(Color.WHITE); // White text for legend
+        }
+
+        // Cast the plot to PiePlot3D for customization
         PiePlot3D plot = (PiePlot3D) pieChart.getPlot();
+
+        // Set the plot background to match the theme
+        plot.setBackgroundPaint(new Color(55, 62, 97)); // Plot background
+        plot.setOutlineVisible(false);                 // Remove outline for a cleaner look
+
+        // Dynamically assign colors to slices (optional)
+        assignDynamicSliceColors(plot, branchProfits);
 
         // Customize shadow (simulates depth)
         plot.setShadowXOffset(3);  // Horizontal shadow
         plot.setShadowYOffset(3);  // Vertical shadow
         plot.setShadowPaint(Color.GRAY);  // Shadow color
 
-        // Set custom label generator to include both branch and profit
-        plot.setLabelGenerator(new StandardPieSectionLabelGenerator("{0}: {1} ({2})",
+        // Set white labels for pie sections
+        plot.setLabelFont(new Font("Arial", Font.BOLD, 12));
+        plot.setLabelPaint(Color.WHITE); // Set section labels to white
+        plot.setLabelBackgroundPaint(null); // Transparent label background
+        plot.setLabelOutlinePaint(null); // Remove label outline for cleaner look
+        plot.setLabelShadowPaint(null);  // Remove label shadow
+
+        // Set custom label generator to include branch, value, and percentage
+        plot.setLabelGenerator(new StandardPieSectionLabelGenerator(
+                "{0}: {1} ({2})", // {0}: branch, {1}: value, {2}: percentage
                 NumberFormat.getNumberInstance(),
-                NumberFormat.getPercentInstance()));  // {0}: branch, {1}: profit, {2}: percentage
+                NumberFormat.getPercentInstance()
+        ));
 
         return pieChart;
     }
+
+    // Optional: Method to assign dynamic colors to slices
+    private void assignDynamicSliceColors(PiePlot3D plot, Map<?, ?> data) {
+        List<Color> colors = Arrays.asList(
+                new Color(94, 132, 226),  // Custom blue
+                new Color(255, 140, 0),   // Custom orange
+                new Color(50, 205, 50),   // Custom green
+                new Color(220, 20, 60),   // Custom red
+                new Color(148, 0, 211)    // Custom purple
+        );
+
+        int index = 0;
+        for (Object key : data.keySet()) {
+            plot.setSectionPaint(key.toString(), colors.get(index % colors.size()));
+            index++;
+        }
+    }
+
 
 
 
@@ -491,17 +538,17 @@ public class SuperAdminUI extends JFrame {
         ProductController controller = new ProductController();
 
 
-        addLabel(panel, "Total Products", 80, 210, 200, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getProductRowCount()), 80, 260, 200, 24, DATA_FONT);
+        addLabel(panel, "Total Products", 80, 204, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getProductRowCount()), 83, 253, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Stocks", 410, 210, 250, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 410, 260, 200, 24, DATA_FONT);
+        addLabel(panel, "Stocks", 410, 204, 250, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 413, 260, 200, 24, DATA_FONT);
 
-        addLabel(panel, "Net Profit", 740, 210, 200, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 740, 260, 200, 24, DATA_FONT);
+        addLabel(panel, "Net Profit", 740, 204, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 743, 260, 200, 24, DATA_FONT);
 
         JLabel lblSalesVal = addLabel(panel, "Loading...", 740, 490, 200, 24, DATA_FONT);
-        addLabel(panel, "Sales", 740, 440, 200, 40, LABEL_FONT);
+        addLabel(panel, "Sales", 735, 430, 200, 40, LABEL_FONT);
         loadSalesValue(lblSalesVal);
 
         addDashboardButtons(panel);
@@ -513,7 +560,7 @@ public class SuperAdminUI extends JFrame {
         btnProfitReport.addActionListener(e -> cardLayout.show(mainContentPanel, "Profit Report"));
         panel.add(btnProfitReport);
 
-        JButton btnSalesReport = createButton("Sales Report", 154, 79, 200, 30);
+        JButton btnSalesReport = createButton("Sales Report", 156, 79, 200, 30);
         btnSalesReport.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSalesReport.addActionListener(e-> cardLayout.show(mainContentPanel, "Sales Report"));
         panel.add(btnSalesReport);

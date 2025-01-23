@@ -25,7 +25,8 @@ import javax.imageio.ImageIO;
 
 public class CashierUI extends JFrame {
 
-
+    private CardLayout cardLayout;
+    private JPanel backgroundPanel;
     private static final String TAX_PERCENTAGE = "17";
     private BufferedImage backgroundImage;
     private JButton activeButton = null;
@@ -36,6 +37,11 @@ public class CashierUI extends JFrame {
     private Bill bill; // Use Bill instead of a Map for cart    private final double TAX_PERCENTAGE = 8.5; // Tax percentage
     private JPanel horizontalScrollPanel = new JPanel();
     private JButton activeCategoryButton = new JButton(); // Tracks the currently active category button
+    int menuYPosition = 280; // Set this closer to 0 for moving the panel higher
+    int menuWidth = 185;
+    JPanel startSalesPanel;
+    JPanel viewBillsPanel;
+    JPanel mainPanel;
 
     private ProductDAO productDAO;
     private Employee employee;
@@ -47,10 +53,9 @@ public class CashierUI extends JFrame {
     public CashierUI(Employee loggedInEmployee) {
         this.employee = loggedInEmployee;
         this.cashierController = new CashierController();
-        this.productDAO = new ProductDAO(); // Initialize with the proper constructor
-        this.categories = productDAO.getUniqueCategories(employee.getBranchId()); // Fetch categories from DAO
-        bill = new Bill(); // Correct initialization of cart as Bill
-        //      productDAO = new ProductDAO(); // Initialize ProductDAO to fetch products
+        this.productDAO = new ProductDAO();
+        this.categories = productDAO.getUniqueCategories(employee.getBranchId());
+        bill = new Bill();
         setTitle("Cashier Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1320, 710);
@@ -58,7 +63,6 @@ public class CashierUI extends JFrame {
         setIconImage(loadIcon("images/icons/logo.PNG"));
 
         try {
-            // Use class loader to load the resource
             backgroundImage = ImageIO.read(Objects.requireNonNull(
                     getClass().getClassLoader().getResourceAsStream("images/Cashier.png")));
         } catch (IOException e) {
@@ -67,37 +71,87 @@ public class CashierUI extends JFrame {
         }
 
         // Background Panel
-        JPanel backgroundPanel = new JPanel() {
+        backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 if (backgroundImage != null) {
                     g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
                 } else {
-                    g.setColor(Color.LIGHT_GRAY); // Fallback color if image is not found
+                    g.setColor(Color.LIGHT_GRAY); // Fallback color
                     g.fillRect(0, 0, getWidth(), getHeight());
                 }
             }
         };
         backgroundPanel.setLayout(null);
         backgroundPanel.setBounds(0, 0, getWidth(), getHeight());
+        setVisible(true);  // Make sure to set the JFrame visible after all components are added
+        add(backgroundPanel);
 
+        // Labels
+        JLabel userName = new JLabel("" + employee.getUsername());
+        userName.setBounds(82, 99, 200, 22);
+        userName.setFont(new Font("Arial", Font.BOLD, 22));
+        userName.setForeground(Color.white);
+
+
+        JLabel branchId = new JLabel("" + employee.getEmployeeId());
+        branchId.setBounds(118, 189, 200, 22);
+        branchId.setFont(new Font("Arial", Font.PLAIN, 16));
+        branchId.setForeground(Color.white);
+
+        JLabel position = new JLabel(employee.getPosition());
+        position.setFont(new Font("Century Gothic", Font.ITALIC, 13));
+        position.setForeground(Color.white);
+        position.setPreferredSize(new Dimension(150, 30));
+        position.setBounds(80, 125, 150, 30);
+
+        backgroundPanel.add(position);
+        backgroundPanel.add(userName);
+        backgroundPanel.add(branchId);
+
+        // Side Menu Panel
+        JPanel sideMenuPanel = createSideMenuPanel();
+        backgroundPanel.add(sideMenuPanel);
+
+        // CardLayout and Main Panel
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);  // Main panel holding cards
+        mainPanel.setBounds(menuWidth, 0, getWidth() - menuWidth, getHeight());
+        backgroundPanel.add(mainPanel);
+
+        // Create panels for CardLayout
+        startSalesPanel = createStartSalesPanel();
+
+        viewBillsPanel = new JPanel();
+        viewBillsPanel.setBackground(Color.WHITE);
+
+        // Add panels to CardLayout
+        mainPanel.add(startSalesPanel, "Start Sales");
+        mainPanel.add(viewBillsPanel, "View Bills");
+
+        // Show the first card
+        cardLayout.show(mainPanel, "Start Sales");
+
+        // Add the main panel to backgroundPanel
+
+    }
+
+    private JPanel createSideMenuPanel() {
         // Side Menu
         JPanel sideMenuPanel = new JPanel();
         sideMenuPanel.setLayout(null); // Use null layout for manual positioning
         sideMenuPanel.setBackground(Color.WHITE);
 
 // Adjust the bounds of the panel itself (height can adjust based on content)
-        int menuYPosition = 220; // Set this closer to 0 for moving the panel higher
-        int menuWidth = 157;
-        sideMenuPanel.setBounds(0, menuYPosition+40, menuWidth+30, getHeight() - menuYPosition);
+
+        sideMenuPanel.setBounds(0, menuYPosition, menuWidth, getHeight() - menuYPosition);
         sideMenuPanel.setOpaque(false);
 
 // Button text and optional icon paths
         String[][] menuItems = {
                 {"Start Sale", "images/icons/dash_icon.png"},
-                {"View Bills", "icons/view_bills.png"},
-                {"Generate Bill", "icons/generate_bill.png"},
+                {"View Bills", "icons/bill.png"},
                 {"Logout", "images/icons/logout.png"}
         };
 
@@ -129,12 +183,13 @@ public class CashierUI extends JFrame {
                 switch (button.getText()) {
                     case "Start Sale":
                         System.out.println("Starting Sale...");
-//                        startSaleAction();
+                        cardLayout.show(mainPanel,"Start Sales");
                         break;
 
                     case "View Bills":
                         System.out.println("Viewing Bills...");
-                        //      viewBillsAction();
+                        cardLayout.show(mainPanel,"View Bills");
+
                         break;
 
                     case "Generate Bill":
@@ -167,29 +222,17 @@ public class CashierUI extends JFrame {
             // Update Y position for next button
             buttonYPosition += buttonHeight; // Increase Y position by the height of the button
         }
-        JLabel userName = new JLabel("" + employee.getUsername());
-        userName.setForeground(Color.white);
-        userName.setBounds(90, 105, 24, 24);
-backgroundPanel.add(userName);
 
-        JLabel branchid = new JLabel("" + employee.getEmployeeId());
-        branchid.setForeground(Color.white);
-        branchid.setBounds(120, 184, 24, 24);
-
-        JLabel position = new JLabel(employee.getPosition());
-        position.setFont(new Font("Century Gothic", Font.ITALIC, 11)); // Set font to italic
-        position.setForeground(Color.white);
-
-// Adjust size to fit the label content
-        position.setPreferredSize(new Dimension(150, 30)); // Adjust size as needed
-        position.setBounds(80, 125, 150, 30); // Adjust bounds to fit preferred size
-
-// Add label to the panel
-        add(position);
+        return sideMenuPanel;
 
 // Add side menu panel to your background panel
-        backgroundPanel.add(sideMenuPanel);
-        backgroundPanel.add(branchid);
+    }
+
+
+    private JPanel createStartSalesPanel() {
+
+        JPanel startSalesPanel = new JPanel();
+        startSalesPanel.setLayout(null); // Use your custom layout here
 
         // Create a label for categories
         JLabel categoryLabel = new JLabel("Product Categories");
@@ -221,13 +264,12 @@ backgroundPanel.add(userName);
 
         // Product Panel - Using GridLayout for 4 products per row
         productPanel = new JPanel();
-        productPanel.setLayout(new GridLayout(0, 3, 20, 20));  // 4 products per row with 20px gap between them
-        productPanel.setBounds(200, 180, 700, 500);  // Increase the 'y' position to move it down        productPanel.setBackground(Color.LIGHT_GRAY);
+        productPanel.setLayout(new GridLayout(0, 3, 16, 16));  // 4 products per row with 20px gap between them
         productPanel.setOpaque(true);  // Make sure productPanel is opaque to display correctly
-        productPanel.setBackground(new Color(247, 247, 247));
+        productPanel.setBackground(new Color(255, 255, 255));
         // Scrollable product panel with vertical scrollbar
         JScrollPane productScrollPane = new JScrollPane(productPanel);
-        productScrollPane.setBounds(200, 123, 700, 500);
+        productScrollPane.setBounds(200, 123, 670, 500);
         productScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         productScrollPane.setBorder(BorderFactory.createEmptyBorder()); // This removes the border
 
@@ -239,7 +281,7 @@ backgroundPanel.add(userName);
         // Bill Panel with enhanced layout
         JPanel billPanel = new JPanel();
         billPanel.setLayout(new BorderLayout());
-        billPanel.setBounds(905, 135, 360, 490);
+        billPanel.setBounds(885, 134, 385, 491);
         billPanel.setBackground(new Color(197, 227, 218));
         billPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
@@ -253,21 +295,24 @@ backgroundPanel.add(userName);
 // Bill Items Header Panel
         JPanel billItemsHeaderPanel = new JPanel();
         billItemsHeaderPanel.setLayout(new GridLayout(1, 3)); // 1 row, 3 columns (Item, Qty, Price)
-        billItemsHeaderPanel.setBackground(new Color(180, 200, 230)); // Light background color for the header
-        billItemsHeaderPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        billItemsHeaderPanel.setBackground(new Color(55, 62, 97)); // Light background color for the header
+        billItemsHeaderPanel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
 // Set FlowLayout with left alignment and some horizontal space between components
-        FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT, 30, 0); // 20px gap between components
+        FlowLayout flowLayout = new FlowLayout(FlowLayout.LEFT, 60, 0); // 20px gap between components
         billItemsHeaderPanel.setLayout(flowLayout);
 
 // Fixed Labels for Item, Quantity, and Price
         JLabel itemLabel = new JLabel("Item");
+        itemLabel.setForeground(Color.white);
         itemLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
 
         JLabel qtyLabel = new JLabel("Price");
         qtyLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
+        qtyLabel.setForeground(Color.white);
 
         JLabel priceLabel = new JLabel("QTY");
         priceLabel.setFont(new Font("Century Gothic", Font.BOLD, 16));
+        priceLabel.setForeground(Color.white);
 
 // Add labels to the header panel
         billItemsHeaderPanel.add(itemLabel);
@@ -349,17 +394,11 @@ backgroundPanel.add(userName);
         totalsPanel.add(totalBillLabel);
 
         billPanel.add(totalsPanel, BorderLayout.SOUTH);  // Add totals at the bottom
-
-// Add bill panel to your main frame or container
-
-
-// Adding components to the layered pane
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setLayout(null);
         layeredPane.setPreferredSize(new Dimension(getWidth(), getHeight()));
 
         layeredPane.add(backgroundPanel, JLayeredPane.DEFAULT_LAYER);
-        layeredPane.add(sideMenuPanel, JLayeredPane.PALETTE_LAYER);
         layeredPane.add(scrollPane, JLayeredPane.PALETTE_LAYER);
         layeredPane.add(productScrollPane, JLayeredPane.PALETTE_LAYER);  // Add scroll pane for products
         layeredPane.add(billPanel, JLayeredPane.PALETTE_LAYER);
@@ -370,7 +409,27 @@ backgroundPanel.add(userName);
 
 
         this.add(layeredPane);
+
+        return startSalesPanel;
     }
+
+    private JPanel createViewBillsPanel() {
+        JPanel viewBillsPanel = new JPanel();
+        viewBillsPanel.setLayout(new BorderLayout());
+
+        // Example content for "View Bills" panel
+        JLabel titleLabel = new JLabel("View Bills Panel", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Century Gothic", Font.BOLD, 20));
+        viewBillsPanel.add(titleLabel, BorderLayout.NORTH);
+
+        JTextArea billsArea = new JTextArea("Bill details will appear here...");
+        billsArea.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+        JScrollPane scrollPane = new JScrollPane(billsArea);
+        viewBillsPanel.add(scrollPane, BorderLayout.CENTER);
+
+        return viewBillsPanel;
+    }
+
 
     public CashierUI() {
 
@@ -458,7 +517,7 @@ backgroundPanel.add(userName);
             RoundedPanel productInfoPanel = new RoundedPanel(15); // Corner radius of 15
             productInfoPanel.setLayout(new BoxLayout(productInfoPanel, BoxLayout.Y_AXIS)); // Stack vertically
             productInfoPanel.setBackground(new Color(35, 42, 67));
-            productInfoPanel.setPreferredSize(new Dimension(200, 200)); // Ensure consistent size for the product panel
+            productInfoPanel.setPreferredSize(new Dimension(135, 148)); // Ensure consistent size for the product panel
             productInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             // Product name label
@@ -508,7 +567,7 @@ backgroundPanel.add(userName);
             // Add the button to the product info panel
             productInfoPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Add space before the button
             productInfoPanel.add(addProductButton);
-
+            productInfoPanel.add(Box.createVerticalGlue()); // Ensure padding below the button
             // Add the product info panel to the main product panel
             productPanel.add(productInfoPanel);
         }
@@ -546,52 +605,52 @@ backgroundPanel.add(userName);
 
             // Step 5: Create a panel for each bill item (product, price, and quantity controls)
             JPanel billItemPanel = new JPanel();
-            billItemPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 20, 5)); // Reduced spacing between items
+            billItemPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 8, 3)); // Reduced spacing between items
             billItemPanel.setBackground(Color.WHITE);
 
             // Step 6: Add product name label
             JLabel productNameLabel = new JLabel(product.getName());
-            productNameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-            productNameLabel.setPreferredSize(new Dimension(60, 30));  // Fixed width for wrapping
-            productNameLabel.setMaximumSize(new Dimension(60, 30));  // Prevent overflow
+            productNameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
+            productNameLabel.setPreferredSize(new Dimension(140, 30));  // Fixed width for wrapping
+            productNameLabel.setMaximumSize(new Dimension(150, 30));  // Prevent overflow
             billItemPanel.add(productNameLabel);
 
             // Step 7: Add product price label
-            JLabel productPriceLabel = new JLabel("$" + productPrice);
-            productPriceLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-            productPriceLabel.setPreferredSize(new Dimension(60, 30));  // Fixed size
-            productPriceLabel.setMaximumSize(new Dimension(60, 30));  // Prevent overflow
+            JLabel productPriceLabel = new JLabel("Rs." + productPrice);
+            productPriceLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
+            productPriceLabel.setPreferredSize(new Dimension(60, 20));  // Fixed size
+            productPriceLabel.setMaximumSize(new Dimension(70, 20));  // Prevent overflow
             billItemPanel.add(productPriceLabel);
 
             // Step 8: Create the quantity control panel (minus, quantity, and plus buttons)
             JPanel quantityPanel = new JPanel();
-            quantityPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5)); // Reduced spacing between buttons
+            quantityPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 3)); // Reduced spacing between buttons
             quantityPanel.setBackground(Color.WHITE);
 
             // Step 9: Add quantity label
             JLabel quantityLabel = new JLabel(" " + quantity + " ");
-            quantityLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            quantityLabel.setFont(new Font("Century Gothic", Font.PLAIN, 12));
             quantityPanel.add(quantityLabel);
 
             // Step 10: Create and add the minus button (rounded)
             RoundedButton minusButton = new RoundedButton("-", 15);  // 15 is the corner radius for rounded corners
-            minusButton.setFont(new Font("Century Gothic", Font.PLAIN, 18));
+            minusButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
             minusButton.setBackground(new Color(255, 255, 255));  // Example background color for the button
-            minusButton.setPreferredSize(new Dimension(60, 40));  // Smaller size (width x height)
+            minusButton.setPreferredSize(new Dimension(45, 32));  // Smaller size (width x height)
             minusButton.addActionListener(e -> adjustQuantity(product, -1, quantityLabel));
             minusButton.setForeground(Color.BLACK);
             quantityPanel.add(minusButton);
 
             // Step 11: Create and add the plus button (rounded)
             RoundedButton plusButton = new RoundedButton("+", 15);  // 15 is the corner radius for rounded corners
-            plusButton.setFont(new Font("Century Gothic", Font.PLAIN, 18));
+            plusButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
 
 // Set the background and text color
             plusButton.setBackground(new Color(35, 42, 67));  // Background color for the button
             plusButton.setForeground(Color.WHITE);  // Text color to white
 
 // Set a smaller preferred size to avoid button cutting
-            plusButton.setPreferredSize(new Dimension(60, 40));  // Smaller size (width x height)
+            plusButton.setPreferredSize(new Dimension(50, 32));  // Smaller size (width x height)
 
 // Add action listener to adjust quantity when clicked
             plusButton.addActionListener(e -> adjustQuantity(product, 1, quantityLabel));

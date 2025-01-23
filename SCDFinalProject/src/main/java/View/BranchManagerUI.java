@@ -216,12 +216,12 @@ public class BranchManagerUI extends JFrame {
 
         JLabel employeeName = new JLabel("" + employee.getUsername());
         employeeName.setBounds(82, 97, 200, 22); // Adjust bounds as needed
-        employeeName.setFont(new Font("Arial", Font.BOLD, 20));
+        employeeName.setFont(new Font("Arial", Font.BOLD, 22));
         employeeName.setForeground(Color.white);
 
         JLabel posLabel = new JLabel("" + employee.getPosition());
-        posLabel.setBounds(72, 125, 180, 14); // Adjust bounds as needed
-        posLabel.setFont(new Font("Arial", Font.ITALIC, 16));
+        posLabel.setBounds(64, 120, 150, 30); // Adjust bounds as needed
+        posLabel.setFont(new Font("Arial", Font.ITALIC, 12));
         posLabel.setForeground(Color.white);
 
         // Display Branch ID
@@ -329,7 +329,7 @@ public class BranchManagerUI extends JFrame {
         // Create and set the label for the employee section
         JLabel employeeLabel = new JLabel("Your Employees", JLabel.CENTER);
         employeeLabel.setFont(new Font("Arial", Font.BOLD, 32));
-        employeeLabel.setForeground(new Color(70, 130, 180));
+        employeeLabel.setForeground(new Color(35, 42, 67));
 
         // Set bounds for the label
         employeeLabel.setBounds(0, 25, getWidth() - menuWidth - 30, 100);
@@ -845,7 +845,7 @@ public class BranchManagerUI extends JFrame {
 
         // Create and add the Profit Chart Panel
         RoundedPanel profitChartPanel = createChartWithZoomButton();
-        profitChartPanel.setBounds(menuWidth -110,(reportsPanel.getHeight() ) / 2 +18 ,485, 235); // Width and height of the button
+        profitChartPanel.setBounds(menuWidth -100,(reportsPanel.getHeight() ) / 2 +18 ,485, 235); // Width and height of the button
         // Set the size and position as needed
         reportsPanel.add(profitChartPanel);
 

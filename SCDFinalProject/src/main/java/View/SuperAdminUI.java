@@ -34,8 +34,8 @@ public class SuperAdminUI extends JFrame {
     private CardLayout cardLayout;
 
     private static final Font TITLE_FONT = new Font("Century Gothic", Font.BOLD, 24);
-    private static final Font LABEL_FONT = new Font("Century Gothic", Font.BOLD, 21);
-    private static final Font DATA_FONT = new Font("Century Gothic", Font.PLAIN, 26);
+    private static final Font LABEL_FONT = new Font("Century Gothic", Font.BOLD, 22);
+    private static final Font DATA_FONT = new Font("Century Gothic", Font.PLAIN, 28);
     private static final Font BUTTON_FONT = new Font("Century Gothic", Font.PLAIN, 16);
     private static final Font BASIC_FONT = new Font("Century Gothic", Font.PLAIN, 14);
     private static final Color FONT_COLOR = Color.white;
@@ -134,7 +134,7 @@ public class SuperAdminUI extends JFrame {
 
         // Create and add the pie chart panel
         JPanel pieChartPanel = createPieChartWithZoomButton();
-        pieChartPanel.setBounds(147, 401, 445, 243);  // Set the bounds of the pie chart
+        pieChartPanel.setBounds(78, 366, 446, 244);  // Set the bounds of the pie chart
         pieChartPanel.setBackground(new Color(35, 42, 67));
         // Add the pie chart panel to the layered pane (this will be on top of the background)
         layeredPane.add(pieChartPanel, Integer.valueOf(1));
@@ -538,29 +538,29 @@ public class SuperAdminUI extends JFrame {
         ProductController controller = new ProductController();
 
 
-        addLabel(panel, "Total Products", 80, 204, 200, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getProductRowCount()), 83, 253, 200, 24, DATA_FONT);
+        addLabel(panel, "Total Products", 84, 180, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getProductRowCount()), 88, 222, 220, 26, DATA_FONT);
 
-        addLabel(panel, "Stocks", 410, 204, 250, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 413, 260, 200, 24, DATA_FONT);
+        addLabel(panel, "Stocks", 400, 180, 250, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(controller.getTotalProductsSum()), 404, 222, 220, 22, DATA_FONT);
 
-        addLabel(panel, "Net Profit", 740, 204, 200, 40, LABEL_FONT);
-        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 743, 260, 200, 24, DATA_FONT);
+        addLabel(panel, "Net Profit", 710, 180, 200, 40, LABEL_FONT);
+        addLabel(panel, String.valueOf(TransactionController.getOverallProfit()), 718, 222, 220, 26, DATA_FONT);
 
-        JLabel lblSalesVal = addLabel(panel, "Loading...", 740, 490, 200, 24, DATA_FONT);
-        addLabel(panel, "Sales", 735, 430, 200, 40, LABEL_FONT);
+        JLabel lblSalesVal = addLabel(panel, "Loading...", 715, 425, 220, 26, DATA_FONT);
+        addLabel(panel, "Sales", 707, 390, 220, 40, LABEL_FONT);
         loadSalesValue(lblSalesVal);
 
         addDashboardButtons(panel);
     }
 
     private void addDashboardButtons(JLabel panel) {
-        JButton btnProfitReport = createButton("Profit Report", 6, 79, 200, 30);
+        JButton btnProfitReport = createButton("Profit Report", 40, 79, 150, 40);
         btnProfitReport.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnProfitReport.addActionListener(e -> cardLayout.show(mainContentPanel, "Profit Report"));
         panel.add(btnProfitReport);
 
-        JButton btnSalesReport = createButton("Sales Report", 156, 79, 200, 30);
+        JButton btnSalesReport = createButton("Sales Report", 205, 79, 150, 40);
         btnSalesReport.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSalesReport.addActionListener(e-> cardLayout.show(mainContentPanel, "Sales Report"));
         panel.add(btnSalesReport);
@@ -596,7 +596,7 @@ public class SuperAdminUI extends JFrame {
     }
 
     private JButton createButton(String text, int x, int y, int width, int height) {
-        JButton button = new JButton(text);
+        RoundedButton button = new RoundedButton(text,3);
         button.setBounds(x, y, width, height);
         styleButton(button);
         return button;
@@ -630,8 +630,8 @@ public class SuperAdminUI extends JFrame {
         String[] statusOptions = {"All Branch Managers", "Active", "Inactive"};
         bmstatusDropdown = new JComboBox<>(statusOptions);
         bmstatusDropdown.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        bmstatusDropdown.setBackground(Color.decode("#e6e6e7"));
-        bmstatusDropdown.setForeground(Color.BLACK);
+        bmstatusDropdown.setBackground(new Color(35, 42, 67));
+        bmstatusDropdown.setForeground(Color.WHITE);
         bmstatusDropdown.setFont(new Font("Century Gothic", Font.BOLD, 16));
         bmstatusDropdown.setSelectedIndex(0); // Default to "All Branch Managers"
         bmstatusDropdown.setBounds(770, 65, 200, 40);  // Position dropdown
@@ -640,17 +640,13 @@ public class SuperAdminUI extends JFrame {
 
         // Button Panel with Add and Update buttons
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton addButton = new JButton("Add Branch Manager");
-        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addButton.setBackground(Color.WHITE);
-        addButton.setForeground(Color.BLACK);
-        addButton.setFont(new Font("Century Gothic", Font.PLAIN, 18));
+        RoundedButton addButton = new RoundedButton("Add Manager",5);
+        addButton.setPreferredSize(new Dimension(172,41 ));
+        addButton.setFont(new Font("Century Gothic", Font.PLAIN, 16));
 
-        JButton updateButton = new JButton("Update Branch Manager");
-        updateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        updateButton.setBackground(Color.WHITE);
-        updateButton.setForeground(Color.BLACK);
-        updateButton.setFont(new Font("Century Gothic", Font.PLAIN, 18));
+        RoundedButton updateButton = new RoundedButton("Update Manager",5);
+        updateButton.setPreferredSize(new Dimension(172,41 ));
+        updateButton.setFont(new Font("Century Gothic", Font.PLAIN, 16));
 
         buttonPanel.add(addButton);
         buttonPanel.add(updateButton);
@@ -820,8 +816,8 @@ public class SuperAdminUI extends JFrame {
         String[] statusOptions = {"All Branches", "Active", "Closed"};
         statusDropdown = new JComboBox<>(statusOptions);
         statusDropdown.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        statusDropdown.setBackground(Color.decode("#e6e6e7"));
-        statusDropdown.setForeground(Color.BLACK);
+        statusDropdown.setBackground(new Color(35, 42, 67));
+        statusDropdown.setForeground(Color.WHITE);
         statusDropdown.setFont(new Font("Century Gothic", Font.BOLD, 16));
         statusDropdown.setSelectedIndex(0); // Default to "All Branches"
         statusDropdown.setBounds(770, 65, 200, 40);  // Position dropdown
@@ -849,17 +845,13 @@ public class SuperAdminUI extends JFrame {
         panel.add(scrollPane);
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton addButton = new JButton("Add Branch");
-        addButton.setBackground(Color.WHITE);
-        addButton.setForeground(Color.BLACK);
-        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
+        RoundedButton addButton = new RoundedButton("Add Branch",5);
+addButton.setPreferredSize(new Dimension(168,40));
+        addButton.setFont(new Font("Century Gothic", Font.PLAIN, 16));
 
-        JButton updateButton = new JButton("Update Branch");
-        updateButton.setBackground(Color.WHITE);
-        updateButton.setForeground(Color.BLACK);
-        updateButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        updateButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
+        RoundedButton updateButton = new RoundedButton("Update Branch",5);
+        updateButton.setPreferredSize(new Dimension(168,40));
+        updateButton.setFont(new Font("Century Gothic", Font.PLAIN, 16));
 
         buttonPanel.add(addButton);
         buttonPanel.add(updateButton);

@@ -61,11 +61,7 @@ public class ProfitPanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
 
-        JButton printButton = new JButton("Print Profit Report");
-        printButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        printButton.setBackground(new Color(200, 229, 220));
-        printButton.setFont(new Font("Century Gothic", Font.BOLD, 16));
-        printButton.setForeground(Color.BLACK);
+        RoundedButton printButton = new RoundedButton("Print",3);
         printButton.addActionListener(e -> {
             try {
                 DefaultTableModel model = (DefaultTableModel) table.getModel();
@@ -139,11 +135,7 @@ public class ProfitPanel extends JPanel {
         endDateField = new JTextField(10);
         customRangePanel.add(endDateField);
 
-        JButton fetchProfitButton = new JButton("Fetch Profit");
-        fetchProfitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        fetchProfitButton.setBackground(new Color(200, 229, 220));
-        fetchProfitButton.setFont(new Font("Century Gothic", Font.BOLD, 16));
-        fetchProfitButton.setForeground(Color.BLACK);
+        RoundedButton fetchProfitButton = new RoundedButton("Fetch Profit",3);
 
         fetchProfitButton.addActionListener(e -> displayProfit());
         timeRangeLabel = new JLabel("Profit Data for: ");

@@ -36,7 +36,7 @@ class RoundedButton extends JButton {
         super(text);
         this.cornerRadius = radius;
         this.text=text;
-    if(text.equalsIgnoreCase("Print")||text.equalsIgnoreCase("Add To Cart")||text.equalsIgnoreCase("+"))
+    if(text.equalsIgnoreCase("Print")||text.equalsIgnoreCase("Add To Cart")||text.equalsIgnoreCase("+")||text.equalsIgnoreCase("Fetch Profit") )
     {
 
     // Set colors based on button text
@@ -89,7 +89,7 @@ class RoundedButton extends JButton {
                 setForeground(HOVER_TEXT_COLOR); // Text color on hover (only for non-minus buttons)
             }
         } else {
-            if (text.equalsIgnoreCase("Print") ||text.equalsIgnoreCase("Add To Cart")||text.equalsIgnoreCase("+")) {
+            if (text.equalsIgnoreCase("Print") ||text.equalsIgnoreCase("Add To Cart")||text.equalsIgnoreCase("+")||text.equalsIgnoreCase("Fetch Profit")) {
                 g2.setColor(new Color(34, 195, 135)); // Default background color
 
             } else {

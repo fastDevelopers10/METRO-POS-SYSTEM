@@ -83,28 +83,46 @@ public class NewLoginFrame extends JFrame {
         jfxPanel.setBounds(100, 150, 500, 400); // Adjust dimensions as needed
         leftPanel.add(jfxPanel);
 
+// Fallback JLabel for the image
+        JLabel fallbackImageLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("images/fallback.png")));
+        fallbackImageLabel.setBounds(44, 150, 500, 400); // Same dimensions as the video panel
+        fallbackImageLabel.setVisible(false); // Initially hidden
+        leftPanel.add(fallbackImageLabel);
+
         SwingUtilities.invokeLater(() -> {
             try {
                 URL videoURL = getClass().getClassLoader().getResource("images/Logingif.mp4"); // Relative path to MP4
                 if (videoURL != null) {
                     Media media = new Media(videoURL.toExternalForm());
                     MediaPlayer mediaPlayer = new MediaPlayer(media);
-                    MediaView mediaView = new MediaView(mediaPlayer);
 
-                    javafx.scene.Group root = new javafx.scene.Group(mediaView);
-                    Scene scene = new Scene(root, 600, 400);
-                    mediaView.setFitWidth(600);
-                    mediaView.setFitHeight(400);
+                    if (mediaPlayer == null) {
+                        System.out.println("MediaPlayer failed to load. Showing fallback image.");
+                        fallbackImageLabel.setVisible(true); // Show fallback image
+                        jfxPanel.setVisible(false); // Hide video panel
+                    } else {
+                        MediaView mediaView = new MediaView(mediaPlayer);
 
-                    jfxPanel.setScene(scene);
+                        javafx.scene.Group root = new javafx.scene.Group(mediaView);
+                        Scene scene = new Scene(root, 600, 400);
+                        mediaView.setFitWidth(600);
+                        mediaView.setFitHeight(400);
 
-                    // Loop the video
-                    mediaPlayer.setOnEndOfMedia(() -> mediaPlayer.seek(javafx.util.Duration.ZERO));
-                    mediaPlayer.play(); // Start playing the video
+                        jfxPanel.setScene(scene);
+
+                        // Loop the video
+                        mediaPlayer.setOnEndOfMedia(() -> mediaPlayer.seek(javafx.util.Duration.ZERO));
+                        mediaPlayer.play(); // Start playing the video
+                    }
                 } else {
-                    System.out.println("Video file not found!");
+                    System.out.println("Video file not found. Showing fallback image.");
+                    fallbackImageLabel.setVisible(true); // Show fallback image
+                    jfxPanel.setVisible(false); // Hide video panel
                 }
             } catch (Exception e) {
+                System.out.println("Error loading video: " + e.getMessage());
+                fallbackImageLabel.setVisible(true); // Show fallback image
+                jfxPanel.setVisible(false); // Hide video panel
                 e.printStackTrace();
             }
         });

@@ -283,7 +283,7 @@ public class DataOperatorUI extends JFrame {
 
         RoundedPanel VendorPanel = new RoundedPanel(8);
         VendorPanel.setBounds(0, 70, 300, 70); // Set bounds for the entire panel
-        VendorPanel.setBackground(Color.decode("#C8E5DC")); // Set background color for the panel
+        VendorPanel.setBackground(Color.WHITE); // Set background color for the panel
         VendorPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding inside the panel
         VendorPanel.setLayout(new BorderLayout());
 
@@ -336,7 +336,7 @@ public class DataOperatorUI extends JFrame {
 
         RoundedPanel categoryPanel = new RoundedPanel(8);
         categoryPanel.setBounds(400, 100, 300, 70); // Set bounds for the entire panel
-        categoryPanel.setBackground(Color.decode("#CCD4E5")); // Set background color for the panel
+        categoryPanel.setBackground(Color.WHITE); // Set background color for the panel
         categoryPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding inside the panel
         categoryPanel.setLayout(new BorderLayout());
 
@@ -413,7 +413,7 @@ public class DataOperatorUI extends JFrame {
 
         RoundedPanel productspanel = new RoundedPanel(8);
         productspanel.setBounds(750, 100, 250, 70); // Set bounds for the entire panel
-        productspanel.setBackground(Color.decode("#FAE7D5")); // Set background color for the panel
+        productspanel.setBackground(Color.WHITE); // Set background color for the panel
         productspanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding inside the panel
         productspanel.setLayout(new BorderLayout());
 

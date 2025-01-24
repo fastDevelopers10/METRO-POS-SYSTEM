@@ -114,12 +114,15 @@ public class NewUpdatePassword extends JFrame {
         txtConfirmPassword.setBounds(100, 450, 400, 40);
         rightPanel.add(txtConfirmPassword);
 
-        JButton btnUpdate = createButton("Update");
+        JButton btnUpdate = new RoundedButton("Update",3);
         btnUpdate.setBounds(100, 550, 180, 50);
+        btnUpdate.setFont(new Font("Century Gothic", Font.BOLD, 20));
+
         rightPanel.add(btnUpdate);
 
-        JButton btnExit = createButton("Exit");
+        JButton btnExit =new RoundedButton("Exit",3);
         btnExit.setBounds(320, 550, 180, 50);
+        btnExit.setFont(new Font("Century Gothic", Font.BOLD, 20));
         rightPanel.add(btnExit);
 
         btnUpdate.addActionListener(e -> updatePassword());
@@ -208,7 +211,7 @@ public class NewUpdatePassword extends JFrame {
         }
     }
 
-    c
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

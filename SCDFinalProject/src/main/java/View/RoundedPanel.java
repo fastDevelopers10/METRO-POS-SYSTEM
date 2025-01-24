@@ -3,7 +3,6 @@ package View;
 import javax.swing.*;
 import java.awt.*;
 
-// Custom RoundedPanel class
 public class RoundedPanel extends JPanel {
     private final int cornerRadius;
 
@@ -16,15 +15,25 @@ public class RoundedPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // Fill the background with the rounded rectangle
         g2.setColor(getBackground());
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
+
+        // Draw the border with specified color and thickness
+        g2.setColor(new Color(35, 42, 67)); // Border color
+        g2.setStroke(new BasicStroke(2));   // Border thickness
+        g2.drawRoundRect(2, 2, getWidth() - 4, getHeight() - 4, cornerRadius, cornerRadius);
+
         super.paintComponent(g2);
     }
 }
+
+
 class RoundedButton extends JButton {
-    private final int cornerRadius;
-    private Color hoverColor;
-    private Color pressedColor; // Color for the pressed state
+    public final int cornerRadius;
+    public Color hoverColor;
+    public Color pressedColor; // Color for the pressed state
 
     // Define the default color
     private static final Color DEFAULT_COLOR = new Color(35, 42, 67);
@@ -52,18 +61,12 @@ class RoundedButton extends JButton {
         addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                // Only change text color on hover if the button text is not "-"
-                if (!getText().equals("-")) {
-                    setForeground(HOVER_TEXT_COLOR); // Change text color on hover for non-minus buttons
-                }
+                setForeground(HOVER_TEXT_COLOR); // Change text color on hover
             }
 
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                // Only revert text color to default if it's not a minus button
-                if (!getText().equals("-")) {
-                    setForeground(DEFAULT_TEXT_COLOR); // Revert to default color for non-minus buttons
-                }
+                setForeground(DEFAULT_TEXT_COLOR); // Revert to default color
             }
         });
     }
@@ -79,14 +82,10 @@ class RoundedButton extends JButton {
         // Set color based on the button state (pressed, rollover, or default)
         if (getModel().isPressed()) {
             g2.setColor(pressedColor); // Set pressed color
-            if (!getText().equals("-")) {
-                setForeground(PRESSED_TEXT_COLOR); // Text color on press (only for non-minus buttons)
-            }
+            setForeground(PRESSED_TEXT_COLOR); // Text color on press
         } else if (getModel().isRollover()) {
             g2.setColor(hoverColor); // Use hover color
-            if (!getText().equals("-")) {
-                setForeground(HOVER_TEXT_COLOR); // Text color on hover (only for non-minus buttons)
-            }
+            setForeground(HOVER_TEXT_COLOR); // Text color on hover
         } else {
             g2.setColor(DEFAULT_COLOR); // Default background color
             setForeground(DEFAULT_TEXT_COLOR); // Default text color
@@ -105,7 +104,7 @@ class RoundedButton extends JButton {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Draw the rounded border
-        g2.setColor(new Color(200, 229, 220)); // Border color
+        g2.setColor(Color.WHITE); // Border color
         g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, cornerRadius, cornerRadius);
 
         g2.dispose();

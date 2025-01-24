@@ -1,3 +1,4 @@
+// Adjust the design of the Update Password screen to match the Login screen's design.
 package View;
 
 import Model.Employee;
@@ -26,12 +27,22 @@ public class NewUpdatePassword extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel mainPanel = new JPanel(null);
+        mainPanel.setBackground(Color.decode("#F4F4F4")); // Match Login screen background
         add(mainPanel);
 
+        // Left Panel with picture
         JPanel leftPanel = new JPanel(null);
         leftPanel.setBounds(0, 0, getWidth() / 2, getHeight());
         leftPanel.setBackground(Color.WHITE);
-        leftPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 15));
+
+        // Set padding (EmptyBorder) and right side border
+        int padding = 20; // Padding value
+        int borderWidth = 15; // Border width for the right side
+        leftPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(-10, -10, -10, 0), // Padding on all sides except the right
+                BorderFactory.createLineBorder(new Color(5, 42, 117), borderWidth) // Line border on the right side
+        ));
+
         mainPanel.add(leftPanel);
 
         JLabel heading = new JLabel("METRO", SwingConstants.CENTER);
@@ -40,7 +51,6 @@ public class NewUpdatePassword extends JFrame {
         heading.setBounds(110, 150, 400, 70);
         leftPanel.add(heading);
 
-        // Left panel: Image instead of video
         JLabel imageLabel = new JLabel();
         imageLabel.setBounds(60, 180, 500, 400);
         leftPanel.add(imageLabel);
@@ -58,11 +68,11 @@ public class NewUpdatePassword extends JFrame {
             e.printStackTrace();
         }
 
-        // Right panel: Black background with update elements
+
         JPanel rightPanel = new JPanel(null);
-        rightPanel.setBackground(Color.BLACK);
-        rightPanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 15));
+        rightPanel.setBackground(new Color(35, 42, 67));
         rightPanel.setBounds(getWidth() / 2, 0, getWidth() / 2, getHeight());
+        rightPanel.setBorder(BorderFactory.createLineBorder(new Color(35, 42, 67), 5)); // Match Login screen design
         mainPanel.add(rightPanel);
 
         JLabel lblHeading = new JLabel("UPDATE PASSWORD", SwingConstants.CENTER);
@@ -79,7 +89,7 @@ public class NewUpdatePassword extends JFrame {
 
         txtPreviousPassword = new JPasswordField();
         styleTextField(txtPreviousPassword);
-        txtPreviousPassword.setBounds(100, 250, 350, 40);
+        txtPreviousPassword.setBounds(100, 250, 400, 40);
         rightPanel.add(txtPreviousPassword);
 
         JLabel lblNewPassword = new JLabel("Enter New Password:");
@@ -90,7 +100,7 @@ public class NewUpdatePassword extends JFrame {
 
         txtNewPassword = new JPasswordField();
         styleTextField(txtNewPassword);
-        txtNewPassword.setBounds(100, 350, 350, 40);
+        txtNewPassword.setBounds(100, 350, 400, 40);
         rightPanel.add(txtNewPassword);
 
         JLabel lblConfirmPassword = new JLabel("Confirm New Password:");
@@ -101,15 +111,15 @@ public class NewUpdatePassword extends JFrame {
 
         txtConfirmPassword = new JPasswordField();
         styleTextField(txtConfirmPassword);
-        txtConfirmPassword.setBounds(100, 450, 350, 40);
+        txtConfirmPassword.setBounds(100, 450, 400, 40);
         rightPanel.add(txtConfirmPassword);
 
         JButton btnUpdate = createButton("Update");
-        btnUpdate.setBounds(100, 570, 180, 50);
+        btnUpdate.setBounds(100, 550, 180, 50);
         rightPanel.add(btnUpdate);
 
         JButton btnExit = createButton("Exit");
-        btnExit.setBounds(320, 570, 180, 50);
+        btnExit.setBounds(320, 550, 180, 50);
         rightPanel.add(btnExit);
 
         btnUpdate.addActionListener(e -> updatePassword());
@@ -183,10 +193,11 @@ public class NewUpdatePassword extends JFrame {
     private void styleTextField(JTextField textField) {
         textField.setFont(new Font("Century Gothic", Font.PLAIN, 18));
         textField.setForeground(Color.BLACK);
-        textField.setBackground(Color.WHITE);
-        textField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+        textField.setBackground(Color.decode("#F4F4F4")); // Match Login screen text field color
+        textField.setBorder(BorderFactory.createLineBorder(new Color(5, 42, 117), 2)); // Match Login screen text field border
         textField.setCaretColor(Color.BLACK);
     }
+
     private Image loadIcon(String path) {
         URL iconURL = getClass().getClassLoader().getResource(path);
         if (iconURL != null) {
@@ -197,19 +208,7 @@ public class NewUpdatePassword extends JFrame {
         }
     }
 
-    private JButton createButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Century Gothic", Font.BOLD, 20));
-        button.setForeground(Color.WHITE);
-        button.setBackground(Color.BLACK);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
-        return button;
-    }
-    public boolean setModal(boolean b) {
-        b=true;
-        return b;
-    }
+    c
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -222,4 +221,8 @@ public class NewUpdatePassword extends JFrame {
         });
     }
 
+    public void setModal(boolean b) {
+        b=true;
+
+    }
 }

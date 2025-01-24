@@ -25,7 +25,7 @@ class RoundedButton extends JButton {
     private final int cornerRadius;
     private Color hoverColor;
     private Color pressedColor; // Color for the pressed state
-
+    private String text;
     // Define the default color
     private static final Color DEFAULT_COLOR = new Color(35, 42, 67);
     private static final Color DEFAULT_TEXT_COLOR = Color.WHITE; // Default text color (white)
@@ -35,36 +35,37 @@ class RoundedButton extends JButton {
     public RoundedButton(String text, int radius) {
         super(text);
         this.cornerRadius = radius;
+        this.text=text;
+    if(text.equalsIgnoreCase("Print")||text.equalsIgnoreCase("Add To Cart")||text.equalsIgnoreCase("+"))
+    {
 
+    // Set colors based on button text
+    this.hoverColor = new Color(28, 165, 115); // Hover color for buttons
+    this.pressedColor = new Color(24, 140, 100); // Pressed color for buttons
+    setForeground(Color.WHITE); // Default text color is white
+        setFont(new Font("Century Gothic", Font.BOLD, 14)); // Use Font.BOLD to make text bold
+    }
+    else
+    {
         // Set colors based on button text
-        this.hoverColor = new Color(65, 72, 97); // Hover color for buttons
-        this.pressedColor = new Color(85, 92, 117); // Pressed color for buttons
-        setForeground(DEFAULT_TEXT_COLOR); // Default text color is white
-
-        setBackground(DEFAULT_COLOR); // Set the default background color
+    this.hoverColor = new Color(65, 72, 97); // Hover color for buttons
+    this.pressedColor = new Color(85, 92, 117); // Pressed color for buttons
+    setForeground(DEFAULT_TEXT_COLOR); // Default text color is white
+    setBackground(DEFAULT_COLOR); // Set the default background color
+        setFont(new Font("Century Gothic", Font.BOLD, 14)); // Use Font.BOLD to make text bold
+    }
         setOpaque(false);
         setFocusPainted(false);
         setContentAreaFilled(false);
+
         setCursor(new Cursor(Cursor.HAND_CURSOR)); // Pointer cursor on hover
         setPreferredSize(new Dimension(120, 40)); // Adjust button size as needed
 
         // Add MouseListener to handle mouse enter and leave events
         addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                // Only change text color on hover if the button text is not "-"
-                if (!getText().equals("-")) {
-                    setForeground(HOVER_TEXT_COLOR); // Change text color on hover for non-minus buttons
-                }
-            }
 
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                // Only revert text color to default if it's not a minus button
-                if (!getText().equals("-")) {
-                    setForeground(DEFAULT_TEXT_COLOR); // Revert to default color for non-minus buttons
-                }
-            }
+
+
         });
     }
 
@@ -88,8 +89,13 @@ class RoundedButton extends JButton {
                 setForeground(HOVER_TEXT_COLOR); // Text color on hover (only for non-minus buttons)
             }
         } else {
-            g2.setColor(DEFAULT_COLOR); // Default background color
-            setForeground(DEFAULT_TEXT_COLOR); // Default text color
+            if (text.equalsIgnoreCase("Print") ||text.equalsIgnoreCase("Add To Cart")||text.equalsIgnoreCase("+")) {
+                g2.setColor(new Color(34, 195, 135)); // Default background color
+
+            } else {
+                g2.setColor(DEFAULT_COLOR); // Default background color
+                setForeground(DEFAULT_TEXT_COLOR); // Default text color
+            }
         }
 
         // Fill the rounded rectangle

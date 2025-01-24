@@ -215,8 +215,8 @@ public class BranchManagerUI extends JFrame {
         }
 
         JLabel employeeName = new JLabel("" + employee.getUsername());
-        employeeName.setBounds(82, 97, 200, 22); // Adjust bounds as needed
-        employeeName.setFont(new Font("Arial", Font.BOLD, 22));
+        employeeName.setBounds(79, 98, 200, 22); // Adjust bounds as needed
+        employeeName.setFont(new Font("Arial", Font.BOLD, 20));
         employeeName.setForeground(Color.white);
 
         JLabel posLabel = new JLabel("" + employee.getPosition());
@@ -315,7 +315,7 @@ public class BranchManagerUI extends JFrame {
 
         // Style the JTable
         employeeTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        employeeTable.getTableHeader().setBackground(new Color(70, 130, 180));
+        employeeTable.getTableHeader().setBackground(new Color(35, 42, 67));
         employeeTable.getTableHeader().setForeground(Color.WHITE);
         employeeTable.setFont(new Font("Arial", Font.PLAIN, 12));
 
@@ -1051,13 +1051,25 @@ public class BranchManagerUI extends JFrame {
     }
 
     private void logoutAction() {
-        SwingUtilities.invokeLater(() -> {
-            NewLoginFrame frame = new NewLoginFrame();
-            frame.setVisible(true); // Make LoginOptions visible
-        });
-        dispose();
+        int confirmation = JOptionPane.showConfirmDialog(
+                this, // The parent component (the current frame)
+                "Are you sure you want to log out?", // The message
+                "Log Out Confirmation", // The title of the confirmation dialog
+                JOptionPane.YES_NO_OPTION, // The option buttons (Yes/No)
+                JOptionPane.QUESTION_MESSAGE // The icon for the dialog (question mark)
+        );
 
+        if (confirmation == JOptionPane.YES_OPTION) {
+            // Proceed with the logout if the user clicked "Yes"
+            SwingUtilities.invokeLater(() -> {
+                NewLoginFrame frame = new NewLoginFrame();
+                frame.setVisible(true); // Make LoginOptions visible
+            });
+            dispose(); // Close the current frame
+        }
+        // If the user clicked "No", do nothing (simply return)
     }
+
     public static void main(String[] args) {
 
         SwingUtilities.invokeLater(() -> {

@@ -90,8 +90,8 @@ public class CashierUI extends JFrame {
 
         // Labels
         JLabel userName = new JLabel("" + employee.getUsername());
-        userName.setBounds(82, 99, 200, 22);
-        userName.setFont(new Font("Arial", Font.BOLD, 22));
+        userName.setBounds(79, 99, 200, 22);
+        userName.setFont(new Font("Arial", Font.BOLD, 20));
         userName.setForeground(Color.white);
 
 
@@ -101,10 +101,10 @@ public class CashierUI extends JFrame {
         branchId.setForeground(Color.white);
 
         JLabel position = new JLabel(employee.getPosition());
-        position.setFont(new Font("Century Gothic", Font.ITALIC, 13));
+        position.setFont(new Font("Century Gothic", Font.ITALIC, 14));
         position.setForeground(Color.white);
         position.setPreferredSize(new Dimension(150, 30));
-        position.setBounds(80, 125, 150, 30);
+        position.setBounds(81, 125, 150, 30);
 
         backgroundPanel.add(position);
         backgroundPanel.add(userName);
@@ -151,7 +151,7 @@ public class CashierUI extends JFrame {
 // Button text and optional icon paths
         String[][] menuItems = {
                 {"Start Sale", "images/icons/dash_icon.png"},
-                {"View Bills", "icons/bill.png"},
+                {"View Bills", "images/icons/bill.png"},
                 {"Logout", "images/icons/logout.png"}
         };
 
@@ -369,9 +369,11 @@ public class CashierUI extends JFrame {
         labelsPanel.add(totalBillLabel);
 
 // Button for generating the bill (aligned to the left)
-        RoundedButton generateBill = new RoundedButton("Print", 15);
-        generateBill.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+        RoundedButton generateBill = new RoundedButton("PRINT", 15);
+        generateBill.setFont(new Font("Century Gothic", Font.PLAIN, 16));
         generateBill.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+
         generateBill.addActionListener(e -> {
             try {
                 generateBillAction();
@@ -469,7 +471,7 @@ public class CashierUI extends JFrame {
                 System.out.println("Category clicked: " + category);
                 loadProductsByCategory(category); // Load products based on selected category
             });
-
+            categoryButton.setPreferredSize(new Dimension(150, 50)); // Width: 150, Height: 50
             // Add the category button to the horizontal scroll panel
             horizontalScrollPanel.add(categoryButton);
         }
@@ -523,7 +525,7 @@ public class CashierUI extends JFrame {
             // Product name label
             JLabel productNameLabel = new JLabel(product.getName());
             productNameLabel.setForeground(Color.white);
-            productNameLabel.setFont(new Font("Century Gothic", Font.PLAIN, 14));
+            productNameLabel.setFont(new Font("Century Gothic", Font.BOLD, 18));
             productNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
             productNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -554,10 +556,8 @@ public class CashierUI extends JFrame {
             productInfoPanel.add(Box.createVerticalGlue()); // Add space below
 
             // Button for adding the product to the cart
-            RoundedButton addProductButton = new RoundedButton("Add to Cart", 15); // Corner radius of 15
-            addProductButton.setFont(new Font("Century Gothic", Font.PLAIN, 14));
-            addProductButton.setBackground(Color.WHITE);
-            addProductButton.setForeground(Color.BLACK);
+            RoundedButton addProductButton = new RoundedButton("ADD TO CART", 15); // Corner radius of 15
+
             addProductButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             addProductButton.addActionListener(e -> {
                 System.out.println("Product clicked: " + product.getName());
@@ -635,7 +635,7 @@ public class CashierUI extends JFrame {
             // Step 10: Create and add the minus button (rounded)
             RoundedButton minusButton = new RoundedButton("-", 15);  // 15 is the corner radius for rounded corners
             minusButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
-            minusButton.setBackground(new Color(255, 255, 255));  // Example background color for the button
+            minusButton.setBackground(new Color(255, 255, 255));
             minusButton.setPreferredSize(new Dimension(45, 32));  // Smaller size (width x height)
             minusButton.addActionListener(e -> adjustQuantity(product, -1, quantityLabel));
             minusButton.setForeground(Color.BLACK);
@@ -645,9 +645,7 @@ public class CashierUI extends JFrame {
             RoundedButton plusButton = new RoundedButton("+", 15);  // 15 is the corner radius for rounded corners
             plusButton.setFont(new Font("Century Gothic", Font.PLAIN, 20));
 
-// Set the background and text color
-            plusButton.setBackground(new Color(35, 42, 67));  // Background color for the button
-            plusButton.setForeground(Color.WHITE);  // Text color to white
+
 
 // Set a smaller preferred size to avoid button cutting
             plusButton.setPreferredSize(new Dimension(50, 32));  // Smaller size (width x height)

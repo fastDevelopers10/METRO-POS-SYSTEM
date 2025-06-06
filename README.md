@@ -4,14 +4,6 @@ A robust **Point-of-Sale (POS)** application developed as part of our *Software 
 
 ---
 
-## 👥 Team Members
-
-- **Anas Khan** *(Team Lead)* – Cashier & Branch Manager modules  
-- **Sumayya Y.** – Super Admin module  
-- **Alina Rafiq** – Data Operator module
-
----
-
 ## 🚀 Features
 
 - **🔐 Role-Based Access**
